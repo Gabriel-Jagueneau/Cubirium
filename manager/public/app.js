@@ -5717,6 +5717,96 @@ async function runSystemBenchmark() {
 }
 window.runSystemBenchmark = runSystemBenchmark;
 
+async function runSettingsBenchmark() {
+  const btn = document.getElementById('btnSettingsRunBenchmark');
+  const loader = document.getElementById('settingsBenchLoader');
+  const results = document.getElementById('settingsBenchResults');
+  const statusBadge = document.getElementById('settingsBenchStatusBadge');
+  const summaryDesc = document.getElementById('settingsBenchSummaryDesc');
+  const origBtnHtml = btn ? btn.innerHTML : null;
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<div class="action-spinner" style="width:14px;height:14px;border-width:2px;"></div><span>Benchmark...</span>`;
+  }
+  if (loader) loader.style.display = 'flex';
+  if (results) results.style.display = 'none';
+  if (statusBadge) {
+    statusBadge.textContent = 'En cours...';
+    statusBadge.style.color = '#93c5fd';
+  }
+  if (summaryDesc) summaryDesc.textContent = "Mesure des performances processeur, mémoire et réseau...";
+
+  try {
+    const res = await fetch('/api/system/benchmark');
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erreur lors du benchmark');
+
+    const ramVal = document.getElementById('settingsRamVal');
+    const ramDetail = document.getElementById('settingsRamDetail');
+    if (ramVal) ramVal.textContent = `${data.totalRamGb} Go`;
+    if (ramDetail) ramDetail.textContent = `${data.freeRamGb} Go disponibles`;
+
+    const cpuVal = document.getElementById('settingsCpuVal');
+    const cpuDetail = document.getElementById('settingsCpuDetail');
+    if (cpuVal) cpuVal.textContent = `${data.cpuCores} Cœurs`;
+    if (cpuDetail) cpuDetail.textContent = (data.cpuModel || '').replace(/\(R\)|\(TM\)/gi, '').trim();
+
+    const netVal = document.getElementById('settingsNetVal');
+    const netDetail = document.getElementById('settingsNetDetail');
+    if (data.network) {
+      if (netVal) netVal.textContent = data.network.quality;
+      if (netDetail) netDetail.textContent = data.network.detail;
+    }
+
+    const osVal = document.getElementById('settingsOsVal');
+    const osDetail = document.getElementById('settingsOsDetail');
+    if (osVal) osVal.textContent = data.platform;
+    if (osDetail) osDetail.textContent = data.arch;
+
+    const verdictCard = document.getElementById('settingsVerdictCard');
+    const verdictBadge = document.getElementById('settingsVerdictBadge');
+    const verdictTitle = document.getElementById('settingsVerdictTitle');
+    const verdictDesc = document.getElementById('settingsVerdictDesc');
+
+    if (verdictCard) {
+      verdictCard.className = `welcome-verdict-box verdict-${data.badgeColor || 'success'}`;
+    }
+    if (verdictBadge) {
+      verdictBadge.textContent = data.badgeColor === 'success' ? 'Optimal' : (data.badgeColor === 'warning' ? 'Conseillé' : 'Limité');
+    }
+    if (verdictTitle) verdictTitle.textContent = data.verdictTitle;
+    if (verdictDesc) verdictDesc.textContent = data.verdictDesc;
+
+    if (statusBadge) {
+      statusBadge.textContent = data.badgeColor === 'success' ? 'Optimal' : (data.badgeColor === 'warning' ? 'Conseillé' : 'Limité');
+      statusBadge.style.color = data.badgeColor === 'success' ? '#4ade80' : (data.badgeColor === 'warning' ? '#facc15' : '#f87171');
+    }
+    if (summaryDesc) {
+      summaryDesc.textContent = `${data.verdictTitle} — ${data.totalRamGb} Go RAM, ${data.cpuCores} Cœurs`;
+    }
+
+    if (loader) loader.style.display = 'none';
+    if (results) results.style.display = 'block';
+    showToast("Benchmark terminé avec succès !", "success");
+  } catch (err) {
+    console.warn('Erreur diagnostic composants dans paramètres:', err);
+    if (loader) loader.style.display = 'none';
+    if (summaryDesc) summaryDesc.textContent = `Échec de l'analyse : ${err.message}`;
+    if (statusBadge) {
+      statusBadge.textContent = 'Erreur';
+      statusBadge.style.color = '#ef4444';
+    }
+    showToast(`Échec du benchmark : ${err.message}`, 'error');
+  } finally {
+    if (btn && origBtnHtml) {
+      btn.disabled = false;
+      btn.innerHTML = origBtnHtml;
+    }
+  }
+}
+window.runSettingsBenchmark = runSettingsBenchmark;
+
 function openAuthorPortfolio() {
   const url = 'https://gjagueneau.eu';
   if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.openExternalUrl) {
@@ -5872,12 +5962,24 @@ function closeUpdateSummaryModal() {
 let updateOfferPostponedThisSession = false;
 
 async function checkForAppUpdates(silent = true) {
+  const btn = document.getElementById('btnManualCheckUpdate');
+  const feedback = document.getElementById('settingsUpdateFeedback');
+  const origBtnHtml = btn ? btn.innerHTML : null;
+
+  if (!silent && btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<div class="action-spinner" style="width:14px;height:14px;border-width:2px;"></div><span>Recherche...</span>`;
+    if (feedback) feedback.textContent = "Vérification en direct auprès des serveurs GitHub...";
+  }
+
   const summaryModal = document.getElementById('updateSummaryModal');
   if (summaryModal && summaryModal.style.display === 'flex') {
+    if (!silent && btn && origBtnHtml) { btn.disabled = false; btn.innerHTML = origBtnHtml; }
     return;
   }
   const currentOfferModal = document.getElementById('updateOfferModal');
   if (currentOfferModal && currentOfferModal.style.display === 'flex') {
+    if (!silent && btn && origBtnHtml) { btn.disabled = false; btn.innerHTML = origBtnHtml; }
     return;
   }
 
@@ -5891,15 +5993,31 @@ async function checkForAppUpdates(silent = true) {
     const data = await res.json();
     if (data && data.updateAvailable) {
       pendingUpdateData = data;
+      if (feedback) feedback.innerHTML = `<span style="color:#60a5fa;font-weight:600;">Nouvelle version v${data.latestVersion} disponible !</span>`;
       showUpdateOfferModal(data);
-    } else if (!silent) {
-      showToast(`Votre application est à jour (v${data?.currentVersion || '1.0.5'}).`, 'success');
+    } else {
+      const curV = data?.currentVersion || '1.0.4';
+      if (!silent) {
+        if (feedback) {
+          feedback.innerHTML = `<span style="color:#4ade80;font-weight:600;">✓ Votre application est parfaitement à jour (v${curV}).</span>`;
+        }
+        showToast(`Votre application est à jour (v${curV}).`, 'success');
+      }
     }
   } catch (e) {
     console.warn('[Update] Erreur de vérification:', e);
-    if (!silent) showToast("Impossible de vérifier les mises à jour.", 'warning');
+    if (!silent) {
+      if (feedback) feedback.innerHTML = `<span style="color:#f87171;">⚠️ Impossible de contacter GitHub : ${escapeHtml(e.message || 'erreur réseau')}</span>`;
+      showToast("Impossible de vérifier les mises à jour.", 'warning');
+    }
+  } finally {
+    if (!silent && btn && origBtnHtml) {
+      btn.disabled = false;
+      btn.innerHTML = origBtnHtml;
+    }
   }
 }
+window.checkForAppUpdates = checkForAppUpdates;
 
 function showUpdateOfferModal(updateData) {
   const modal = document.getElementById('updateOfferModal');
