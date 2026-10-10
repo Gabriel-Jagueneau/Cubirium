@@ -25,11 +25,16 @@ MinecraftServerManager.exe
 .cache-win/
 .swift-cache/
 manager/cache/
-manager/public/cache/skins/
+manager/public/cache/
 manager/app-settings.json
 .welcome-completed
 .runtime.json
 _temp_import_*
+
+# Diagnostic & local scripts
+*diagnose.js
+*.command
+desktop-app.sh
 
 # OS & IDE metadata
 .DS_Store
