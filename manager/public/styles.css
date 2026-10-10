@@ -4379,20 +4379,21 @@ select option {
 .range-val-badge {
   font-size: 0.73rem;
   font-weight: 700;
-  color: #c7d2fe;
-  background: rgba(99, 102, 241, 0.18);
-  border: 1px solid rgba(99, 102, 241, 0.35);
+  color: #ffffff;
+  background: #4f46e5;
+  border: 1px solid #6366f1;
   padding: 2px 8px;
   border-radius: var(--radius-pill);
   white-space: nowrap;
   letter-spacing: -0.01em;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
 }
 
 .settings-slider-wrap {
   position: relative;
   display: flex;
   align-items: center;
-  padding: 6px 0;
+  padding: 8px 0;
 }
 
 .slider-default-tick {
@@ -4400,17 +4401,18 @@ select option {
   top: 50%;
   transform: translate(-50%, -50%);
   width: 2px;
-  height: 12px;
-  background: rgba(255, 255, 255, 0.45);
-  border-radius: 1px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 2px;
   pointer-events: none;
-  z-index: 1;
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+  z-index: 2;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.6);
   transition: background 0.2s ease;
 }
 
 .settings-slider-wrap:hover .slider-default-tick {
-  background: rgba(255, 255, 255, 0.7);
+  background: #ffffff;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
 }
 
 .range-control {
