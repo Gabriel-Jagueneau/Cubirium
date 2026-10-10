@@ -5,7 +5,7 @@
 !include "x64.nsh"
 
 Name "Minecraft Server Manager"
-OutFile "..\dist\Minecraft-Server-Manager-Installer.exe"
+OutFile "..\dist\win-McS-Manager.exe"
 InstallDir "$LOCALAPPDATA\MinecraftServerManager"
 RequestExecutionLevel user
 

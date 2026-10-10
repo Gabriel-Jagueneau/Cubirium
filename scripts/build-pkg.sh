@@ -11,7 +11,7 @@ echo "Application : Minecraft Server Manager"
 BUILD_TMP="$PROJECT_ROOT/.build-pkg-tmp"
 DIST_DIR="$PROJECT_ROOT/dist"
 STAGING_APP="$BUILD_TMP/Minecraft Server Manager.app"
-PKG_OUT="$DIST_DIR/Minecraft-Server-Manager-Installer.pkg"
+PKG_OUT="$DIST_DIR/mac-McS-Manager.pkg"
 
 rm -rf "$BUILD_TMP"
 mkdir -p "$BUILD_TMP" "$DIST_DIR"

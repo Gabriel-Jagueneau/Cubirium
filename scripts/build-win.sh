@@ -40,7 +40,7 @@ makensis launcher.nsi
 echo "-> Compilation de l'installeur Windows avec NSIS..."
 makensis installer.nsi
 
-OUT_EXE="$DIST_DIR/Minecraft-Server-Manager-Installer.exe"
+OUT_EXE="$DIST_DIR/win-McS-Manager.exe"
 if [ -f "$OUT_EXE" ]; then
   echo ""
   echo "=== Installeur Windows universel généré avec succès ! ==="
