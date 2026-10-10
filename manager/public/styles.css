@@ -1099,120 +1099,78 @@ body {
   box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
 }
 
-/* Update notification banner */
-.update-notification-banner {
-  background: linear-gradient(90deg, rgba(16, 185, 129, 0.14) 0%, rgba(59, 130, 246, 0.14) 100%);
-  border-bottom: 1px solid rgba(16, 185, 129, 0.3);
-  padding: 8px 16px;
-  position: sticky;
-  top: 0;
-  z-index: 9999;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  animation: slideDownBanner 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+/* In-App Update Modals */
+.modal-card-update {
+  max-width: 520px;
+  width: 90%;
+  animation: fadeIn 0.22s ease-out;
 }
 
-@keyframes slideDownBanner {
-  from { transform: translateY(-100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+.update-modal-content {
+  padding: 16px 20px 20px;
 }
 
-.update-banner-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 0.85rem;
+.update-version-highlight {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--accent-green, #10b981);
+  margin-bottom: 8px;
 }
 
-.update-banner-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.update-offer-description {
+  font-size: 0.88rem;
+  color: var(--text-color, #e6edf3);
+  line-height: 1.5;
+  margin-bottom: 16px;
 }
 
-.update-pulse-dot {
-  width: 8px;
-  height: 8px;
+.update-notes-box {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: 8px;
+  padding: 12px 14px;
+  max-height: 180px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+}
+
+.update-notes-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted, #8b949e);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.update-notes-content {
+  font-size: 0.82rem;
+  color: var(--text-color, #e6edf3);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.update-spinner {
+  width: 38px;
+  height: 38px;
+  border: 3px solid rgba(16, 185, 129, 0.18);
+  border-top-color: var(--accent-green, #10b981);
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 8px #10b981;
-  animation: pulseGreen 1.6s infinite ease-in-out;
-  flex-shrink: 0;
+  margin: 0 auto 16px;
+  animation: spin 0.85s linear infinite;
 }
 
-@keyframes pulseGreen {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.85); }
+.update-progress-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color, #e6edf3);
+  margin-bottom: 6px;
 }
 
-.update-badge {
-  background: rgba(16, 185, 129, 0.22);
-  color: #34d399;
-  font-weight: 700;
-  font-size: 0.72rem;
-  padding: 2px 8px;
-  border-radius: var(--radius-pill);
-  border: 1px solid rgba(16, 185, 129, 0.4);
-}
-
-.update-text {
-  color: var(--text-color);
-  font-weight: 500;
-}
-
-.update-banner-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn-update-action {
-  background: var(--accent-green);
-  color: #042416;
-  text-decoration: none;
-  font-size: 0.8rem;
-  font-weight: 700;
-  padding: 5px 12px;
-  border-radius: var(--radius-pill);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: transform 0.15s, opacity 0.15s;
-}
-
-.btn-update-action:hover {
-  transform: translateY(-1px);
-  opacity: 0.95;
-}
-
-.btn-update-close {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: var(--radius-pill);
-  font-size: 0.9rem;
-  transition: color 0.15s;
-}
-
-.btn-update-close:hover {
-  color: var(--text-color);
-}
-
-@media (max-width: 600px) {
-  .update-banner-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  .update-banner-actions {
-    width: 100%;
-    justify-content: space-between;
-  }
+.update-progress-subtitle {
+  font-size: 0.82rem;
+  color: var(--text-muted, #8b949e);
 }
 
 /* Modals */

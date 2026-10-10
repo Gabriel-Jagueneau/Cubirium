@@ -495,20 +495,36 @@ const server = http.createServer(async (req, res) => {
 
     // 2. API Status
     if (pathname === '/api/status' && method === 'GET') {
-      const welcomeFlagPath = path.join(__dirname, '..', '.welcome-completed');
-      const isWelcomeNeeded = !fs.existsSync(welcomeFlagPath);
+      const isWin = process.platform === 'win32';
+      const appSupportDir = isWin
+        ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), 'MinecraftServerManager')
+        : path.join(os.homedir(), 'Library/Application Support/MinecraftServerManager');
+      const welcomeFlagAppSupport = path.join(appSupportDir, '.welcome-completed');
+      const welcomeFlagLocal = path.join(__dirname, '..', '.welcome-completed');
+
+      const existingWorlds = await minecraftService.listWorlds();
+      const hasWorlds = Array.isArray(existingWorlds) && existingWorlds.length > 0;
+      const isWelcomeCompleted = fs.existsSync(welcomeFlagAppSupport) || fs.existsSync(welcomeFlagLocal) || hasWorlds;
+
       return sendJson(res, 200, {
         minecraft: minecraftService.getState(),
         tunnel: tunnelService.getState(),
-        welcomeNeeded: isWelcomeNeeded
+        welcomeNeeded: !isWelcomeCompleted
       });
     }
 
     // 2b. API Welcome Dismiss
     if (pathname === '/api/app/welcome-dismiss' && method === 'POST') {
-      const welcomeFlagPath = path.join(__dirname, '..', '.welcome-completed');
+      const isWin = process.platform === 'win32';
+      const appSupportDir = isWin
+        ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), 'MinecraftServerManager')
+        : path.join(os.homedir(), 'Library/Application Support/MinecraftServerManager');
       try {
-        fs.writeFileSync(welcomeFlagPath, new Date().toISOString(), 'utf8');
+        if (!fs.existsSync(appSupportDir)) fs.mkdirSync(appSupportDir, { recursive: true });
+        fs.writeFileSync(path.join(appSupportDir, '.welcome-completed'), new Date().toISOString(), 'utf8');
+      } catch (e) {}
+      try {
+        fs.writeFileSync(path.join(__dirname, '..', '.welcome-completed'), new Date().toISOString(), 'utf8');
       } catch (e) {}
       return sendJson(res, 200, { success: true });
     }
@@ -582,6 +598,161 @@ const server = http.createServer(async (req, res) => {
           latestVersion: packageJson.version || '1.0.4',
           updateAvailable: false
         });
+      }
+    }
+
+    // 2d. API Update Summary (Post-mise à jour)
+    if (pathname === '/api/app/update-summary' && method === 'GET') {
+      const summaryFile = path.resolve(__dirname, '..', '.update-summary.json');
+      if (fs.existsSync(summaryFile)) {
+        try {
+          const raw = fs.readFileSync(summaryFile, 'utf8');
+          const summary = JSON.parse(raw);
+          try { fs.unlinkSync(summaryFile); } catch (_) {}
+          return sendJson(res, 200, { hasSummary: true, summary });
+        } catch (_) {
+          return sendJson(res, 200, { hasSummary: false });
+        }
+      }
+      return sendJson(res, 200, { hasSummary: false });
+    }
+
+    // 2e. API Apply Update (Auto-mise à jour transparente sans installeur externe)
+    if (pathname === '/api/app/apply-update' && method === 'POST') {
+      try {
+        const { targetVersion, releaseName, releaseNotes } = await parseBody(req);
+        if (!targetVersion) {
+          return sendJson(res, 400, { error: 'targetVersion requise' });
+        }
+
+        const cleanTag = String(targetVersion).replace(/^v/i, '').trim();
+        const tagName = `v${cleanTag}`;
+        const tempDir = path.join(os.tmpdir(), `mcs-update-${Date.now()}`);
+
+        fs.mkdirSync(tempDir, { recursive: true });
+        const archiveFile = path.join(tempDir, 'update.tar.gz');
+
+        // 1. Télécharger l'archive des sources de la release
+        const downloadUrls = [
+          `https://codeload.github.com/Gabriel-Jagueneau/McS-Manager/tar.gz/refs/tags/${tagName}`,
+          `https://github.com/Gabriel-Jagueneau/McS-Manager/archive/refs/tags/${tagName}.tar.gz`
+        ];
+
+        let downloaded = false;
+        for (const dlUrl of downloadUrls) {
+          try {
+            execSync(`curl -sL --max-time 30 "${dlUrl}" -o "${archiveFile}"`);
+            if (fs.existsSync(archiveFile) && fs.statSync(archiveFile).size > 10000) {
+              downloaded = true;
+              break;
+            }
+          } catch (_) {}
+        }
+
+        if (!downloaded) {
+          try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (_) {}
+          return sendJson(res, 500, { error: "Échec du téléchargement des sources de la mise à jour depuis GitHub." });
+        }
+
+        // 2. Extraire l'archive
+        try {
+          execSync(`tar -xzf "${archiveFile}" -C "${tempDir}"`);
+        } catch (tarErr) {
+          try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (_) {}
+          return sendJson(res, 500, { error: "Échec de décompression de l'archive téléchargée." });
+        }
+
+        // 3. Localiser le sous-dossier manager extrait
+        const entries = fs.readdirSync(tempDir);
+        let extractedManagerDir = null;
+        for (const entry of entries) {
+          const cand = path.join(tempDir, entry, 'manager');
+          if (fs.existsSync(cand) && fs.existsSync(path.join(cand, 'package.json'))) {
+            extractedManagerDir = cand;
+            break;
+          }
+        }
+
+        if (!extractedManagerDir) {
+          try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (_) {}
+          return sendJson(res, 500, { error: "L'archive téléchargée ne contient pas le dossier manager." });
+        }
+
+        // 4. Dossiers à mettre à jour
+        const currentManagerDir = path.resolve(__dirname, '..');
+        const targetDirs = [currentManagerDir];
+
+        const macAppManager = '/Applications/Minecraft Server Manager.app/Contents/Resources/manager';
+        if (fs.existsSync(macAppManager) && path.resolve(macAppManager) !== path.resolve(currentManagerDir)) {
+          targetDirs.push(macAppManager);
+        }
+
+        const copyFolderRecursive = (src, dest) => {
+          if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+          const items = fs.readdirSync(src);
+          for (const item of items) {
+            const sPath = path.join(src, item);
+            const dPath = path.join(dest, item);
+            if (fs.statSync(sPath).isDirectory()) {
+              copyFolderRecursive(sPath, dPath);
+            } else {
+              fs.copyFileSync(sPath, dPath);
+            }
+          }
+        };
+
+        for (const tDir of targetDirs) {
+          try {
+            // Mise à jour de src/
+            copyFolderRecursive(path.join(extractedManagerDir, 'src'), path.join(tDir, 'src'));
+            // Mise à jour de public/
+            copyFolderRecursive(path.join(extractedManagerDir, 'public'), path.join(tDir, 'public'));
+            // Mise à jour de package.json
+            fs.copyFileSync(path.join(extractedManagerDir, 'package.json'), path.join(tDir, 'package.json'));
+
+            // Écriture du résumé post-mise à jour
+            const summaryData = {
+              version: cleanTag,
+              releaseName: releaseName || `Version ${cleanTag}`,
+              releaseNotes: releaseNotes || 'Mise à jour de sécurité et améliorations de performances.',
+              updatedAt: Date.now()
+            };
+            fs.writeFileSync(path.join(tDir, '.update-summary.json'), JSON.stringify(summaryData, null, 2), 'utf8');
+          } catch (errCopy) {
+            console.error(`Erreur de copie de mise à jour vers ${tDir}:`, errCopy);
+          }
+        }
+
+        // Nettoyage temporaire
+        try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (_) {}
+
+        // Réponse immédiate au client avant le redémarrage
+        sendJson(res, 200, {
+          success: true,
+          version: cleanTag,
+          message: "Mise à jour installée avec succès. Rechargement en cours..."
+        });
+
+        // 5. Redémarrage propre du serveur en arrière-plan
+        setTimeout(() => {
+          try {
+            const child = spawn(process.execPath, [path.join(__dirname, 'server.js')], {
+              detached: true,
+              stdio: 'ignore',
+              cwd: path.resolve(__dirname, '..'),
+              env: process.env
+            });
+            child.unref();
+            process.exit(0);
+          } catch (e) {
+            process.exit(0);
+          }
+        }, 1200);
+
+        return;
+      } catch (err) {
+        console.error("Erreur critique apply-update:", err);
+        return sendJson(res, 500, { error: err.message || "Erreur interne lors de la mise à jour." });
       }
     }
 

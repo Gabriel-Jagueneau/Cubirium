@@ -5812,19 +5812,64 @@ window.addEventListener('DOMContentLoaded', async () => {
     } catch (e) {}
   }, 3500);
 
-  // Vérification automatique des mises à jour après 2.5 secondes
-  setTimeout(() => checkForAppUpdates(true), 2500);
+  // Vérification si une mise à jour vient d'être appliquée (Résumé post-update)
+  checkPostUpdateSummary().then((hasSummary) => {
+    // Si aucun résumé n'a été affiché, vérifier si une nouvelle mise à jour est disponible
+    if (!hasSummary) {
+      setTimeout(() => checkForAppUpdates(true), 2500);
+    }
+  });
 });
 
 /**
- * Système de détection de mise à jour automatique
+ * Système de mise à jour intégrée à l'application
  */
+let pendingUpdateData = null;
+
+async function checkPostUpdateSummary() {
+  try {
+    const res = await fetch('/api/app/update-summary');
+    const data = await res.json();
+    if (data && data.hasSummary && data.summary) {
+      showUpdateSummaryModal(data.summary);
+      return true;
+    }
+  } catch (_) {}
+  return false;
+}
+
+function showUpdateSummaryModal(summary) {
+  const modal = document.getElementById('updateSummaryModal');
+  if (!modal) return;
+  const versionBadge = document.getElementById('updateSummaryVersionBadge');
+  if (versionBadge) versionBadge.textContent = `Version v${summary.version}`;
+  const notesEl = document.getElementById('updateSummaryNotesContent');
+  if (notesEl) {
+    notesEl.textContent = summary.releaseNotes || summary.releaseName || 'Mise à jour installée avec succès.';
+  }
+  modal.style.display = 'flex';
+}
+
+function closeUpdateSummaryModal() {
+  const modal = document.getElementById('updateSummaryModal');
+  if (modal) modal.style.display = 'none';
+}
+
 async function checkForAppUpdates(silent = true) {
+  if (sessionStorage.getItem('updateOfferDeclined') === 'true' && silent) {
+    return;
+  }
+  const summaryModal = document.getElementById('updateSummaryModal');
+  if (summaryModal && summaryModal.style.display === 'flex') {
+    return;
+  }
+
   try {
     const res = await fetch('/api/app/check-update');
     const data = await res.json();
     if (data && data.updateAvailable) {
-      showUpdateBanner(data);
+      pendingUpdateData = data;
+      showUpdateOfferModal(data);
     } else if (!silent) {
       showToast(`Votre application est à jour (v${data?.currentVersion || '1.0.4'}).`, 'success');
     }
@@ -5833,33 +5878,105 @@ async function checkForAppUpdates(silent = true) {
   }
 }
 
-function showUpdateBanner(updateData) {
-  const existing = document.getElementById('updateNotificationBanner');
-  if (existing) existing.remove();
+function showUpdateOfferModal(updateData) {
+  const modal = document.getElementById('updateOfferModal');
+  if (!modal) return;
 
-  const banner = document.createElement('div');
-  banner.id = 'updateNotificationBanner';
-  banner.className = 'update-notification-banner';
-  banner.innerHTML = `
-    <div class="update-banner-content">
-      <div class="update-banner-left">
-        <span class="update-pulse-dot"></span>
-        <span class="update-badge">Mise à jour v${escapeHtml(updateData.latestVersion)}</span>
-        <span class="update-text">${escapeHtml(updateData.releaseName || 'Une nouvelle version est disponible.')}</span>
-      </div>
-      <div class="update-banner-actions">
-        <a href="${escapeHtml(updateData.downloadUrl || updateData.releaseUrl)}" target="_blank" rel="noopener noreferrer" class="btn-update-action" onclick="window.openBridgeExternalUrl && window.openBridgeExternalUrl('${escapeHtml(updateData.downloadUrl || updateData.releaseUrl)}')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          Mettre à jour
-        </a>
-        <button class="btn-update-close" onclick="document.getElementById('updateNotificationBanner')?.remove()" title="Fermer">✕</button>
-      </div>
-    </div>
-  `;
-  document.body.prepend(banner);
+  const versionBadge = document.getElementById('updateOfferVersionBadge');
+  if (versionBadge) versionBadge.textContent = `Version v${updateData.latestVersion}`;
+
+  const desc = document.getElementById('updateOfferDescription');
+  if (desc) {
+    desc.textContent = updateData.releaseName && updateData.releaseName !== `Version ${updateData.latestVersion}`
+      ? updateData.releaseName
+      : `Une nouvelle version v${updateData.latestVersion} de Minecraft Server Manager est disponible.`;
+  }
+
+  const notesBox = document.getElementById('updateOfferNotesBox');
+  const notesEl = document.getElementById('updateOfferNotesContent');
+  if (notesEl) {
+    if (updateData.releaseNotes && updateData.releaseNotes.trim().length > 0) {
+      notesEl.textContent = updateData.releaseNotes.trim();
+      if (notesBox) notesBox.style.display = 'block';
+    } else {
+      if (notesBox) notesBox.style.display = 'none';
+    }
+  }
+
+  const normalView = document.getElementById('updateOfferNormalView');
+  const progressView = document.getElementById('updateOfferProgressView');
+  const footer = document.getElementById('updateOfferFooter');
+  const closeBtn = document.getElementById('btnCloseUpdateOfferModal');
+
+  if (normalView) normalView.style.display = 'block';
+  if (progressView) progressView.style.display = 'none';
+  if (footer) footer.style.display = 'flex';
+  if (closeBtn) closeBtn.style.display = 'block';
+
+  modal.style.display = 'flex';
+}
+
+function closeUpdateOfferModal() {
+  const modal = document.getElementById('updateOfferModal');
+  if (modal) modal.style.display = 'none';
+  sessionStorage.setItem('updateOfferDeclined', 'true');
+}
+
+async function startInAppUpdate() {
+  if (!pendingUpdateData) return;
+
+  const normalView = document.getElementById('updateOfferNormalView');
+  const progressView = document.getElementById('updateOfferProgressView');
+  const footer = document.getElementById('updateOfferFooter');
+  const closeBtn = document.getElementById('btnCloseUpdateOfferModal');
+  const title = document.getElementById('updateProgressTitle');
+  const sub = document.getElementById('updateProgressSubtitle');
+
+  if (normalView) normalView.style.display = 'none';
+  if (progressView) progressView.style.display = 'block';
+  if (footer) footer.style.display = 'none';
+  if (closeBtn) closeBtn.style.display = 'none';
+
+  if (title) title.textContent = "Téléchargement de la mise à jour...";
+  if (sub) sub.textContent = `Téléchargement et application des composants v${pendingUpdateData.latestVersion}...`;
+
+  try {
+    const res = await fetch('/api/app/apply-update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        targetVersion: pendingUpdateData.latestVersion,
+        releaseName: pendingUpdateData.releaseName,
+        releaseNotes: pendingUpdateData.releaseNotes
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || "Erreur lors de l'application de la mise à jour.");
+    }
+
+    if (title) title.textContent = "Mise à jour installée avec succès !";
+    if (sub) sub.textContent = "Rechargement automatique de l'application...";
+
+    setTimeout(() => {
+      window.location.reload();
+    }, 2200);
+  } catch (err) {
+    if (title) title.textContent = "Échec de la mise à jour";
+    if (sub) sub.textContent = err.message || "Une erreur est survenue.";
+    if (footer) footer.style.display = 'flex';
+    if (closeBtn) closeBtn.style.display = 'block';
+    const acceptBtn = document.getElementById('btnAcceptUpdate');
+    if (acceptBtn) {
+      acceptBtn.textContent = "Réessayer";
+      acceptBtn.onclick = () => {
+        if (normalView) normalView.style.display = 'block';
+        if (progressView) progressView.style.display = 'none';
+        acceptBtn.textContent = "Mettre à jour";
+        acceptBtn.onclick = startInAppUpdate;
+      };
+    }
+  }
 }
 

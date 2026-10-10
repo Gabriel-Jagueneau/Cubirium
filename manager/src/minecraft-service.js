@@ -24,13 +24,21 @@ function formatWorldSizeFrench(raw) {
 
 class MinecraftService {
   constructor() {
-    const isBundled = __dirname.includes('.app/Contents');
+    const isWin = process.platform === 'win32';
+    const appSupportDir = isWin
+      ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), 'MinecraftServerManager')
+      : path.join(os.homedir(), 'Library/Application Support/MinecraftServerManager');
+    const appSupportGames = path.join(appSupportDir, 'games');
+    const devGames = path.resolve(__dirname, '../../games');
+
     if (process.env.GAMES_DIR) {
       this.gamesDir = path.resolve(process.env.GAMES_DIR);
-    } else if (isBundled) {
-      this.gamesDir = path.join(os.homedir(), 'Library/Application Support/MinecraftServerManager/games');
+    } else if (fs.existsSync(appSupportGames) || __dirname.includes('.app/Contents') || isWin) {
+      this.gamesDir = appSupportGames;
+    } else if (fs.existsSync(devGames)) {
+      this.gamesDir = devGames;
     } else {
-      this.gamesDir = path.resolve(__dirname, '../../games');
+      this.gamesDir = appSupportGames;
     }
     if (!fs.existsSync(this.gamesDir)) {
       fs.mkdirSync(this.gamesDir, { recursive: true });

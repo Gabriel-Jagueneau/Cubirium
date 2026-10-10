@@ -1804,6 +1804,76 @@
         </div>
       </div>
     </div>
+  <!-- Modal Proposition de Mise à Jour -->
+  <div class="modal-backdrop" id="updateOfferModal" style="display: none; z-index: 1060;">
+    <div class="modal-card modal-card-update blur-box">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3 id="updateOfferTitle">Mise à jour disponible</h3>
+          <span class="sub-brand" id="updateOfferSubtitle">Nouvelle version prête à être installée</span>
+        </div>
+        <button class="btn-close" id="btnCloseUpdateOfferModal" onclick="closeUpdateOfferModal()" title="Fermer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-content update-modal-content">
+        <div id="updateOfferNormalView">
+          <div class="update-version-highlight" id="updateOfferVersionBadge">Version v1.0.5</div>
+          <p class="update-offer-description" id="updateOfferDescription">
+            Une nouvelle version de Minecraft Server Manager est disponible avec des améliorations et des correctifs.
+          </p>
+          <div class="update-notes-box" id="updateOfferNotesBox">
+            <div class="update-notes-title">Nouveautés</div>
+            <div class="update-notes-content" id="updateOfferNotesContent"></div>
+          </div>
+        </div>
+
+        <!-- Vue de progression de téléchargement et d'installation -->
+        <div id="updateOfferProgressView" style="display: none; text-align: center; padding: 24px 0;">
+          <div class="update-spinner"></div>
+          <div class="update-progress-title" id="updateProgressTitle">Installation de la mise à jour...</div>
+          <div class="update-progress-subtitle" id="updateProgressSubtitle">Téléchargement et application des composants en arrière-plan.</div>
+        </div>
+      </div>
+      <div class="modal-footer" id="updateOfferFooter">
+        <button type="button" class="btn-secondary" id="btnDeclineUpdate" onclick="closeUpdateOfferModal()">Décliner</button>
+        <button type="button" class="btn-primary" id="btnAcceptUpdate" onclick="startInAppUpdate()">Mettre à jour</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Résumé Post-Mise à Jour -->
+  <div class="modal-backdrop" id="updateSummaryModal" style="display: none; z-index: 1060;">
+    <div class="modal-card modal-card-update blur-box">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3 id="updateSummaryTitle">Mise à jour réussie</h3>
+          <span class="sub-brand" id="updateSummarySubtitle">Application mise à niveau avec succès</span>
+        </div>
+        <button class="btn-close" id="btnCloseUpdateSummaryModal" onclick="closeUpdateSummaryModal()" title="Fermer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-content update-modal-content">
+        <div class="update-version-highlight" id="updateSummaryVersionBadge">Version v1.0.5</div>
+        <p class="update-offer-description">
+          Voici le résumé des nouveautés et correctifs apportés par cette mise à jour :
+        </p>
+        <div class="update-notes-box">
+          <div class="update-notes-title">Résumé des changements</div>
+          <div class="update-notes-content" id="updateSummaryNotesContent"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-primary" id="btnConfirmUpdateSummary" onclick="closeUpdateSummaryModal()">Continuer</button>
+      </div>
+    </div>
   </div>
 
   <!-- Overlay global de Drag & Drop pour charger un monde -->
