@@ -1366,7 +1366,7 @@
         </div>
 
         <!-- Section Mises à jour -->
-        <div class="settings-section" style="margin-top: 26px;">
+        <div class="settings-section" style="margin-top: 22px;">
           <div class="settings-section-header">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -1375,13 +1375,21 @@
             </svg>
             <h4>Mises à jour</h4>
           </div>
-          <div class="settings-row" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0;">
-            <div>
-              <span style="font-weight: 600; font-size: 0.9rem;">Version actuelle</span>
-              <p class="settings-section-desc" style="margin: 2px 0 0;">Version 1.0.4</p>
+          <p class="settings-section-desc">Recherche et installation des nouvelles versions de Minecraft Server Manager.</p>
+
+          <div class="settings-update-content">
+            <div class="settings-update-info">
+              <div class="settings-update-title-wrap">
+                <span class="settings-update-title">Version installée</span>
+                <span class="settings-update-tag" id="settingsCurrentVersionTag">v1.0.4</span>
+              </div>
+              <span class="settings-update-desc">Vérifiez si une nouvelle version ou des correctifs sont disponibles.</span>
             </div>
-            <button type="button" class="btn-secondary" style="padding: 7px 14px; font-size: 0.82rem;" onclick="checkForAppUpdates(false)">
-              Vérifier les mises à jour
+            <button type="button" class="btn-secondary settings-update-btn" id="btnManualCheckUpdate" onclick="checkForAppUpdates(false)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+              </svg>
+              <span>Vérifier les mises à jour</span>
             </button>
           </div>
         </div>

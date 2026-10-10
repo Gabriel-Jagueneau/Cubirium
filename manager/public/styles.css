@@ -5073,6 +5073,62 @@ select option {
 }
 
 /* ==========================================================================
+   Section Paramètres : Mises à jour
+   ========================================================================== */
+.settings-update-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.settings-update-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-update-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-update-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.settings-update-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+}
+
+.settings-update-desc {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.settings-update-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
    Splash Loader Simple (Affiché à partir du second lancement)
    ========================================================================== */
 .app-splash-loader {

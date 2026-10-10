@@ -5120,6 +5120,19 @@ async function openAppSettingsModal() {
       };
       applySettingsState(initialSettingsState);
     }
+
+    // Charger la version actuelle de l'application
+    const versionTag = document.getElementById('settingsCurrentVersionTag');
+    if (versionTag) {
+      fetch('/api/app/check-update')
+        .then(r => r.json())
+        .then(vData => {
+          if (vData && vData.currentVersion) {
+            versionTag.textContent = `v${vData.currentVersion}`;
+          }
+        })
+        .catch(() => {});
+    }
   } catch (err) {
     console.warn('Erreur chargement paramètres:', err);
   }
