@@ -1306,8 +1306,9 @@
               <div class="settings-slider-wrap">
                 <input type="range" id="settingsViewDistance" min="4" max="32" step="1" value="12" class="range-control"
                   oninput="document.getElementById('settingsViewDistanceVal').textContent = this.value + ' chunks'" />
+                <div class="slider-default-tick" style="left: calc(9px + (100% - 18px) * 8 / 28);" title="Défaut : 12 chunks"></div>
               </div>
-              <div class="settings-prop-desc">Rayon de chunks chargés et envoyés aux clients. Défaut : 12.</div>
+              <div class="settings-prop-desc">Rayon de chunks chargés et envoyés aux clients.</div>
             </div>
 
             <!-- Distance de simulation -->
@@ -1323,8 +1324,9 @@
                 <input type="range" id="settingsSimulationDistance" min="3" max="16" step="1" value="4"
                   class="range-control"
                   oninput="document.getElementById('settingsSimulationDistanceVal').textContent = this.value + ' chunks'" />
+                <div class="slider-default-tick" style="left: calc(9px + (100% - 18px) * 1 / 13);" title="Défaut : 4 chunks"></div>
               </div>
-              <div class="settings-prop-desc">Rayon d'actualisation des entités. Défaut : 4.</div>
+              <div class="settings-prop-desc">Rayon d'actualisation des entités.</div>
             </div>
 
             <!-- Mode de jeu par défaut -->
@@ -1905,9 +1907,9 @@
             <div class="welcome-verdict-box" id="welcomeVerdictCard">
               <div class="verdict-header">
                 <span class="verdict-badge" id="diagVerdictBadge">Recommandation</span>
-                <strong id="diagVerdictTitle">-</strong>
+                <strong class="verdict-title" id="diagVerdictTitle">-</strong>
               </div>
-              <p id="diagVerdictDesc">-</p>
+              <p class="verdict-desc" id="diagVerdictDesc">-</p>
             </div>
           </div>
         </div>
@@ -2009,7 +2011,7 @@
   </div>
 
   <script src="libs/skinview3d.bundle.js"></script>
-  <script src="app.js?v=1.0.4.3"></script>
+  <script src="app.js?v=1.0.4.4"></script>
 </body>
 
 </html>

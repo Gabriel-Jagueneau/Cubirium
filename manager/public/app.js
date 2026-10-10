@@ -5103,8 +5103,61 @@ function getSettingsFromInputs() {
   };
 }
 
+function resetAppSettingsModalUI() {
+  // 1. Masquer les résultats du benchmark et réinitialiser son statut
+  const benchResults = document.getElementById('settingsBenchResults');
+  const benchLoader = document.getElementById('settingsBenchLoader');
+  const benchBadge = document.getElementById('settingsBenchStatusBadge');
+  const benchDesc = document.getElementById('settingsBenchSummaryDesc');
+  const benchBtn = document.getElementById('btnSettingsRunBenchmark');
+
+  if (benchResults) benchResults.style.display = 'none';
+  if (benchLoader) benchLoader.style.display = 'none';
+  if (benchBadge) {
+    benchBadge.textContent = 'Non testé';
+    benchBadge.style.color = '';
+  }
+  if (benchDesc) {
+    benchDesc.textContent = 'Cliquez pour lancer une analyse complète de vos composants.';
+  }
+  if (benchBtn) {
+    benchBtn.disabled = false;
+    benchBtn.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </svg>
+      <span>Tester mon PC</span>
+    `;
+  }
+
+  // 2. Rétablir le message initial pour la vérification des mises à jour
+  const updateFeedback = document.getElementById('settingsUpdateFeedback');
+  if (updateFeedback) {
+    updateFeedback.innerHTML = 'Vérifiez si une nouvelle version ou des correctifs sont disponibles.';
+  }
+  const updateBtn = document.getElementById('btnManualCheckUpdate');
+  if (updateBtn) {
+    updateBtn.disabled = false;
+    updateBtn.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+      </svg>
+      <span>Vérifier les mises à jour</span>
+    `;
+  }
+
+  // 3. Remonter le défilement tout en haut
+  if (appSettingsModal) {
+    const modalContent = appSettingsModal.querySelector('.modal-content');
+    if (modalContent) {
+      modalContent.scrollTop = 0;
+    }
+  }
+}
+
 async function openAppSettingsModal() {
   if (!appSettingsModal) return;
+  resetAppSettingsModalUI();
   appSettingsModal.style.display = 'flex';
 
   try {
@@ -5143,6 +5196,7 @@ function cancelAppSettingsModal() {
   if (initialSettingsState) {
     applySettingsState(initialSettingsState);
   }
+  resetAppSettingsModalUI();
   if (appSettingsModal) {
     appSettingsModal.style.display = 'none';
   }
@@ -5160,6 +5214,7 @@ async function closeAppSettingsModal() {
     current.defaultGamemode !== initialSettingsState.defaultGamemode ||
     current.defaultDifficulty !== initialSettingsState.defaultDifficulty;
 
+  resetAppSettingsModalUI();
   appSettingsModal.style.display = 'none';
 
   if (hasChanged) {

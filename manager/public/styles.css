@@ -4389,9 +4389,28 @@ select option {
 }
 
 .settings-slider-wrap {
+  position: relative;
   display: flex;
   align-items: center;
   padding: 6px 0;
+}
+
+.slider-default-tick {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.45);
+  border-radius: 1px;
+  pointer-events: none;
+  z-index: 1;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+  transition: background 0.2s ease;
+}
+
+.settings-slider-wrap:hover .slider-default-tick {
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .range-control {
@@ -5510,28 +5529,30 @@ select option {
 }
 
 .welcome-verdict-box {
-  padding: 14px 16px;
+  padding: 15px 18px;
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.025);
   border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  position: relative;
+  transition: all 0.2s ease;
 }
 
 .welcome-verdict-box.verdict-success {
   background: rgba(16, 185, 129, 0.06);
-  border-color: rgba(16, 185, 129, 0.35);
+  border-color: rgba(16, 185, 129, 0.28);
 }
 
 .welcome-verdict-box.verdict-warning {
   background: rgba(245, 158, 11, 0.06);
-  border-color: rgba(245, 158, 11, 0.35);
+  border-color: rgba(245, 158, 11, 0.28);
 }
 
 .welcome-verdict-box.verdict-danger {
   background: rgba(239, 68, 68, 0.06);
-  border-color: rgba(239, 68, 68, 0.35);
+  border-color: rgba(239, 68, 68, 0.28);
 }
 
 .verdict-header {
@@ -5541,38 +5562,60 @@ select option {
 }
 
 .verdict-badge {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.70rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
   border-radius: var(--radius-pill);
+  line-height: 1.2;
+}
+
+.verdict-badge::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 5px currentColor;
+  flex-shrink: 0;
 }
 
 .verdict-success .verdict-badge {
-  background: rgba(16, 185, 129, 0.2);
-  color: var(--accent-green);
+  background: rgba(16, 185, 129, 0.14);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.28);
 }
 
 .verdict-warning .verdict-badge {
-  background: rgba(245, 158, 11, 0.2);
-  color: var(--accent-amber);
+  background: rgba(245, 158, 11, 0.14);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.28);
 }
 
 .verdict-danger .verdict-badge {
-  background: rgba(239, 68, 68, 0.2);
-  color: var(--accent-red);
+  background: rgba(239, 68, 68, 0.14);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.28);
 }
 
-.verdict-header strong {
-  font-size: 0.88rem;
-  color: var(--text-main);
+.verdict-header strong,
+.verdict-title {
+  font-size: 0.98rem;
+  font-weight: 650;
+  color: #ffffff;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
 }
 
-.welcome-verdict-box p {
-  font-size: 0.8rem;
+.welcome-verdict-box p,
+.verdict-desc {
+  font-size: 0.82rem;
   color: var(--text-muted);
-  line-height: 1.45;
+  line-height: 1.5;
   margin: 0;
 }
 
