@@ -5655,6 +5655,76 @@ function goToWelcomePage(pageNumber) {
 }
 window.goToWelcomePage = goToWelcomePage;
 
+function renderBenchmarkCards(prefix, data) {
+  // RAM
+  const ramVal = document.getElementById(`${prefix}RamVal`);
+  const ramDetail = document.getElementById(`${prefix}RamDetail`);
+  if (ramVal) ramVal.textContent = `${data.totalRamGb} Go`;
+  if (ramDetail) {
+    if (data.totalRamGb >= 15.5) {
+      ramDetail.textContent = 'Mémoire vive très confortable';
+    } else if (data.totalRamGb >= 7.5) {
+      ramDetail.textContent = 'Recommandé pour serveur & jeu';
+    } else {
+      ramDetail.textContent = 'Mémoire système minimale';
+    }
+  }
+
+  // CPU
+  const cpuVal = document.getElementById(`${prefix}CpuVal`);
+  const cpuDetail = document.getElementById(`${prefix}CpuDetail`);
+  const cleanCpu = (data.cpuModel || '')
+    .replace(/\(R\)|\(TM\)|CPU|@.*$/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (cleanCpu) {
+    if (cpuVal) cpuVal.textContent = cleanCpu;
+    if (cpuDetail) cpuDetail.textContent = `${data.cpuCores} Cœurs physiques & logiques`;
+  } else {
+    if (cpuVal) cpuVal.textContent = `${data.cpuCores} Cœurs`;
+    if (cpuDetail) cpuDetail.textContent = 'Processeur multi-cœurs';
+  }
+
+  // Connexion
+  const netVal = document.getElementById(`${prefix}NetVal`);
+  const netDetail = document.getElementById(`${prefix}NetDetail`);
+  if (data.network) {
+    if (netVal) {
+      if (data.network.pingMs !== null && data.network.pingMs < 35) {
+        netVal.textContent = 'Fibre • Très rapide';
+      } else if (data.network.pingMs !== null && data.network.pingMs < 80) {
+        netVal.textContent = 'Excellente connexion';
+      } else if (data.network.online) {
+        netVal.textContent = 'Connexion standard';
+      } else {
+        netVal.textContent = 'Local uniquement';
+      }
+    }
+    if (netDetail) {
+      if (data.network.pingMs !== null) {
+        netDetail.textContent = `${data.network.pingMs} ms (latence optimale)`;
+      } else {
+        netDetail.textContent = "Pas d'accès internet détecté";
+      }
+    }
+  }
+
+  // Système
+  const osVal = document.getElementById(`${prefix}OsVal`);
+  const osDetail = document.getElementById(`${prefix}OsDetail`);
+  if (osVal) osVal.textContent = data.platform;
+  if (osDetail) {
+    if (data.platform === 'macOS') {
+      osDetail.textContent = data.arch === 'arm64' ? 'Apple Silicon (arm64)' : 'Processeur Intel (x64)';
+    } else if (data.platform === 'Windows') {
+      osDetail.textContent = `Architecture 64 bits (${data.arch})`;
+    } else {
+      osDetail.textContent = `Architecture ${data.arch}`;
+    }
+  }
+}
+
 async function runSystemBenchmark() {
   const loader = document.getElementById('welcomeDiagnosisLoader');
   const results = document.getElementById('welcomeDiagnosisResults');
@@ -5672,27 +5742,7 @@ async function runSystemBenchmark() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Erreur lors du benchmark');
 
-    const ramVal = document.getElementById('diagRamVal');
-    const ramDetail = document.getElementById('diagRamDetail');
-    if (ramVal) ramVal.textContent = `${data.totalRamGb} Go`;
-    if (ramDetail) ramDetail.textContent = `${data.freeRamGb} Go disponibles`;
-
-    const cpuVal = document.getElementById('diagCpuVal');
-    const cpuDetail = document.getElementById('diagCpuDetail');
-    if (cpuVal) cpuVal.textContent = `${data.cpuCores} Cœurs`;
-    if (cpuDetail) cpuDetail.textContent = (data.cpuModel || '').replace(/\(R\)|\(TM\)/gi, '').trim();
-
-    const netVal = document.getElementById('diagNetVal');
-    const netDetail = document.getElementById('diagNetDetail');
-    if (data.network) {
-      if (netVal) netVal.textContent = data.network.quality;
-      if (netDetail) netDetail.textContent = data.network.detail;
-    }
-
-    const osVal = document.getElementById('diagOsVal');
-    const osDetail = document.getElementById('diagOsDetail');
-    if (osVal) osVal.textContent = data.platform;
-    if (osDetail) osDetail.textContent = data.arch;
+    renderBenchmarkCards('diag', data);
 
     const verdictCard = document.getElementById('welcomeVerdictCard');
     const verdictBadge = document.getElementById('diagVerdictBadge');
@@ -5742,27 +5792,7 @@ async function runSettingsBenchmark() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Erreur lors du benchmark');
 
-    const ramVal = document.getElementById('settingsRamVal');
-    const ramDetail = document.getElementById('settingsRamDetail');
-    if (ramVal) ramVal.textContent = `${data.totalRamGb} Go`;
-    if (ramDetail) ramDetail.textContent = `${data.freeRamGb} Go disponibles`;
-
-    const cpuVal = document.getElementById('settingsCpuVal');
-    const cpuDetail = document.getElementById('settingsCpuDetail');
-    if (cpuVal) cpuVal.textContent = `${data.cpuCores} Cœurs`;
-    if (cpuDetail) cpuDetail.textContent = (data.cpuModel || '').replace(/\(R\)|\(TM\)/gi, '').trim();
-
-    const netVal = document.getElementById('settingsNetVal');
-    const netDetail = document.getElementById('settingsNetDetail');
-    if (data.network) {
-      if (netVal) netVal.textContent = data.network.quality;
-      if (netDetail) netDetail.textContent = data.network.detail;
-    }
-
-    const osVal = document.getElementById('settingsOsVal');
-    const osDetail = document.getElementById('settingsOsDetail');
-    if (osVal) osVal.textContent = data.platform;
-    if (osDetail) osDetail.textContent = data.arch;
+    renderBenchmarkCards('settings', data);
 
     const verdictCard = document.getElementById('settingsVerdictCard');
     const verdictBadge = document.getElementById('settingsVerdictBadge');

@@ -5424,18 +5424,24 @@ select option {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
-  padding: 12px 14px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  gap: 10px;
+  padding: 13px 15px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: var(--radius-md);
   min-width: 0;
+  transition: all 0.2s ease;
+}
+
+.welcome-diag-card:hover {
+  background: rgba(255, 255, 255, 0.038);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .diag-card-icon {
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5471,28 +5477,36 @@ select option {
 }
 
 .diag-card-title {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   color: var(--text-dim);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   font-weight: 600;
+  margin-bottom: 2px;
 }
 
-.diag-card-val {
-  font-size: 0.95rem;
-  font-weight: 700;
+.diag-card-val,
+.diag-card-value {
+  font-size: 1.05rem;
+  font-weight: 650;
   color: var(--text-main);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
 }
 
-.diag-card-detail {
-  font-size: 0.73rem;
+.diag-card-detail,
+.diag-card-sub {
+  font-size: 0.77rem;
+  font-weight: 400;
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.35;
+  margin-top: 2px;
 }
 
 .welcome-verdict-box {
