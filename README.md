@@ -23,11 +23,11 @@ Application desktop pour la gestion, l'hébergement et l'administration de serve
 ## Installation
 
 ### macOS
-1. Télécharger le package `.pkg` depuis les [Releases GitHub](https://github.com/Gabriel-Jagueneau/McS-Manager/releases).
+1. Télécharger l'installeur [mac-McS-Manager.pkg](https://github.com/Gabriel-Jagueneau/McS-Manager/releases/latest/download/mac-McS-Manager.pkg).
 2. Lancer l'installateur et suivre les instructions à l'écran.
 
 ### Windows
-1. Télécharger `MinecraftServerManager-Setup.exe` depuis les [Releases GitHub](https://github.com/Gabriel-Jagueneau/McS-Manager/releases).
+1. Télécharger l'exécutable [win-McS-Manager.exe](https://github.com/Gabriel-Jagueneau/McS-Manager/releases/latest/download/win-McS-Manager.exe).
 2. Exécuter l'assistant d'installation.
 
 ### Exécution depuis les sources
