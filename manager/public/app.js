@@ -5813,10 +5813,11 @@ window.addEventListener('DOMContentLoaded', async () => {
   }, 3500);
 
   // Vérification si une mise à jour vient d'être appliquée (Résumé post-update)
+  sessionStorage.removeItem('updateOfferDeclined'); // Purger l'ancien drapeau global de test
   checkPostUpdateSummary().then((hasSummary) => {
-    // Si aucun résumé n'a été affiché, vérifier si une nouvelle mise à jour est disponible
+    // Si aucun résumé n'a été affiché, vérifier rapidement si une nouvelle mise à jour est disponible
     if (!hasSummary) {
-      setTimeout(() => checkForAppUpdates(true), 2500);
+      setTimeout(() => checkForAppUpdates(true), 400);
     }
   });
 });
@@ -5855,12 +5856,20 @@ function closeUpdateSummaryModal() {
   if (modal) modal.style.display = 'none';
 }
 
+let updateOfferPostponedThisSession = false;
+
 async function checkForAppUpdates(silent = true) {
-  if (sessionStorage.getItem('updateOfferDeclined') === 'true' && silent) {
-    return;
-  }
   const summaryModal = document.getElementById('updateSummaryModal');
   if (summaryModal && summaryModal.style.display === 'flex') {
+    return;
+  }
+  const currentOfferModal = document.getElementById('updateOfferModal');
+  if (currentOfferModal && currentOfferModal.style.display === 'flex') {
+    return;
+  }
+
+  // Si l'utilisateur a choisi "Plus tard" durant cette session, ne pas ré-afficher en arrière-plan
+  if (silent && updateOfferPostponedThisSession) {
     return;
   }
 
@@ -5871,9 +5880,10 @@ async function checkForAppUpdates(silent = true) {
       pendingUpdateData = data;
       showUpdateOfferModal(data);
     } else if (!silent) {
-      showToast(`Votre application est à jour (v${data?.currentVersion || '1.0.4'}).`, 'success');
+      showToast(`Votre application est à jour (v${data?.currentVersion || '1.0.5'}).`, 'success');
     }
   } catch (e) {
+    console.warn('[Update] Erreur de vérification:', e);
     if (!silent) showToast("Impossible de vérifier les mises à jour.", 'warning');
   }
 }
@@ -5919,7 +5929,7 @@ function showUpdateOfferModal(updateData) {
 function closeUpdateOfferModal() {
   const modal = document.getElementById('updateOfferModal');
   if (modal) modal.style.display = 'none';
-  sessionStorage.setItem('updateOfferDeclined', 'true');
+  updateOfferPostponedThisSession = true;
 }
 
 async function startInAppUpdate() {

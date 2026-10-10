@@ -146,7 +146,7 @@ echo "-> Génération du paquet natif .pkg..."
 rm -f "$PKG_OUT"
 pkgbuild --root "$PKG_ROOT" \
   --identifier "com.gabriel.minecraftservermanager" \
-  --version "1.0.4" \
+  --version "1.0.5" \
   --install-location "/Applications" \
   --scripts "$PKG_SCRIPTS" \
   "$PKG_OUT"
