@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Minecraft worlds & user server data
+games/
+*.log
+manager/logs/
+logs/
+
+# Build outputs & installers
+dist/
+build/
+*.pkg
+*.exe
+*.dmg
+*.msi
+*.zip
+*.tar.gz
+Minecraft Server Manager.app/
+MinecraftServerManager.exe
+
+# Cache & temporary files
+.cache/
+.cache-win/
+.swift-cache/
+manager/cache/
+manager/public/cache/skins/
+manager/app-settings.json
+.welcome-completed
+.runtime.json
+_temp_import_*
+
+# OS & IDE metadata
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo

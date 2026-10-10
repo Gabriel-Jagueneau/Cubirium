@@ -1,0 +1,22 @@
+{
+  "name": "minecraft-server-manager",
+  "version": "1.0.4",
+  "description": "Gestionnaire et automatisation de serveurs Minecraft locaux avec tunnel public",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "diagnose": "node ../diagnose.js",
+    "package:pkg": "bash ../scripts/build-pkg.sh",
+    "package:win": "bash ../scripts/build-win.sh",
+    "package:mac": "bash ../scripts/build-pkg.sh"
+  },
+  "keywords": [
+    "minecraft",
+    "server",
+    "tunnel",
+    "mods",
+    "vanilla"
+  ],
+  "author": "Gabriel JAGUENEAU",
+  "license": "ISC"
+}

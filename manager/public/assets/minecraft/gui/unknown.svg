@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="32" height="32" style="image-rendering: pixelated;">
+  <rect x="5" y="2" width="6" height="2" fill="#1e232a"/>
+  <rect x="9" y="4" width="3" height="3" fill="#1e232a"/>
+  <rect x="7" y="7" width="3" height="2" fill="#1e232a"/>
+  <rect x="6" y="9" width="3" height="2" fill="#1e232a"/>
+  <rect x="6" y="12" width="3" height="2" fill="#1e232a"/>
+  <!-- Ombrage -->
+  <rect x="5" y="1" width="6" height="1" fill="#525d6d"/>
+  <rect x="4" y="2" width="1" height="2" fill="#525d6d"/>
+  <rect x="8" y="4" width="1" height="3" fill="#525d6d"/>
+  <rect x="6" y="7" width="1" height="2" fill="#525d6d"/>
+  <rect x="5" y="9" width="1" height="2" fill="#525d6d"/>
+  <rect x="5" y="12" width="1" height="2" fill="#525d6d"/>
+</svg>

@@ -1,0 +1,12 @@
+{
+  "name": "play-minecraft",
+  "version": "1.0.4",
+  "description": "Minecraft Server Manager root workspace",
+  "scripts": {
+    "diagnose": "node diagnose.js",
+    "start": "cd manager && node src/server.js",
+    "package:pkg": "bash scripts/build-pkg.sh",
+    "package:win": "bash scripts/build-win.sh",
+    "package:mac": "bash scripts/build-pkg.sh"
+  }
+}

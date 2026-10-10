@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minecraft Server Manager</title>
+  <link rel="icon" type="image/png" href="/assets/favicon.png?v=5">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+  <!-- Loader simple (à partir du second lancement) -->
+  <div id="appSplashLoader" class="app-splash-loader" style="display: none;">
+    <div class="splash-loader-content">
+      <div class="splash-logo-wrap">
+        <img src="/assets/logo.png?v=5" alt="Logo" class="splash-logo-img" />
+      </div>
+      <div class="splash-spinner"></div>
+      <div class="splash-text">Connexion et chargement...</div>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-box">
+          <img src="/assets/logo.png?v=5" alt="Minecraft Server Manager Logo" class="app-logo-img" />
+        </div>
+        <div class="brand-text">
+          <h1>Minecraft Server Manager</h1>
+          <span class="sub-brand">L'app pour héberger des serveurs Minecraft sur votre ordinateur.</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn-secondary" id="btnOpenAppSettings" title="Paramètres de l'application"
+          onclick="openAppSettingsModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+            </path>
+          </svg>
+          <span>Paramètres</span>
+        </button>
+        <button class="btn-primary" id="btnOpenCreateModal">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Nouveau Monde
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="main-layout">
+      <!-- Left Panel: Worlds List -->
+      <section class="worlds-panel">
+        <div class="panel-header">
+          <div class="panel-title-wrap">
+            <h2>Mondes Disponibles</h2>
+            <span class="badge" id="worldsCountBadge">0</span>
+          </div>
+          <button class="btn-icon" id="btnRefreshWorlds" title="Actualiser la liste">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="worlds-grid" id="worldsList">
+          <!-- Les cartes de mondes seront injectées ici en JavaScript -->
+          <div class="loading-state">Chargement des mondes...</div>
+        </div>
+      </section>
+
+      <!-- Right Panel: Live Console & Controls -->
+      <section class="console-panel">
+        <div class="console-header">
+          <div class="console-title">
+            <span class="pulse-dot" id="serverPulseDot"></span>
+            <span id="activeWorldTitle">Terminal</span>
+            <span class="terminal-status-tag" id="terminalStatusTag" style="display: none;"></span>
+          </div>
+          <div class="console-actions">
+            <div class="players-online" id="playersOnlineBadge" style="display: none;">
+              <span id="playersCount"></span>
+            </div>
+            <div class="tunnel-share-pill" id="tunnelSharePill" style="display: none;" onclick="copyTunnelShareIp()" title="Copier l'adresse IP">
+              <span class="tunnel-pulse-dot"></span>
+              <span class="tunnel-share-ip" id="tunnelShareIp" title="Adresse de connexion">...</span>
+              <button type="button" class="btn-copy-tunnel" id="btnCopyTunnel" onclick="copyTunnelShareIp(); event.stopPropagation();" title="Copier l'adresse IP">
+                Copier l'IP
+              </button>
+            </div>
+            <button class="btn-primary-small" id="btnLaunchViewedWorld" style="display: none;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              Lancer ce monde
+            </button>
+            <button class="btn-danger" id="btnStopActiveServer" style="display: none;">
+              Arrêter le Serveur
+            </button>
+            <button class="btn-small" id="btnClearConsole" title="Effacer les logs de ce monde">Effacer</button>
+          </div>
+        </div>
+
+
+        <!-- Terminal Output -->
+        <div class="terminal-body" id="terminalOutput">
+          <div class="terminal-welcome">
+            <p>Bienvenue sur Minecraft Server Manager.</p>
+            <p>Sélectionnez un monde à gauche pour afficher sa console et gérer la partie.</p>
+          </div>
+        </div>
+
+        <!-- Suggestions de commandes dynamiques & Saisie Console pleine largeur (sans trait de séparation) -->
+        <div class="console-footer">
+          <div class="cmd-suggestions-box" id="cmdSuggestionsBox" style="display: none;">
+            <div class="suggestions-header">
+              <span>Suggestions de commandes :</span>
+              <span class="suggestions-tip">[↑ / ↓] Parcourir • [Tab] / [Clic] Compléter • [Échap] Fermer</span>
+            </div>
+            <div class="suggestions-list" id="suggestionsList"></div>
+          </div>
+
+          <form class="cmd-form" id="cmdForm">
+            <div class="cmd-input-wrap">
+              <span class="cmd-prompt">&gt;</span>
+              <input type="text" id="cmdInput" placeholder="Entrer une commande Minecraft..." disabled
+                autocomplete="off" spellcheck="false" />
+              <button type="submit" class="btn-send-inline" id="btnSendCmd" disabled title="Envoyer la commande">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <!-- Create World Modal -->
+    <div class="modal-backdrop" id="createModal" style="display: none;">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Créer un Nouveau Monde</h3>
+          <button class="btn-close" id="btnCloseCreateModal" title="Fermer"><svg width="16" height="16"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg></button>
+        </div>
+
+        <div class="modal-tabs">
+          <button class="tab-btn active" data-tab="tab-vanilla">Vanilla</button>
+          <button class="tab-btn" data-tab="tab-modded">Moddé</button>
+          <button class="tab-btn" data-tab="tab-import">Charger</button>
+        </div>
+
+        <div class="modal-content">
+          <!-- Tab Vanilla -->
+          <div class="tab-pane active" id="tab-vanilla">
+            <form id="formCreateVanilla">
+              <div class="form-group">
+                <label for="vanillaName">Nom du monde <span class="help-badge-optional">Optionnel</span></label>
+                <input type="text" id="vanillaName" placeholder="ex: Mon-Monde-1" />
+              </div>
+              <div class="form-group">
+                <label for="vanillaSeed">Graine de Génération <span class="help-badge-optional">Optionnel</span></label>
+                <input type="text" id="vanillaSeed" placeholder="ex: 123456789 ou laisser vide" />
+              </div>
+              <div class="form-group">
+                <label for="vanillaVersion">Version Minecraft</label>
+                <select id="vanillaVersion">
+                  <option value="26.3">Minecraft 26.3</option>
+                  <option value="1.21.1">Minecraft 1.21.1</option>
+                  <option value="1.21">Minecraft 1.21</option>
+                  <option value="1.20.6">Minecraft 1.20.6</option>
+                  <option value="1.20.4">Minecraft 1.20.4</option>
+                  <option value="1.20.1">Minecraft 1.20.1</option>
+                  <option value="1.19.4">Minecraft 1.19.4</option>
+                </select>
+                <span class="help-text">Le fichier server.jar officiel Mojang sera téléchargé automatiquement.</span>
+              </div>
+              <div class="form-group-checkbox">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="vanillaOffline" />
+                  <span>Cracké</span>
+                </label>
+                <span class="help-text">Désactivé par défaut. Coche pour autoriser les versions crackées.</span>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="btnCancelVanilla">Annuler</button>
+                <button type="submit" class="btn-primary" id="btnSubmitVanilla">Créer le monde</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Tab Modded -->
+          <div class="tab-pane" id="tab-modded">
+            <form id="formCreateModded">
+              <div class="form-group">
+                <label for="moddedName">Nom du monde <span class="help-badge-optional">Optionnel</span></label>
+                <input type="text" id="moddedName" placeholder="ex: Pack-Aventure" />
+              </div>
+              <div class="form-group">
+                <label for="moddedSeed">Graine de Génération <span class="help-badge-optional">Optionnel</span></label>
+                <input type="text" id="moddedSeed" placeholder="ex: 123456789 ou laisser vide" />
+              </div>
+
+              <div class="form-group">
+                <label>Fichiers Mods ou Archive</label>
+                <div class="drop-zone" id="dropZone" title="Cliquez ou déposez vos fichiers ici">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                  <p class="drop-title" id="dropTitle">Cliquez pour parcourir ou déposez vos fichiers mods ici</p>
+                  <span class="drop-hint">Dossier mods, fichiers .jar ou archive .zip / .mrpack</span>
+                  <input type="file" id="modpackFileInput" accept=".zip,.mrpack,.jar" multiple
+                    style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;" />
+                </div>
+
+                <!-- Indicateur d'avancement du chargement et du tri des mods -->
+                <div class="mod-analysis-progress-card" id="modAnalysisProgressCard" style="display: none;">
+                  <div class="mod-progress-header">
+                    <div class="mod-progress-status-group">
+                      <div class="mod-progress-spinner" id="modProgressSpinner"></div>
+                      <div class="mod-progress-texts">
+                        <span class="mod-progress-title" id="modProgressTitle">Chargement et tri des mods...</span>
+                        <span class="mod-progress-subtitle" id="modProgressSubtitle">Initialisation du transfert</span>
+                      </div>
+                    </div>
+                    <span class="mod-progress-pct-badge" id="modProgressPct">0%</span>
+                  </div>
+                  <div class="mod-progress-track">
+                    <div class="mod-progress-fill" id="modProgressBar" style="width: 0%"></div>
+                  </div>
+                  <div class="mod-progress-footer">
+                    <span class="mod-progress-detail" id="modProgressDetail">Tri intelligent des mods serveur et
+                      exclusion des mods visuels client</span>
+                    <span class="mod-progress-count" id="modProgressCount"></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Configuration du Loader & Version -->
+              <div class="form-row mod-config-row" id="modConfigRow" style="display: none;">
+                <div class="form-group">
+                  <label for="moddedVersion">Version Minecraft <span class="detected-badge" id="detectedVerBadge"
+                      style="display: none;">Détectée</span></label>
+                  <select id="moddedVersion">
+                    <option value="26.3">26.3</option>
+                    <option value="1.21.1" selected>1.21.1</option>
+                    <option value="1.21">1.21</option>
+                    <option value="1.20.6">1.20.6</option>
+                    <option value="1.20.4">1.20.4</option>
+                    <option value="1.20.2">1.20.2</option>
+                    <option value="1.20.1">1.20.1</option>
+                    <option value="1.19.4">1.19.4</option>
+                    <option value="1.18.2">1.18.2</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="moddedLoader">Modloader <span class="detected-badge" id="detectedLoaderBadge"
+                      style="display: none;">Détecté</span></label>
+                  <select id="moddedLoader">
+                    <option value="fabric" selected>Fabric</option>
+                    <option value="neoforge">NeoForge</option>
+                    <option value="forge">Forge</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group-checkbox">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="moddedOffline" />
+                  <span>Cracké</span>
+                </label>
+                <span class="help-text">Désactivé par défaut. Si activé, autorise les comptes non officiels.</span>
+              </div>
+
+              <!-- Mod Analysis Preview -->
+              <div class="analysis-results" id="analysisResults" style="display: none;">
+                <div class="analysis-summary">
+                  <div class="summary-box success">
+                    <span class="summary-val" id="serverModsCount">0</span>
+                    <span class="summary-lbl">Mods Serveur retenus</span>
+                  </div>
+                  <div class="summary-box warning">
+                    <span class="summary-val" id="clientModsCount">0</span>
+                    <span class="summary-lbl">Mods Client exclus</span>
+                  </div>
+                </div>
+
+                <div class="excluded-mods-list-wrap">
+                  <div class="list-title">Filtrage des mods incompatibles :</div>
+                  <ul class="excluded-mods-list" id="excludedModsList"></ul>
+                </div>
+              </div>
+
+              <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="btnCancelModded">Annuler</button>
+                <button type="submit" class="btn-primary" id="btnSubmitModded" disabled>Créer le serveur moddé</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Tab Charger Sauvegarde -->
+          <div class="tab-pane" id="tab-import">
+            <form id="formImportWorld">
+              <div class="form-group">
+                <label for="importWorldName">Nom du monde <span class="help-badge-optional">Optionnel</span></label>
+                <input type="text" id="importWorldName" placeholder="ex: Mon-Monde" />
+              </div>
+
+              <div class="form-group">
+                <label>Dossier de Sauvegarde ou Archive Zip</label>
+                <div class="drop-zone" id="importDropZone"
+                  title="Cliquez pour parcourir ou déposez un dossier ou une archive .zip">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                  <p class="drop-title" id="importDropTitle">Cliquez pour parcourir ou déposez votre dossier ou archive .zip ici</p>
+                  <span class="drop-hint">Dossier de monde ou archive .zip</span>
+                  <input type="file" id="importFolderInput" webkitdirectory directory multiple
+                    style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;" />
+                  <input type="file" id="importFileInput" accept=".zip"
+                    style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;" />
+                </div>
+                <!-- Badge de Détection Automatique du Lanceur & Version -->
+                <div class="auto-detected-badge" id="importDetectedBadge"></div>
+              </div>
+
+              <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="btnCancelImport">Annuler</button>
+                <button type="submit" class="btn-primary" id="btnSubmitImport" disabled>Importer et Configurer le
+                  Serveur</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-- Modal de Progression de Création de Monde -->
+  <div class="modal-backdrop" id="createProgressModal" style="display: none;">
+    <div class="modal-dialog modal-dialog-progress">
+      <div class="progress-modal-content">
+        <div class="progress-modal-spinner-wrap">
+          <div class="progress-modal-spinner" id="progressModalSpinner">
+            <svg class="spinner-svg" viewBox="0 0 50 50">
+              <circle class="spinner-path" cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
+            </svg>
+          </div>
+          <div class="progress-modal-icon-success" id="progressSuccessIcon" style="display: none;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <div class="progress-modal-icon-error" id="progressErrorIcon" style="display: none;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </div>
+        </div>
+        <h3 class="progress-modal-title" id="progressModalTitle">Création du monde en cours...</h3>
+        <p class="progress-modal-subtitle" id="progressModalSubtitle">Initialisation...</p>
+
+        <div class="progress-track-wrapper">
+          <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
+        </div>
+        <div class="progress-modal-meta">
+          <span class="progress-step-text" id="progressStepText">Préparation...</span>
+          <span class="progress-pct-text" id="progressPctText">0%</span>
+        </div>
+
+        <p class="progress-modal-notice">Cette étape télécharge et prépare les dépendances officielles Mojang et du
+          loader. Merci de patienter.</p>
+
+        <div class="progress-modal-footer" id="progressModalFooter" style="display: none;">
+          <button type="button" class="btn-primary" id="btnCloseProgressModal">Fermer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Options du Serveur -->
+  <div class="modal-backdrop" id="editPropsModal" style="display: none;">
+    <div class="modal-card modal-large options-modal">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3 id="editPropsTitle">Options du Serveur</h3>
+          <span class="sub-brand" id="editPropsSubtitle">Configuration server.properties</span>
+        </div>
+        <button class="btn-close" id="btnClosePropsModal" title="Fermer"><svg width="16" height="16" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg></button>
+      </div>
+
+      <div class="modal-content options-modal-content">
+        <div class="options-grid" id="optionsGrid">
+
+          <!-- Emplacement des Fichiers & Finder -->
+          <div class="option-card option-card-full" id="propsPathCard"
+            data-keywords="chemin dossier finder path fichiers">
+            <div class="option-card-info">
+              <span class="option-card-title">Emplacement des Fichiers</span>
+              <span class="option-card-desc path-display" id="propWorldFullPath">/chemin/vers/le/serveur</span>
+            </div>
+            <div class="option-card-control">
+              <button type="button" class="btn-primary-small btn-open-finder" id="btnOpenFinderFolder"
+                title="Ouvrir dans le Finder de macOS">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Ouvrir le Finder
+              </button>
+            </div>
+          </div>
+
+          <!-- Gamemode -->
+          <div class="option-card" data-keywords="mode jeu gamemode survie creatif creative survival">
+            <div class="option-card-info">
+              <span class="option-card-title">Mode de Jeu</span>
+              <span class="option-card-desc">Type d'expérience pour les joueurs</span>
+            </div>
+            <div class="option-card-control">
+              <select id="propGamemode" class="option-select">
+                <option value="survival">Survie</option>
+                <option value="creative">Créatif</option>
+                <option value="adventure">Aventure</option>
+                <option value="spectator">Spectateur</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Difficulty -->
+          <div class="option-card" data-keywords="difficulte difficulty paisible normal facile difficile">
+            <div class="option-card-info">
+              <span class="option-card-title">Difficulté</span>
+              <span class="option-card-desc">Dégâts subis et agressivité des monstres</span>
+            </div>
+            <div class="option-card-control">
+              <select id="propDifficulty" class="option-select">
+                <option value="peaceful">Paisible</option>
+                <option value="easy">Facile</option>
+                <option value="normal">Normal</option>
+                <option value="hard">Difficile</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Max Players -->
+          <div class="option-card" data-keywords="joueurs max max-players slot slots">
+            <div class="option-card-info">
+              <span class="option-card-title">Nombre de Joueurs</span>
+              <span class="option-card-desc">Capacité maximale simultanée du serveur</span>
+            </div>
+            <div class="option-card-control">
+              <input type="number" id="propMaxPlayers" class="option-input-number" min="1" max="100" value="20" />
+            </div>
+          </div>
+
+          <!-- Whitelist -->
+          <div class="option-card" data-keywords="whitelist liste blanche securite access">
+            <div class="option-card-info">
+              <span class="option-card-title">Liste Blanche</span>
+              <span class="option-card-desc">Autoriser uniquement les joueurs enregistrés</span>
+            </div>
+            <div class="option-card-control">
+              <label class="toggle-switch">
+                <input type="checkbox" id="propWhitelist" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Crack / Offline Mode -->
+          <div class="option-card" data-keywords="crack cracked offline online-mode authentification mojang">
+            <div class="option-card-info">
+              <span class="option-card-title">Cracké</span>
+              <span class="option-card-desc">Autorise les comptes non officiels</span>
+            </div>
+            <div class="option-card-control">
+              <label class="toggle-switch">
+                <input type="checkbox" id="propCracked" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- PvP -->
+          <div class="option-card" data-keywords="pvp combat degats frappe fight">
+            <div class="option-card-info">
+              <span class="option-card-title">PvP</span>
+              <span class="option-card-desc">Permettre le combat entre joueurs</span>
+            </div>
+            <div class="option-card-control">
+              <label class="toggle-switch">
+                <input type="checkbox" id="propPvp" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Hardcore -->
+          <div class="option-card" data-keywords="hardcore mort definitive permadeath">
+            <div class="option-card-info">
+              <span class="option-card-title">Hardcore</span>
+              <span class="option-card-desc">Mort définitive et passage en spectateur</span>
+            </div>
+            <div class="option-card-control">
+              <label class="toggle-switch">
+                <input type="checkbox" id="propHardcore" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Allow Flight -->
+          <div class="option-card" data-keywords="vol fly flight elytres kick">
+            <div class="option-card-info">
+              <span class="option-card-title">Vol</span>
+              <span class="option-card-desc">Autoriser le vol sans exclusion</span>
+            </div>
+            <div class="option-card-control">
+              <label class="toggle-switch">
+                <input type="checkbox" id="propAllowFlight" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Monsters -->
+          <div class="option-card" data-keywords="monstres monsters zombies squelettes creepers spawn">
+            <div class="option-card-info">
+              <span class="option-card-title">Monstres</span>
+              <span class="option-card-desc">Apparition des monstres agressifs</span>
+            </div>
+            <div class="option-card-control">
+              <label class="toggle-switch">
+                <input type="checkbox" id="propSpawnMonsters" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Animals -->
+          <div class="option-card" data-keywords="animaux animals vaches moutons cochons">
+            <div class="option-card-info">
+              <span class="option-card-title">Animaux</span>
+              <span class="option-card-desc">Apparition des créatures passives</span>
+            </div>
+            <div class="option-card-control">
+              <label class="toggle-switch">
+                <input type="checkbox" id="propSpawnAnimals" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Villagers -->
+          <div class="option-card" data-keywords="villageois npcs pnjs commerce village">
+            <div class="option-card-info">
+              <span class="option-card-title">Villageois</span>
+              <span class="option-card-desc">Apparition des marchands et villageois</span>
+            </div>
+            <div class="option-card-control">
+              <label class="toggle-switch">
+                <input type="checkbox" id="propSpawnNpcs" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Command Blocks -->
+          <div class="option-card" data-keywords="command block blocs commande commandes">
+            <div class="option-card-info">
+              <span class="option-card-title">Blocs de Commande</span>
+              <span class="option-card-desc">Activer l'exécution des Command Blocks</span>
+            </div>
+            <div class="option-card-control">
+              <label class="toggle-switch">
+                <input type="checkbox" id="propCommandBlock" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Nether -->
+          <div class="option-card" data-keywords="nether enfer dimension portail">
+            <div class="option-card-info">
+              <span class="option-card-title">Nether</span>
+              <span class="option-card-desc">Autoriser l'accès à la dimension du Nether</span>
+            </div>
+            <div class="option-card-control">
+              <label class="toggle-switch">
+                <input type="checkbox" id="propAllowNether" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- View Distance -->
+          <div class="option-card" data-keywords="view-distance vue chunks vision render distance">
+            <div class="option-card-info">
+              <span class="option-card-title">Distance de Vue</span>
+              <span class="option-card-desc">Rayon d'affichage en chunks</span>
+            </div>
+            <div class="option-card-control">
+              <input type="number" id="propViewDistance" class="option-input-number" min="3" max="32" value="12" />
+            </div>
+          </div>
+
+          <!-- Simulation Distance -->
+          <div class="option-card" data-keywords="simulation distance anti lag ticks entites">
+            <div class="option-card-info">
+              <span class="option-card-title">Distance de Simulation</span>
+              <span class="option-card-desc">Rayon de calcul des entités</span>
+            </div>
+            <div class="option-card-control">
+              <input type="number" id="propSimulationDistance" class="option-input-number" min="3" max="32" value="4" />
+            </div>
+          </div>
+
+          <!-- Server Port -->
+          <div class="option-card" data-keywords="port server-port reseau connexion">
+            <div class="option-card-info">
+              <span class="option-card-title">Port du Serveur</span>
+              <span class="option-card-desc">Port local du processus Minecraft</span>
+            </div>
+            <div class="option-card-control">
+              <input type="number" id="propPort" class="option-input-number" min="1024" max="65535" value="25565" />
+            </div>
+          </div>
+
+          <!-- MOTD -->
+          <div class="option-card full-span" data-keywords="motd message accueil description serveur">
+            <div class="option-card-info">
+              <span class="option-card-title">Message d'Accueil</span>
+              <span class="option-card-desc">Texte affiché dans la liste des serveurs du jeu</span>
+            </div>
+            <div class="option-card-control">
+              <input type="text" id="propMotd" class="option-input-text" placeholder="Serveur Minecraft" />
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Stockage invisible des raw properties pour préserver le fichier -->
+        <textarea id="propsTextarea" style="display: none;"></textarea>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="btnCancelProps">Annuler</button>
+        <button type="button" class="btn-primary" id="btnSaveProps">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Player Manager Modal -->
+  <div class="modal-backdrop" id="playersModal" style="display: none;">
+    <div class="modal-card modal-large players-modal">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3 id="playersModalTitle">Gestion des Joueurs</h3>
+          <span class="sub-brand" id="playersModalSubtitle">Permissions, Whitelist et Sanctions</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button class="btn-icon" id="btnRefreshPlayersModal" title="Actualiser la liste"
+            style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: var(--text-muted); cursor: pointer; padding: 6px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 4v6h-6"></path>
+              <path d="M1 20v-6h6"></path>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+          </button>
+          <button class="btn-close" id="btnClosePlayersModal" title="Fermer"><svg width="16" height="16"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg></button>
+        </div>
+      </div>
+
+      <!-- Onglets Gestion Joueurs -->
+      <div class="players-tabs">
+        <button class="players-tab active" data-tab="players" id="tabBtnPlayers" type="button">
+          Joueurs <span class="tab-badge" id="countPlayers">0</span>
+        </button>
+        <button class="players-tab" data-tab="ops" id="tabBtnOps" type="button">
+          Opérateurs <span class="tab-badge" id="countOps">0</span>
+        </button>
+        <button class="players-tab" data-tab="whitelist" id="tabBtnWhitelist" type="button">
+          Liste Blanche <span class="tab-badge" id="countWhitelist">0</span>
+        </button>
+        <button class="players-tab" data-tab="bannedPlayers" id="tabBtnBannedPlayers" type="button">
+          Bannis <span class="tab-badge" id="countBannedPlayers">0</span>
+        </button>
+      </div>
+
+      <div class="modal-content players-modal-content">
+        <!-- Formulaire d'ajout rapide -->
+        <form id="formAddPlayer" class="players-add-bar" style="display: none;">
+          <div class="add-input-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <input type="text" id="playerInputName" placeholder="Entrer un pseudo Minecraft..." required
+              autocomplete="off" />
+          </div>
+          <input type="text" id="playerInputReason" class="reason-input" placeholder="Raison..."
+            style="display: none;" />
+          <button type="submit" class="btn-primary btn-add-player">Ajouter</button>
+        </form>
+
+        <!-- Liste des joueurs pour l'onglet actif -->
+        <div class="players-list-scroll">
+          <div class="players-list" id="playersListContainer">
+            <!-- Rempli dynamiquement -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Player Detail Inspector Modal -->
+  <div class="modal-backdrop" id="playerDetailModal" style="display: none; z-index: 1050;">
+    <div class="modal-card modal-extra-large player-detail-card">
+      <!-- Header -->
+      <div class="player-detail-header">
+        <div class="player-detail-profile">
+          <img class="player-detail-avatar" id="detailAvatar" src="" alt="Avatar" />
+          <div class="player-detail-titles">
+            <div class="player-detail-name-row">
+              <h3 id="detailPlayerName">Pseudo</h3>
+              <span class="player-status-pill" id="detailStatusPill">Hors ligne</span>
+            </div>
+            <div class="player-detail-uuid" id="detailPlayerUuid">UUID</div>
+          </div>
+        </div>
+        <div class="player-detail-header-actions">
+          <div class="gamemode-picker-wrap" title="Changer le Mode de Jeu">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="6" width="20" height="12" rx="4"></rect>
+              <path d="M6 12h4m-2-2v4m10-2h.01m-3 0h.01"></path>
+            </svg>
+            <select id="detailGameModeSelect" class="gamemode-select">
+              <option value="survival">Survie</option>
+              <option value="creative">Créatif</option>
+              <option value="adventure">Aventure</option>
+              <option value="spectator">Spectateur</option>
+            </select>
+          </div>
+          <button class="btn-close" id="btnClosePlayerDetailModal" title="Fermer"><svg width="16" height="16"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg></button>
+        </div>
+      </div>
+
+      <div class="player-detail-body">
+        <!-- Main Grid: 2 Columns Top, 2 Columns Middle -->
+        <div class="player-detail-grid">
+          <!-- Box 1: Vie et expérience -->
+          <div class="detail-box">
+            <div class="detail-box-title">Vie et expérience</div>
+
+            <div class="player-vitals-layout">
+              <!-- Colonne gauche : barres + XP -->
+              <div class="player-vitals-left">
+                <div class="xp-section">
+                  <div class="xp-level-label" id="detailXpLabel">Niveau 0</div>
+                  <div class="xp-progress-bar">
+                    <div class="xp-progress-fill" id="detailXpFill" style="width: 0%;"></div>
+                  </div>
+                </div>
+
+                <!-- Health Row -->
+                <div class="vitals-bar-row">
+                  <div class="hearts-container" id="detailHeartsContainer">
+                    <!-- 10 cœurs dynamiques Minecraft -->
+                  </div>
+                </div>
+
+                <!-- Food Row -->
+                <div class="vitals-bar-row">
+                  <div class="food-container" id="detailFoodContainer">
+                    <!-- 10 pilons dynamiques Minecraft -->
+                  </div>
+                </div>
+
+                <!-- XP Quick Actions -->
+                <div class="xp-quick-actions">
+                  <span class="xp-quick-label">XP :</span>
+                  <button class="btn-xp-chip negative" data-xp="-10" title="Retirer 10 niveaux d'XP">-10</button>
+                  <button class="btn-xp-chip negative" data-xp="-5" title="Retirer 5 niveaux d'XP">-5</button>
+                  <button class="btn-xp-chip negative" data-xp="-1" title="Retirer 1 niveau d'XP">-1</button>
+                  <button class="btn-xp-chip positive" data-xp="1" title="Donner 1 niveau d'XP">+1</button>
+                  <button class="btn-xp-chip positive" data-xp="5" title="Donner 5 niveaux d'XP">+5</button>
+                  <button class="btn-xp-chip positive" data-xp="10" title="Donner 10 niveaux d'XP">+10</button>
+                </div>
+              </div>
+
+              <!-- Colonne droite : skin 3D joueur -->
+              <div class="player-3d-wrap">
+                <canvas id="player3dCanvas" width="150" height="210"></canvas>
+                <div class="player-3d-loading" id="player3dLoading">
+                  <div class="player-3d-spinner"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Box 2: Contrôle -->
+          <div class="detail-box">
+            <div class="detail-box-title">Contrôle</div>
+            <div class="control-rows">
+              <div class="control-row">
+                <div class="control-label">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <span>Liste blanche</span>
+                </div>
+                <button class="player-toggle-switch" id="toggleWhitelist" type="button"
+                  title="Activer / Désactiver la whitelist" aria-pressed="false">
+                  <span class="toggle-thumb"></span>
+                </button>
+              </div>
+
+              <div class="control-row">
+                <div class="control-label">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                  </svg>
+                  <span>Banni</span>
+                </div>
+                <button class="player-toggle-switch" id="toggleBanned" type="button"
+                  title="Bannir / Pardonner le joueur" aria-pressed="false">
+                  <span class="toggle-thumb"></span>
+                </button>
+              </div>
+
+              <div class="control-row">
+                <div class="control-label">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  </svg>
+                  <span>Opérateur</span>
+                </div>
+                <button class="player-toggle-switch" id="toggleOp" type="button" title="Donner / Retirer le statut OP"
+                  aria-pressed="false">
+                  <span class="toggle-thumb"></span>
+                </button>
+              </div>
+
+              <div class="control-row danger-row"
+                style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                <div class="control-label">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  <span style="color: #fca5a5; font-size: 0.8rem; font-weight: 600;">Données du joueur</span>
+                </div>
+                <button type="button" class="btn-detail-delete-data" id="btnDetailDeleteData"
+                  title="Effacer l'inventaire, coffres, progrès et position du joueur">
+                  Supprimer les données
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Box 3: Inventaire -->
+          <div class="detail-box">
+            <div class="detail-box-title">Inventaire</div>
+            <div class="mc-inventory-view">
+              <!-- Armor Column on Left -->
+              <div class="mc-armor-column">
+                <div class="mc-slot armor-slot" id="slot-head" data-slot="103"><img class="slot-armor-placeholder"
+                    src="/assets/minecraft/gui/empty_helmet.png" alt="Casque" /></div>
+                <div class="mc-slot armor-slot" id="slot-chest" data-slot="102"><img class="slot-armor-placeholder"
+                    src="/assets/minecraft/gui/empty_chestplate.png" alt="Plastron" /></div>
+                <div class="mc-slot armor-slot" id="slot-legs" data-slot="101"><img class="slot-armor-placeholder"
+                    src="/assets/minecraft/gui/empty_leggings.png" alt="Jambières" /></div>
+                <div class="mc-slot armor-slot" id="slot-feet" data-slot="100"><img class="slot-armor-placeholder"
+                    src="/assets/minecraft/gui/empty_boots.png" alt="Bottes" /></div>
+                <div class="mc-slot offhand-slot" id="slot-offhand" data-slot="-106"><img class="slot-armor-placeholder"
+                    src="/assets/minecraft/gui/empty_shield.png" alt="Seconde main" /></div>
+              </div>
+
+              <!-- Main Inventory + Hotbar -->
+              <div class="mc-inventory-main">
+                <div class="mc-slots-grid" id="mainInventoryGrid">
+                  <!-- 27 slots (9x3) -->
+                </div>
+                <div class="mc-hotbar-grid" id="hotbarGrid">
+                  <!-- 9 hotbar slots (9x1) -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Box 4: Information -->
+          <div class="detail-box">
+            <div class="detail-box-title">Information</div>
+            <div class="info-cards-list">
+              <!-- Position Actuelle -->
+              <div class="info-card">
+                <div class="info-card-header">
+                  <span class="info-card-icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                    </svg>
+                  </span>
+                  <span class="info-card-title">Position actuelle</span>
+                </div>
+                <div class="info-coords-row">
+                  <span>X: <strong id="detailPosX">0</strong></span>
+                  <span>Y: <strong id="detailPosY">64</strong></span>
+                  <span>Z: <strong id="detailPosZ">0</strong></span>
+                </div>
+                <div class="info-dim-row">
+                  <span class="info-dim" id="detailDimension">minecraft:overworld</span>
+                  <button class="btn-copy-coords" id="btnCopyPosCoords" title="Copier les coordonnées">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Copier
+                  </button>
+                </div>
+              </div>
+
+              <!-- Spawn -->
+              <div class="info-card">
+                <div class="info-card-header">
+                  <span class="info-card-icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M2 4v16"></path>
+                      <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+                      <path d="M2 17h20"></path>
+                      <path d="M6 8v9"></path>
+                    </svg>
+                  </span>
+                  <span class="info-card-title">Lieu de réapparition</span>
+                </div>
+                <div class="info-dim-row">
+                  <div class="info-coords-text" id="detailSpawnCoords">Non défini</div>
+                  <button class="btn-copy-coords" id="btnCopySpawnCoords" title="Copier les coordonnées de réapparition"
+                    style="display: none;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Copier
+                  </button>
+                </div>
+              </div>
+
+              <!-- Dernière mort -->
+              <div class="info-card">
+                <div class="info-card-header">
+                  <span class="info-card-icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 2a6 6 0 0 0-6 6v3c0 2-2 4-2 6v1h16v-1c0-2-2-4-2-6V8a6 6 0 0 0-6-6z"></path>
+                      <line x1="12" y1="6" x2="12" y2="12"></line>
+                      <line x1="9" y1="9" x2="15" y2="9"></line>
+                    </svg>
+                  </span>
+                  <span class="info-card-title">Position de la dernière mort</span>
+                </div>
+                <div class="info-dim-row">
+                  <div class="info-coords-text" id="detailDeathCoords">Aucune mort enregistrée</div>
+                  <button class="btn-copy-coords" id="btnCopyDeathCoords" title="Copier les coordonnées de mort"
+                    style="display: none;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Copier
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Bar: Statistiques -->
+        <div class="detail-stats-bar">
+          <div class="stat-item">
+            <span class="stat-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </span>
+            <div class="stat-meta">
+              <span class="stat-label">Temps de jeu</span>
+              <strong class="stat-val" id="detailPlayTime">0 min</strong>
+            </div>
+          </div>
+          <div class="stat-item">
+            <span class="stat-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"></polyline>
+                <line x1="13" y1="19" x2="19" y2="13"></line>
+                <line x1="16" y1="16" x2="20" y2="20"></line>
+                <line x1="19" y1="21" x2="21" y2="19"></line>
+              </svg>
+            </span>
+            <div class="stat-meta">
+              <span class="stat-label">Éliminations de Joueur</span>
+              <strong class="stat-val" id="detailPlayerKills">0</strong>
+            </div>
+          </div>
+          <div class="stat-item">
+            <span class="stat-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M9 10h.01"></path>
+                <path d="M15 10h.01"></path>
+                <path d="M9.5 15a3.5 3.5 0 0 1 5 0"></path>
+              </svg>
+            </span>
+            <div class="stat-meta">
+              <span class="stat-label">Morts</span>
+              <strong class="stat-val" id="detailDeaths">0</strong>
+            </div>
+          </div>
+          <div class="stat-item">
+            <span class="stat-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="6"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
+              </svg>
+            </span>
+            <div class="stat-meta">
+              <span class="stat-label">KDR</span>
+              <strong class="stat-val" id="detailKdr">0.0</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manage World Modal (Onglet Crayon : Renommer, Exporter Zip, Réinitialiser dimensions) -->
+  <div class="modal-backdrop" id="renameModal" style="display: none;">
+    <div class="modal-card modal-large">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3 id="manageWorldModalTitle">Gestion du Monde</h3>
+          <span class="sub-brand" id="manageWorldModalSubtitle">Contrôle des dimensions, sauvegarde et
+            configuration</span>
+        </div>
+        <button class="btn-close" id="btnCloseRenameModal" title="Fermer"><svg width="16" height="16"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg></button>
+      </div>
+      <div class="modal-content manage-world-content">
+        <!-- 1. Renommer -->
+        <div class="manage-section">
+          <h4 class="manage-section-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+            </svg>
+            Nom du Monde
+          </h4>
+          <form id="formRenameWorld" class="rename-inline-form">
+            <input type="text" id="renameNewName" required placeholder="Nom du monde" />
+            <button type="submit" class="btn-primary" id="btnSubmitRename">Enregistrer</button>
+          </form>
+        </div>
+
+        <!-- 2. Exportation / Sauvegarde compactée -->
+        <div class="manage-section">
+          <h4 class="manage-section-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Sauvegarde et Exportation
+          </h4>
+          <div class="export-box">
+            <div class="export-desc">
+              <strong>Exporter une copie compressée</strong>
+              <p>Compresse l'intégralité du monde et ouvre le Finder.</p>
+            </div>
+            <button type="button" class="btn-primary-small" id="btnExportWorldZip">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Sauvegarder et Exporter
+            </button>
+          </div>
+
+
+
+          <!-- Barre de chargement & progression en direct pour l'exportation -->
+          <div class="export-progress-container" id="exportProgressContainer" style="display: none;">
+            <div class="export-progress-header">
+              <span class="export-progress-status" id="exportProgressStatus">
+                <span class="action-spinner" id="exportProgressSpinner"></span>
+                <span id="exportProgressText">Compression de la sauvegarde en cours...</span>
+              </span>
+              <span class="export-progress-pct" id="exportProgressPct">0%</span>
+            </div>
+            <div class="export-progress-track">
+              <div class="export-progress-bar" id="exportProgressBar" style="width: 0%;"></div>
+            </div>
+            <div class="export-progress-sub" id="exportProgressSub">Lecture et compression des données du monde...</div>
+          </div>
+
+          <!-- Indicateur en direct pour l'exportation -->
+          <div class="action-status-box" id="exportStatusBox"></div>
+        </div>
+
+        <!-- 3. Contrôle des Mondes & Réinitialisation des Dimensions -->
+        <div class="manage-section">
+          <h4 class="manage-section-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+              </path>
+            </svg>
+            Contrôle & Réinitialisation des Dimensions
+          </h4>
+          <p class="manage-section-desc">
+            Régénère une dimension spécifique tout en conservant les inventaires des joueurs.
+          </p>
+          <div class="dimensions-list" id="manageDimensionsList">
+            <!-- Injecté en JavaScript : Overworld, Nether, End si créés -->
+            <div class="loading-state">Détection des dimensions chargées...</div>
+          </div>
+
+          <!-- Indicateur en direct pour la réinitialisation de dimension -->
+          <div class="action-status-box" id="dimResetStatusBox"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="btnCancelRename">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete World Confirmation Modal -->
+  <div class="modal-backdrop" id="deleteWorldModal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="color: #fca5a5;">Supprimer le Monde</h3>
+        <button class="btn-close" id="btnCloseDeleteModal" title="Fermer"><svg width="16" height="16"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg></button>
+      </div>
+      <div class="modal-content">
+        <p style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-main);">
+          Es-tu certain de vouloir supprimer définitivement le monde <strong id="deleteWorldNameTarget"
+            style="color: #fca5a5;"></strong> ?
+        </p>
+        <p style="font-size: 0.8rem; color: var(--text-dim); line-height: 1.5;">
+          ⚠️ Cette action supprimera tous les fichiers du monde. Cette opération est irréversible.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="btnCancelDelete">Annuler</button>
+        <button type="button" class="btn-danger" id="btnConfirmDelete" style="padding: 9px 18px;">Supprimer
+          Définitivement</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- App Settings Modal -->
+  <div class="modal-backdrop" id="appSettingsModal" style="display: none;">
+    <div class="modal-card modal-card-large">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3>Paramètres de l'Application</h3>
+          <span class="sub-brand">Emplacements des fichiers et configurations par défaut</span>
+        </div>
+        <button class="btn-close" id="btnCloseAppSettingsModal" onclick="closeAppSettingsModal()" title="Fermer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-content" style="max-height: 74vh; overflow-y: auto; padding: 22px 26px;">
+        <!-- Section 1 : Emplacement des sauvegardes et téléchargements -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <h4>Fichiers & Téléchargements</h4>
+          </div>
+          <p class="settings-section-desc">Dossier de destination par défaut pour les sauvegardes de mondes.</p>
+
+          <div class="settings-path-group" style="margin-top: 14px;">
+            <label for="settingsDownloadPath" class="settings-field-label">Emplacement des exports :</label>
+            <div class="settings-input-with-action">
+              <div class="settings-input-wrapper">
+                <svg class="settings-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <input type="text" id="settingsDownloadPath" class="settings-text-input"
+                  placeholder="/Users/.../Downloads" spellcheck="false" />
+              </div>
+              <button type="button" class="btn-secondary" id="btnBrowseSettingsDownloadPath"
+                title="Sélectionner un dossier sur macOS" onclick="browseSettingsFolder()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>Parcourir</span>
+              </button>
+            </div>
+            <span class="settings-hint">Par défaut, les sauvegardes exportées sont enregistrées dans votre dossier Téléchargements.</span>
+          </div>
+        </div>
+
+        <!-- Section Réseau : Tunnel Public Automatique -->
+        <div class="settings-section" style="margin-top: 22px;">
+          <div class="settings-section-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+            <h4>Accès Réseau Public</h4>
+          </div>
+          <p class="settings-section-desc">Redirection automatique du serveur pour permettre la connexion directe des autres joueurs.</p>
+        </div>
+
+        <!-- Section 2 : Propriétés par défaut à la création de mondes -->
+        <div class="settings-section" style="margin-top: 22px;">
+          <div class="settings-section-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+              </path>
+            </svg>
+            <h4>Valeurs server.properties par défaut</h4>
+          </div>
+          <p class="settings-section-desc">Ces réglages seront automatiquement appliqués dans le fichier
+            <code>server.properties</code> de chaque nouveau monde créé.
+          </p>
+
+          <div class="settings-controls-grid" style="margin-top: 16px;">
+            <!-- Distance d'affichage -->
+            <div class="settings-prop-card">
+              <div class="settings-prop-top">
+                <div class="settings-prop-title-wrap">
+                  <label for="settingsViewDistance" class="settings-prop-name">Distance d'affichage</label>
+                  <span class="settings-code-tag">view-distance</span>
+                </div>
+                <span class="range-val-badge" id="settingsViewDistanceVal">12 chunks</span>
+              </div>
+              <div class="settings-slider-wrap">
+                <input type="range" id="settingsViewDistance" min="4" max="32" step="1" value="12" class="range-control"
+                  oninput="document.getElementById('settingsViewDistanceVal').textContent = this.value + ' chunks'" />
+              </div>
+              <div class="settings-prop-desc">Rayon de chunks chargés et envoyés aux clients. Défaut : 12.</div>
+            </div>
+
+            <!-- Distance de simulation -->
+            <div class="settings-prop-card">
+              <div class="settings-prop-top">
+                <div class="settings-prop-title-wrap">
+                  <label for="settingsSimulationDistance" class="settings-prop-name">Distance de simulation</label>
+                  <span class="settings-code-tag">simulation-distance</span>
+                </div>
+                <span class="range-val-badge" id="settingsSimulationDistanceVal">4 chunks</span>
+              </div>
+              <div class="settings-slider-wrap">
+                <input type="range" id="settingsSimulationDistance" min="3" max="16" step="1" value="4"
+                  class="range-control"
+                  oninput="document.getElementById('settingsSimulationDistanceVal').textContent = this.value + ' chunks'" />
+              </div>
+              <div class="settings-prop-desc">Rayon d'actualisation des entités. Défaut : 4.</div>
+            </div>
+
+            <!-- Mode de jeu par défaut -->
+            <div class="settings-prop-card">
+              <div class="settings-prop-top">
+                <div class="settings-prop-title-wrap">
+                  <label for="settingsDefaultGamemode" class="settings-prop-name">Mode de jeu par défaut</label>
+                  <span class="settings-code-tag">gamemode</span>
+                </div>
+              </div>
+              <div class="settings-select-wrap">
+                <select id="settingsDefaultGamemode" class="settings-select-control">
+                  <option value="survival">Survie</option>
+                  <option value="creative">Créatif</option>
+                  <option value="adventure">Aventure</option>
+                  <option value="spectator">Spectateur</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Difficulté par défaut -->
+            <div class="settings-prop-card">
+              <div class="settings-prop-top">
+                <div class="settings-prop-title-wrap">
+                  <label for="settingsDefaultDifficulty" class="settings-prop-name">Difficulté par défaut</label>
+                  <span class="settings-code-tag">difficulty</span>
+                </div>
+              </div>
+              <div class="settings-select-wrap">
+                <select id="settingsDefaultDifficulty" class="settings-select-control">
+                  <option value="peaceful">Paisible</option>
+                  <option value="easy">Facile</option>
+                  <option value="normal" selected>Normal</option>
+                  <option value="hard">Difficile</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Mises à jour -->
+        <div class="settings-section" style="margin-top: 26px;">
+          <div class="settings-section-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <h4>Mises à jour</h4>
+          </div>
+          <div class="settings-row" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0;">
+            <div>
+              <span style="font-weight: 600; font-size: 0.9rem;">Version actuelle</span>
+              <p class="settings-section-desc" style="margin: 2px 0 0;">Version 1.0.4</p>
+            </div>
+            <button type="button" class="btn-secondary" style="padding: 7px 14px; font-size: 0.82rem;" onclick="checkForAppUpdates(false)">
+              Vérifier les mises à jour
+            </button>
+          </div>
+        </div>
+
+        <!-- Section 3 : Zone de danger (Désinstallation) -->
+        <div class="settings-section settings-danger-zone" style="margin-top: 26px;">
+          <div class="settings-section-header danger-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <h4>Zone de danger</h4>
+          </div>
+          <p class="settings-section-desc">Supprime définitivement l'application et son raccourci Bureau de cet ordinateur.</p>
+
+          <div class="danger-zone-content">
+            <div class="danger-zone-info">
+              <span class="danger-zone-title">Désinstaller l'application</span>
+              <span class="danger-zone-desc">Arrête tous les serveurs actifs et retire l'application de votre système.</span>
+            </div>
+            <button type="button" class="btn-danger" id="btnOpenUninstallModal" onclick="openUninstallModal()">
+              Désinstaller
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; padding: 18px 26px;">
+        <button type="button" class="btn-secondary" onclick="cancelAppSettingsModal()">
+          <span>Annuler</span>
+        </button>
+        <button type="button" class="btn-primary" id="btnSaveAppSettings" onclick="closeAppSettingsModal()">
+          <span>Enregistrer</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Confirmation Désinstallation (Trois étapes de confirmation) -->
+  <div class="modal-backdrop" id="uninstallConfirmModal" style="display: none; z-index: 200;">
+    <div class="modal-card blur-box uninstall-modal-card">
+      
+      <!-- Étape 1 : Sélection des options de suppression -->
+      <div id="uninstallStep1" class="uninstall-step" style="display: flex;">
+        <div class="uninstall-header">
+          <h3 class="uninstall-title">Désinstaller l'application</h3>
+          <span class="uninstall-step-badge">Étape 1 sur 3</span>
+        </div>
+        <div class="uninstall-body">
+          <h4 class="uninstall-intro-title">Que souhaitez-vous supprimer lors de la désinstallation ?</h4>
+          <p class="uninstall-intro-desc">
+            Cette opération va arrêter vos serveurs en cours, retirer les raccourcis de votre Bureau et supprimer le gestionnaire de votre Mac. Choisissez les éléments à supprimer :
+          </p>
+
+          <div class="uninstall-options-toggle-row">
+            <span style="font-size: 0.76rem; color: var(--text-dim);">Options de nettoyage :</span>
+            <button type="button" class="uninstall-toggle-all-btn" id="btnToggleAllUninstall" onclick="toggleAllUninstallOptions()">
+              Tout sélectionner
+            </button>
+          </div>
+
+          <div class="uninstall-options-list">
+            <!-- Élément obligatoire de base -->
+            <label class="uninstall-option-item locked">
+              <input type="checkbox" checked disabled id="uninstallOptApp" />
+              <div class="uninstall-option-text">
+                <span class="uninstall-option-label">Application &amp; Raccourcis (Obligatoire)</span>
+                <span class="uninstall-option-sub">Supprime l'application Minecraft Server Manager et les raccourcis sur le Bureau.</span>
+              </div>
+            </label>
+
+            <!-- Option Mondes -->
+            <label class="uninstall-option-item" for="uninstallOptWorlds">
+              <input type="checkbox" id="uninstallOptWorlds" />
+              <div class="uninstall-option-text">
+                <span class="uninstall-option-label">Mondes, maps et données de jeu</span>
+                <span class="uninstall-option-sub">Dossier des serveurs (<code>games/</code>), dimensions, blocs, inventaires et mods associés.</span>
+              </div>
+            </label>
+
+            <!-- Option Sauvegardes -->
+            <label class="uninstall-option-item" for="uninstallOptBackups">
+              <input type="checkbox" id="uninstallOptBackups" />
+              <div class="uninstall-option-text">
+                <span class="uninstall-option-label">Sauvegardes et archives exportées</span>
+                <span class="uninstall-option-sub">Archives de sécurité (.zip) et copies de secours locales créées par le gestionnaire.</span>
+              </div>
+            </label>
+
+            <!-- Option Réglages & Config -->
+            <label class="uninstall-option-item" for="uninstallOptSettings">
+              <input type="checkbox" id="uninstallOptSettings" />
+              <div class="uninstall-option-text">
+                <span class="uninstall-option-label">Préférences et réglages personnalisés</span>
+                <span class="uninstall-option-sub">Configuration générale (<code>app-settings.json</code>) et dossier d'export prédéfini.</span>
+              </div>
+            </label>
+
+            <!-- Option Caches -->
+            <label class="uninstall-option-item" for="uninstallOptCaches">
+              <input type="checkbox" id="uninstallOptCaches" checked />
+              <div class="uninstall-option-text">
+                <span class="uninstall-option-label">Caches système et données WebKit / WebView</span>
+                <span class="uninstall-option-sub">Journaux système, cookies locaux et état de session de navigation.</span>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="uninstall-footer">
+          <button type="button" class="btn-secondary" onclick="closeUninstallModal()">
+            Annuler
+          </button>
+          <button type="button" class="btn-danger" onclick="goToUninstallStep2()">
+            Continuer
+          </button>
+        </div>
+      </div>
+
+      <!-- Étape 2 : Récapitulatif et Sauvegarde préventive -->
+      <div id="uninstallStep2" class="uninstall-step" style="display: none;">
+        <div class="uninstall-header">
+          <h3 class="uninstall-title">Récapitulatif de désinstallation</h3>
+          <span class="uninstall-step-badge">Étape 2 sur 3</span>
+        </div>
+        <div class="uninstall-body">
+          <h4 class="uninstall-intro-title">Vérifiez les données impactées par la suppression</h4>
+          <p class="uninstall-intro-desc">
+            Voici le détail de ce qui sera supprimé de votre machine et de ce qui sera préservé :
+          </p>
+
+          <div class="uninstall-recap-grid">
+            <!-- Ce qui sera détruit -->
+            <div class="uninstall-recap-box danger">
+              <div class="uninstall-recap-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                <span>Éléments qui seront DÉFINITIVEMENT supprimés :</span>
+              </div>
+              <ul class="uninstall-recap-list" id="uninstallRecapDestroyList">
+                <!-- Dynamique via app.js -->
+              </ul>
+            </div>
+
+            <!-- Ce qui sera conservé -->
+            <div class="uninstall-recap-box safe">
+              <div class="uninstall-recap-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  <polyline points="9 12 11 14 15 10"></polyline>
+                </svg>
+                <span>Éléments qui seront CONSERVÉS sur votre ordinateur :</span>
+              </div>
+              <ul class="uninstall-recap-list" id="uninstallRecapKeepList">
+                <!-- Dynamique via app.js -->
+              </ul>
+            </div>
+          </div>
+
+          <!-- Boîte de sauvegarde et exportation de tous les mondes -->
+          <div class="uninstall-backup-panel" id="uninstallBackupPanel">
+            <div class="uninstall-backup-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Sauvegarde préventive de vos mondes</span>
+            </div>
+            <p class="uninstall-backup-desc">
+              Sécurisez vos cartes et créations dans une archive .zip unique. L'archive sera exportée dans votre dossier prédéfini :
+            </p>
+            <div class="uninstall-backup-dest">
+              <span>Dossier d'export prédéfini : </span>
+              <code id="uninstallBackupDestPath">~/Downloads</code>
+            </div>
+            <button type="button" class="btn-secondary" id="btnExportAllFromUninstall" onclick="exportAllWorldsFromUninstall()" style="display: inline-flex; align-items: center; gap: 8px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+              </svg>
+              <span>Sauvegarder et exporter tous les mondes maintenant</span>
+            </button>
+            <div id="uninstallExportAllStatus" class="uninstall-backup-status" style="display: none;"></div>
+          </div>
+        </div>
+        <div class="uninstall-footer">
+          <button type="button" class="btn-secondary" onclick="backToUninstallStep1()">
+            Retour
+          </button>
+          <button type="button" class="btn-danger" onclick="goToUninstallStep3()">
+            Continuer
+          </button>
+        </div>
+      </div>
+
+      <!-- Étape 3 : Confirmation définitive par mot-clé obligatoire -->
+      <div id="uninstallStep3" class="uninstall-step" style="display: none;">
+        <div class="uninstall-header">
+          <h3 class="uninstall-title">Confirmation définitive</h3>
+          <span class="uninstall-step-badge step-danger">Étape 3 sur 3</span>
+        </div>
+        <div class="uninstall-body">
+          <p style="font-size: 0.88rem; color: var(--accent-red); font-weight: 700; margin-bottom: 10px;">
+            Êtes-vous absolument sûr ? Cette action est irréversible.
+          </p>
+          <div class="uninstall-confirm-box">
+            <p class="uninstall-match-prompt">
+              L'application va être immédiatement fermée et le nettoyage sélectionné sera exécuté.<br>
+              Pour valider définitivement la désinstallation, veuillez saisir <strong>supprimer</strong> ci-dessous :
+            </p>
+            <input type="text" id="uninstallConfirmKeyword" class="uninstall-match-input" placeholder="Tapez 'supprimer' pour débloquer" oninput="checkUninstallKeywordMatch()" autocomplete="off" spellcheck="false" />
+          </div>
+        </div>
+        <div class="uninstall-footer">
+          <button type="button" class="btn-secondary" onclick="backToUninstallStep2()">
+            Retour
+          </button>
+          <button type="button" class="btn-danger" id="btnConfirmUninstall" disabled onclick="executeUninstall()" style="font-weight: 700; opacity: 0.5; cursor: not-allowed;">
+            Désinstaller définitivement
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+
+  <!-- Modal d'introduction et présentation (Page 1/2 : Présentation, Page 2/2 : Diagnostic matériel) -->
+  <!-- Modal d'introduction et présentation (Page 1/2 : Présentation, Page 2/2 : Diagnostic matériel & réseau) -->
+  <div class="modal-backdrop" id="welcomeModal" style="display: none; z-index: 1200;">
+    <div class="modal-card welcome-modal-card">
+      <div class="modal-header welcome-modal-header">
+        <div class="welcome-header-badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+          <span id="welcomeHeaderTitle">Minecraft Server Manager</span>
+        </div>
+        <div class="welcome-header-counter">
+          <span class="counter-badge" id="welcomeStepBadge">1 / 2</span>
+        </div>
+      </div>
+
+      <!-- Page 1 / 2 : Présentation du concept de l'application -->
+      <div id="welcomePage1" class="welcome-page">
+        <div class="modal-content welcome-modal-content">
+          <h3 class="welcome-title">Bienvenue sur votre gestionnaire de serveurs</h3>
+          <p class="welcome-intro">
+            Une application conçue pour créer, administrer et partager vos serveurs Minecraft en toute simplicité, qu'ils soient Vanilla ou Moddés, sans configuration réseau complexe.
+          </p>
+
+          <div class="welcome-features">
+            <div class="welcome-feature-item">
+              <div class="welcome-feature-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+              </div>
+              <div class="welcome-feature-text">
+                <strong>Serveurs en un clic</strong>
+                <span>Téléchargement automatique des serveurs officiels et installateur Forge, Fabric ou NeoForge.</span>
+              </div>
+            </div>
+            <div class="welcome-feature-item">
+              <div class="welcome-feature-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+              </div>
+              <div class="welcome-feature-text">
+                <strong>Partage automatique</strong>
+                <span>Tunnel public instantané pour inviter vos amis sans ouvrir aucun port sur votre box.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="welcome-author-card">
+            <div class="welcome-author-info">
+              <span class="welcome-author-label">Développé par</span>
+              <strong class="welcome-author-name">Gabriel Jagueneau</strong>
+            </div>
+            <button type="button" class="btn-portfolio" id="btnOpenPortfolio" onclick="openAuthorPortfolio()" title="Découvrir mon portfolio">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+              <span>gjagueneau.eu</span>
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer welcome-modal-footer welcome-footer-single">
+          <button type="button" class="btn-primary" id="btnNextWelcome" onclick="goToWelcomePage(2)">
+            <span>Commencer</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Page 2 / 2 : Diagnostic des composants et conseils d'hébergement -->
+      <div id="welcomePage2" class="welcome-page" style="display: none;">
+        <div class="modal-content welcome-modal-content">
+          <h3 class="welcome-title">Diagnostic de votre ordinateur</h3>
+          <p class="welcome-intro">
+            Analyse de votre configuration matérielle et réseau pour déterminer si votre PC peut héberger et jouer simultanément, ou s'il est préférable d'héberger uniquement.
+          </p>
+
+          <!-- Loader pendant l'analyse des composants -->
+          <div id="welcomeDiagnosisLoader" class="welcome-diag-loader">
+            <div class="action-spinner"></div>
+            <span>Analyse des composants et du réseau en cours...</span>
+          </div>
+
+          <!-- Résultats du diagnostic matériel -->
+          <div id="welcomeDiagnosisResults" class="welcome-diag-results" style="display: none;">
+            <div class="welcome-diag-cards-grid">
+              <div class="welcome-diag-card">
+                <div class="diag-card-icon ram">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="2" width="20" height="8" rx="2"></rect>
+                    <rect x="2" y="14" width="20" height="8" rx="2"></rect>
+                    <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                    <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                  </svg>
+                </div>
+                <div class="diag-card-body">
+                  <span class="diag-card-title">Mémoire RAM</span>
+                  <strong class="diag-card-val" id="diagRamVal">-</strong>
+                  <span class="diag-card-detail" id="diagRamDetail">-</span>
+                </div>
+              </div>
+
+              <div class="welcome-diag-card">
+                <div class="diag-card-icon cpu">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                    <rect x="9" y="9" width="6" height="6"></rect>
+                    <line x1="9" y1="1" x2="9" y2="4"></line>
+                    <line x1="15" y1="1" x2="15" y2="4"></line>
+                    <line x1="9" y1="20" x2="9" y2="23"></line>
+                    <line x1="15" y1="20" x2="15" y2="23"></line>
+                    <line x1="20" y1="9" x2="23" y2="9"></line>
+                    <line x1="20" y1="15" x2="23" y2="15"></line>
+                    <line x1="1" y1="9" x2="4" y2="9"></line>
+                    <line x1="1" y1="15" x2="4" y2="15"></line>
+                  </svg>
+                </div>
+                <div class="diag-card-body">
+                  <span class="diag-card-title">Processeur</span>
+                  <strong class="diag-card-val" id="diagCpuVal">-</strong>
+                  <span class="diag-card-detail" id="diagCpuDetail">-</span>
+                </div>
+              </div>
+
+              <div class="welcome-diag-card">
+                <div class="diag-card-icon net">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                  </svg>
+                </div>
+                <div class="diag-card-body">
+                  <span class="diag-card-title">Réseau</span>
+                  <strong class="diag-card-val" id="diagNetVal">-</strong>
+                  <span class="diag-card-detail" id="diagNetDetail">Test de latence...</span>
+                </div>
+              </div>
+
+              <div class="welcome-diag-card">
+                <div class="diag-card-icon os">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                  </svg>
+                </div>
+                <div class="diag-card-body">
+                  <span class="diag-card-title">Système</span>
+                  <strong class="diag-card-val" id="diagOsVal">-</strong>
+                  <span class="diag-card-detail" id="diagOsDetail">-</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Avis et recommandation personnalisée -->
+            <div class="welcome-verdict-box" id="welcomeVerdictCard">
+              <div class="verdict-header">
+                <span class="verdict-badge" id="diagVerdictBadge">Recommandation</span>
+                <strong id="diagVerdictTitle">-</strong>
+              </div>
+              <p id="diagVerdictDesc">-</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer welcome-modal-footer">
+          <button type="button" class="btn-secondary" id="btnPrevWelcome" onclick="goToWelcomePage(1)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Précédent</span>
+          </button>
+          <button type="button" class="btn-primary" id="btnConfirmWelcome" onclick="closeWelcomeModal()">
+            Accéder à l'application
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay global de Drag & Drop pour charger un monde -->
+  <div id="globalDropOverlay" class="global-drop-overlay">
+    <div class="global-drop-box blur-box">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+      <div class="global-drop-title">Déposer votre monde Minecraft ici</div>
+      <div class="global-drop-sub">Archive .zip ou dossier pour importer directement votre partie</div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+  </div>
+
+  <script src="libs/skinview3d.bundle.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
