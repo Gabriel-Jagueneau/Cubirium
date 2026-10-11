@@ -2,7 +2,7 @@
 ; Génère : Minecraft-Server-Manager-Setup.exe
 
 #define MyAppName "Minecraft Server Manager"
-#define MyAppVersion "1.0.4"
+#define MyAppVersion "1.0.5"
 #define MyAppPublisher "Gabriel JAGUENEAU"
 #define MyAppURL "https://github.com/Gabriel-Jagueneau"
 #define MyAppExeName "Lancer-Manager.vbs"

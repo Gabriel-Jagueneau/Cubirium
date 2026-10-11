@@ -531,7 +531,7 @@ const server = http.createServer(async (req, res) => {
 
     // 2c. API Check Update
     if (pathname === '/api/app/check-update' && method === 'GET') {
-      const currentVersion = packageJson.version || '1.0.4';
+      const currentVersion = packageJson.version || '1.0.5';
       try {
         const options = {
           hostname: 'api.github.com',
@@ -594,8 +594,8 @@ const server = http.createServer(async (req, res) => {
         });
       } catch (err) {
         return sendJson(res, 200, {
-          currentVersion: packageJson.version || '1.0.4',
-          latestVersion: packageJson.version || '1.0.4',
+          currentVersion: packageJson.version || '1.0.5',
+          latestVersion: packageJson.version || '1.0.5',
           updateAvailable: false
         });
       }

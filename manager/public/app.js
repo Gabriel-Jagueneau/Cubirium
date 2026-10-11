@@ -6081,7 +6081,7 @@ async function checkForAppUpdates(silent = true) {
       if (feedback) feedback.innerHTML = `<span style="color:#60a5fa;font-weight:600;">Nouvelle version v${data.latestVersion} disponible !</span>`;
       showUpdateOfferModal(data);
     } else {
-      const curV = data?.currentVersion || '1.0.4';
+      const curV = data?.currentVersion || '1.0.5';
       if (!silent) {
         if (feedback) {
           feedback.innerHTML = `<span style="color:#4ade80;font-weight:600;">✓ Votre application est parfaitement à jour (v${curV}).</span>`;

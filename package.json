@@ -1,6 +1,6 @@
 {
   "name": "play-minecraft",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Minecraft Server Manager root workspace",
   "scripts": {
     "diagnose": "node diagnose.js",
