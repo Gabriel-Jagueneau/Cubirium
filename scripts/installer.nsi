@@ -99,7 +99,7 @@ Section "Application Principale" SecMain
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\MinecraftServerManager" "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\MinecraftServerManager" "DisplayIcon" "$\"$INSTDIR\AppIcon.ico$\""
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\MinecraftServerManager" "Publisher" "Gabriel JAGUENEAU"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\MinecraftServerManager" "DisplayVersion" "1.0.5"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\MinecraftServerManager" "DisplayVersion" "1.0.0"
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\MinecraftServerManager" "NoModify" 1
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\MinecraftServerManager" "NoRepair" 1
 SectionEnd

@@ -36,7 +36,7 @@ rm -f "$LOCAL_RESOURCES/manager/.welcome-completed"
 find "$LOCAL_RESOURCES/bin" -type f ! -name "node" -delete 2>/dev/null || true
 
 # Mise à jour automatique de Info.plist avec la version de package.json
-APP_VERSION=$(node -e "try{console.log(require('$PROJECT_ROOT/manager/package.json').version)}catch(_){console.log('1.0.5')}")
+APP_VERSION=$(node -e "try{console.log(require('$PROJECT_ROOT/manager/package.json').version)}catch(_){console.log('1.0.0')}")
 PLIST_FILE="$PROJECT_ROOT/Minecraft Server Manager.app/Contents/Info.plist"
 if [ -f "$PLIST_FILE" ]; then
   sed -i '' "s/<string>[0-9]*\.[0-9]*\.[0-9]*<\/string>/<string>$APP_VERSION<\/string>/g" "$PLIST_FILE" 2>/dev/null || true
@@ -153,7 +153,7 @@ echo "-> Génération du paquet natif .pkg..."
 rm -f "$PKG_OUT"
 pkgbuild --root "$PKG_ROOT" \
   --identifier "com.gabriel.minecraftservermanager" \
-  --version "1.0.5" \
+  --version "$APP_VERSION" \
   --install-location "/Applications" \
   --scripts "$PKG_SCRIPTS" \
   "$PKG_OUT"

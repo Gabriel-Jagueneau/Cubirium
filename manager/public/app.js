@@ -6113,7 +6113,7 @@ async function checkForAppUpdates(silent = true) {
       }
       showUpdateOfferModal(data);
     } else {
-      const curV = data?.currentVersion || '1.0.5';
+      const curV = data?.currentVersion || '1.0.0';
       if (!silent) {
         if (feedback) {
           feedback.innerHTML = `<span style="color:#4ade80;font-weight:600;">✓ Votre application est parfaitement à jour (v${escapeHtml(curV)}).</span>`;
