@@ -5144,6 +5144,13 @@ select option {
   line-height: 1.4;
 }
 
+.settings-update-checking {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+}
+
 .settings-update-btn {
   display: inline-flex;
   align-items: center;

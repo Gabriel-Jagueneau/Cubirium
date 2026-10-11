@@ -24,7 +24,7 @@ swiftc -module-cache-path "$PROJECT_ROOT/.swift-cache" \
   "$PROJECT_ROOT/manager/src/native-app/main.swift" \
   -o "$PROJECT_ROOT/Minecraft Server Manager.app/Contents/MacOS/MinecraftServerManager"
 
-# 2.1 Synchronisation des sources dans le bundle local
+# 2.1 Synchronisation des sources et de la version dans le bundle local
 LOCAL_RESOURCES="$PROJECT_ROOT/Minecraft Server Manager.app/Contents/Resources"
 mkdir -p "$LOCAL_RESOURCES/manager"
 rm -rf "$LOCAL_RESOURCES/manager/src" "$LOCAL_RESOURCES/manager/public"
@@ -34,6 +34,13 @@ cp "$PROJECT_ROOT/manager/package.json" "$LOCAL_RESOURCES/manager/"
 rm -rf "$LOCAL_RESOURCES/manager/logs" "$LOCAL_RESOURCES/manager/app-settings.json"
 rm -f "$LOCAL_RESOURCES/manager/.welcome-completed"
 find "$LOCAL_RESOURCES/bin" -type f ! -name "node" -delete 2>/dev/null || true
+
+# Mise à jour automatique de Info.plist avec la version de package.json
+APP_VERSION=$(node -e "try{console.log(require('$PROJECT_ROOT/manager/package.json').version)}catch(_){console.log('1.0.5')}")
+PLIST_FILE="$PROJECT_ROOT/Minecraft Server Manager.app/Contents/Info.plist"
+if [ -f "$PLIST_FILE" ]; then
+  sed -i '' "s/<string>[0-9]*\.[0-9]*\.[0-9]*<\/string>/<string>$APP_VERSION<\/string>/g" "$PLIST_FILE" 2>/dev/null || true
+fi
 
 # 3. Préparation du bundle .app
 echo "-> Préparation du bundle .app..."

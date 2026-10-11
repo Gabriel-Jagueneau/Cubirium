@@ -6030,11 +6030,20 @@ async function checkPostUpdateSummary() {
 function showUpdateSummaryModal(summary) {
   const modal = document.getElementById('updateSummaryModal');
   if (!modal) return;
+  const settingsModal = document.getElementById('appSettingsModal');
+  if (settingsModal && settingsModal.style.display !== 'none') {
+    settingsModal.style.display = 'none';
+  }
   const versionBadge = document.getElementById('updateSummaryVersionBadge');
   if (versionBadge) versionBadge.textContent = `Version v${summary.version}`;
   const notesEl = document.getElementById('updateSummaryNotesContent');
   if (notesEl) {
-    notesEl.textContent = summary.releaseNotes || summary.releaseName || 'Mise à jour installée avec succès.';
+    const rawNotes = summary.releaseNotes || summary.releaseName || 'Mise à jour installée avec succès.';
+    if (typeof renderMarkdownToHtml === 'function') {
+      notesEl.innerHTML = renderMarkdownToHtml(rawNotes);
+    } else {
+      notesEl.textContent = rawNotes;
+    }
   }
   modal.style.display = 'flex';
 }
@@ -6051,40 +6060,63 @@ async function checkForAppUpdates(silent = true) {
   const feedback = document.getElementById('settingsUpdateFeedback');
   const origBtnHtml = btn ? btn.innerHTML : null;
 
-  if (!silent && btn) {
-    btn.disabled = true;
-    btn.innerHTML = `<div class="action-spinner" style="width:14px;height:14px;border-width:2px;"></div><span>Recherche...</span>`;
-    if (feedback) feedback.textContent = "Vérification en direct auprès des serveurs GitHub...";
+  if (!silent) {
+    updateOfferPostponedThisSession = false;
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<div class="action-spinner" style="width:14px;height:14px;border-width:2px;"></div><span>Recherche...</span>`;
+    }
+    if (feedback) {
+      feedback.innerHTML = `
+        <span class="settings-update-checking">
+          <span class="action-spinner" style="width:12px;height:12px;border-width:2px;"></span>
+          <span>Vérification en direct auprès des serveurs GitHub...</span>
+        </span>
+      `;
+    }
+  } else if (updateOfferPostponedThisSession) {
+    return;
   }
 
+  // Fermer la modale de résumé si l'utilisateur lance une vérification manuelle
   const summaryModal = document.getElementById('updateSummaryModal');
   if (summaryModal && summaryModal.style.display === 'flex') {
-    if (!silent && btn && origBtnHtml) { btn.disabled = false; btn.innerHTML = origBtnHtml; }
-    return;
-  }
-  const currentOfferModal = document.getElementById('updateOfferModal');
-  if (currentOfferModal && currentOfferModal.style.display === 'flex') {
-    if (!silent && btn && origBtnHtml) { btn.disabled = false; btn.innerHTML = origBtnHtml; }
-    return;
+    if (silent) return;
+    summaryModal.style.display = 'none';
   }
 
-  // Si l'utilisateur a choisi "Plus tard" durant cette session, ne pas ré-afficher en arrière-plan
-  if (silent && updateOfferPostponedThisSession) {
+  const currentOfferModal = document.getElementById('updateOfferModal');
+  if (currentOfferModal && currentOfferModal.style.display === 'flex') {
+    if (silent) return;
+    // Si l'utilisateur clique manuellement alors qu'une offre est déjà ouverte, masquer les paramètres pour lui montrer
+    const settingsModal = document.getElementById('appSettingsModal');
+    if (settingsModal) settingsModal.style.display = 'none';
+    if (feedback && pendingUpdateData) {
+      feedback.innerHTML = `<span style="color:#60a5fa;font-weight:600;">✨ Nouvelle version v${escapeHtml(pendingUpdateData.latestVersion)} disponible !</span>`;
+    }
+    if (btn && origBtnHtml) {
+      btn.disabled = false;
+      btn.innerHTML = origBtnHtml;
+    }
     return;
   }
 
   try {
-    const res = await fetch('/api/app/check-update');
+    const res = await fetch('/api/app/check-update', {
+      signal: AbortSignal.timeout(6000)
+    });
     const data = await res.json();
     if (data && data.updateAvailable) {
       pendingUpdateData = data;
-      if (feedback) feedback.innerHTML = `<span style="color:#60a5fa;font-weight:600;">Nouvelle version v${data.latestVersion} disponible !</span>`;
+      if (feedback) {
+        feedback.innerHTML = `<span style="color:#60a5fa;font-weight:600;">✨ Nouvelle version v${escapeHtml(data.latestVersion)} disponible !</span>`;
+      }
       showUpdateOfferModal(data);
     } else {
       const curV = data?.currentVersion || '1.0.5';
       if (!silent) {
         if (feedback) {
-          feedback.innerHTML = `<span style="color:#4ade80;font-weight:600;">✓ Votre application est parfaitement à jour (v${curV}).</span>`;
+          feedback.innerHTML = `<span style="color:#4ade80;font-weight:600;">✓ Votre application est parfaitement à jour (v${escapeHtml(curV)}).</span>`;
         }
         showToast(`Votre application est à jour (v${curV}).`, 'success');
       }
@@ -6092,7 +6124,9 @@ async function checkForAppUpdates(silent = true) {
   } catch (e) {
     console.warn('[Update] Erreur de vérification:', e);
     if (!silent) {
-      if (feedback) feedback.innerHTML = `<span style="color:#f87171;">⚠️ Impossible de contacter GitHub : ${escapeHtml(e.message || 'erreur réseau')}</span>`;
+      if (feedback) {
+        feedback.innerHTML = `<span style="color:#f87171;">⚠️ Impossible de contacter GitHub : ${escapeHtml(e.message || 'erreur réseau')}</span>`;
+      }
       showToast("Impossible de vérifier les mises à jour.", 'warning');
     }
   } finally {
@@ -6108,6 +6142,12 @@ function showUpdateOfferModal(updateData) {
   const modal = document.getElementById('updateOfferModal');
   if (!modal) return;
 
+  // Si la fenêtre des paramètres est ouverte, la masquer pour mettre en valeur la proposition de mise à jour
+  const settingsModal = document.getElementById('appSettingsModal');
+  if (settingsModal && settingsModal.style.display !== 'none') {
+    settingsModal.style.display = 'none';
+  }
+
   const versionBadge = document.getElementById('updateOfferVersionBadge');
   if (versionBadge) versionBadge.textContent = `Version v${updateData.latestVersion}`;
 
@@ -6122,7 +6162,11 @@ function showUpdateOfferModal(updateData) {
   const notesEl = document.getElementById('updateOfferNotesContent');
   if (notesEl) {
     if (updateData.releaseNotes && updateData.releaseNotes.trim().length > 0) {
-      notesEl.textContent = updateData.releaseNotes.trim();
+      if (typeof renderMarkdownToHtml === 'function') {
+        notesEl.innerHTML = renderMarkdownToHtml(updateData.releaseNotes.trim());
+      } else {
+        notesEl.textContent = updateData.releaseNotes.trim();
+      }
       if (notesBox) notesBox.style.display = 'block';
     } else {
       if (notesBox) notesBox.style.display = 'none';

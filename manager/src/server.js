@@ -710,6 +710,30 @@ const server = http.createServer(async (req, res) => {
             // Mise à jour de package.json
             fs.copyFileSync(path.join(extractedManagerDir, 'package.json'), path.join(tDir, 'package.json'));
 
+            // Mise à jour de Info.plist si on se trouve dans un bundle macOS (.app)
+            const possiblePlists = [
+              path.resolve(tDir, '../../Info.plist'),
+              '/Applications/Minecraft Server Manager.app/Contents/Info.plist'
+            ];
+            for (const pPath of possiblePlists) {
+              if (fs.existsSync(pPath)) {
+                try {
+                  let pContent = fs.readFileSync(pPath, 'utf8');
+                  pContent = pContent.replace(
+                    /(<key>CFBundleShortVersionString<\/key>\s*<string>)[^<]+(<\/string>)/,
+                    `$1${cleanTag}$2`
+                  );
+                  pContent = pContent.replace(
+                    /(<key>CFBundleVersion<\/key>\s*<string>)[^<]+(<\/string>)/,
+                    `$1${cleanTag}$2`
+                  );
+                  fs.writeFileSync(pPath, pContent, 'utf8');
+                } catch (pErr) {
+                  console.warn(`[Updater] Impossible de modifier ${pPath}:`, pErr.message);
+                }
+              }
+            }
+
             // Écriture du résumé post-mise à jour
             const summaryData = {
               version: cleanTag,
