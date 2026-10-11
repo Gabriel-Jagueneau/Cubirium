@@ -4394,6 +4394,7 @@ select option {
   display: flex;
   align-items: center;
   padding: 8px 0;
+  isolation: isolate;
 }
 
 .slider-default-tick {
@@ -4401,11 +4402,11 @@ select option {
   top: 50%;
   transform: translate(-50%, -50%);
   width: 2px;
-  height: 22px;
+  height: 24px;
   background: rgba(255, 255, 255, 0.75);
   border-radius: 2px;
   pointer-events: none;
-  z-index: 2;
+  z-index: 1;
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.6);
   transition: background 0.2s ease;
 }
@@ -4424,6 +4425,8 @@ select option {
   background: rgba(255, 255, 255, 0.12);
   outline: none;
   cursor: pointer;
+  position: relative;
+  z-index: 2;
   transition: background 0.2s ease;
 }
 
