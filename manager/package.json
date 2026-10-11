@@ -1,6 +1,6 @@
 {
   "name": "minecraft-server-manager",
-  "version": "1.0.5",
+  "version": "1.0.0",
   "description": "Gestionnaire et automatisation de serveurs Minecraft locaux avec tunnel public",
   "main": "src/server.js",
   "scripts": {
