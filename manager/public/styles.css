@@ -31,7 +31,7 @@
 html,
 body {
   color-scheme: dark;
-  scrollbar-color: rgba(255, 255, 255, 0.22) #0a0d14;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
   scrollbar-width: thin;
 }
 
@@ -41,35 +41,56 @@ body {
   padding: 0;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
 }
 
-/* Dark Custom Scrollbars pour TOUS les conteneurs (Chrome, Safari, WebView) */
+/* Custom Scrollbars ultra-fines (5px) et transparentes (aucun impact sur la largeur du contenu) */
 *::-webkit-scrollbar,
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 5px;
+  height: 5px;
 }
 
 *::-webkit-scrollbar-track,
 ::-webkit-scrollbar-track {
-  background: #0a0d14;
+  background: transparent !important;
+  border: none !important;
 }
 
 *::-webkit-scrollbar-thumb,
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.22);
   border-radius: 9999px;
-  border: 2px solid #0a0d14;
+  border: none !important;
 }
 
 *::-webkit-scrollbar-thumb:hover,
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.38);
+  background: rgba(255, 255, 255, 0.42);
 }
 
 *::-webkit-scrollbar-corner,
 ::-webkit-scrollbar-corner {
-  background: #0a0d14;
+  background: transparent !important;
+}
+
+/* Règle globale pour garantir que toute zone à défilement utilise overlay et ne rogne pas le contenu */
+.worlds-grid,
+.terminal-body,
+.modal-content,
+.modal-backdrop,
+.update-notes-box,
+.props-form-sections,
+.options-modal-content,
+.players-list-scroll,
+.player-detail-body,
+.welcome-modal-content,
+.uninstall-body,
+.excluded-mods-list,
+.suggestions-list {
+  overflow-y: auto;
+  overflow-y: overlay;
 }
 
 body {
@@ -276,6 +297,7 @@ body {
 .worlds-grid {
   padding: 18px;
   overflow-y: auto;
+  overflow-y: overlay;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -841,6 +863,7 @@ body {
   background-color: var(--bg-terminal);
   padding: 16px 20px;
   overflow-y: auto;
+  overflow-y: overlay;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.83rem;
   line-height: 1.6;
@@ -1421,6 +1444,7 @@ body {
 .modal-content {
   padding: 24px;
   overflow-y: auto;
+  overflow-y: overlay;
   flex: 1;
 }
 
