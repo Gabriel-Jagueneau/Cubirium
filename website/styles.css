@@ -1,6 +1,6 @@
 /* ==========================================================================
    CUBIRIUM WEBSITE · DESIGN SYSTEM & STYLES
-   Thème sombre haute précision · Glassmorphism · Sans framework
+   Thème sombre haute précision · Sans framework · Sans artifice IA
    ========================================================================== */
 
 :root {
@@ -8,7 +8,7 @@
   --bg-surface: #11131c;
   --bg-surface-elevated: #161926;
   --bg-surface-hover: #1c2030;
-
+  
   --border-subtle: rgba(255, 255, 255, 0.07);
   --border-strong: rgba(255, 255, 255, 0.14);
   --border-highlight: rgba(99, 102, 241, 0.4);
@@ -16,12 +16,12 @@
   --text-hi: #f8fafc;
   --text-mid: #94a3b8;
   --text-lo: #64748b;
-
+  
   --accent-primary: #6366f1;
   --accent-hover: #4f46e5;
   --accent-secondary: #8b5cf6;
   --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-
+  
   --success: #10b981;
   --success-bg: rgba(16, 185, 129, 0.12);
   --warning: #f59e0b;
@@ -30,22 +30,20 @@
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 18px;
-  --radius-xl: 24px;
+  --radius-xl: 22px;
   --radius-pill: 9999px;
 
   --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
   --shadow-glow: 0 0 40px -10px rgba(99, 102, 241, 0.25);
-
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 /* --------------------------------------------------------------------------
    Reset & Base
    -------------------------------------------------------------------------- */
-*,
-*::before,
-*::after {
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -69,21 +67,18 @@ body {
 
 /* Scrollbar ultra fine */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.18);
   border-radius: var(--radius-pill);
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.35);
 }
 
 a {
@@ -152,7 +147,7 @@ code {
   z-index: 100;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  background: rgba(9, 10, 15, 0.8);
+  background: rgba(9, 10, 15, 0.85);
   border-bottom: 1px solid var(--border-subtle);
   transition: border-color 0.2s ease;
 }
@@ -161,7 +156,7 @@ code {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 68px;
+  height: 64px;
   max-width: 1140px;
   margin: 0 auto;
   padding: 0 24px;
@@ -170,17 +165,16 @@ code {
 .navbar__brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   font-weight: 700;
   font-size: 1.15rem;
 }
 
 .navbar__logo {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 8px;
   object-fit: cover;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .navbar__name {
@@ -265,15 +259,15 @@ code {
 }
 
 .btn--compact {
-  padding: 8px 16px;
+  padding: 7px 16px;
   font-size: 0.85rem;
 }
 
 /* --------------------------------------------------------------------------
-   Hero Section
+   Hero Section (Sobre, sans pill AI)
    -------------------------------------------------------------------------- */
 .hero {
-  padding: 72px 0 60px;
+  padding: 64px 0 60px;
   text-align: center;
 }
 
@@ -281,45 +275,6 @@ code {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.hero__badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-pill);
-  font-size: 0.85rem;
-  color: var(--text-mid);
-  margin-bottom: 24px;
-}
-
-.hero__badge-pulse {
-  width: 8px;
-  height: 8px;
-  background-color: var(--success);
-  border-radius: 50%;
-  box-shadow: 0 0 8px var(--success);
-  animation: pulse-dot 2s infinite;
-}
-
-@keyframes pulse-dot {
-  0% {
-    transform: scale(0.95);
-    opacity: 0.8;
-  }
-
-  50% {
-    transform: scale(1.2);
-    opacity: 1;
-  }
-
-  100% {
-    transform: scale(0.95);
-    opacity: 0.8;
-  }
 }
 
 .hero__title {
@@ -353,7 +308,7 @@ code {
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  margin-bottom: 54px;
+  margin-bottom: 50px;
   width: 100%;
 }
 
@@ -449,36 +404,39 @@ code {
   opacity: 0.4;
 }
 
-/* --------------------------------------------------------------------------
-   Aperçu Démo Interactive de l'application
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   VRAIE INTERFACE DE L'APPLICATION CUBIRIUM (Preview Authentique)
+   ========================================================================== */
 .hero__preview {
   width: 100%;
-  max-width: 960px;
+  max-width: 980px;
   margin-top: 10px;
 }
 
-.app-window {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-strong);
+.real-app-window {
+  background: #0a0d14;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-xl);
   overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 60px -20px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 50px -15px rgba(99, 102, 241, 0.25);
   text-align: left;
 }
 
-.app-window__header {
+/* Barre de titre / En-tête de l'application */
+.real-app-titlebar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 20px;
-  background: rgba(13, 15, 23, 0.95);
-  border-bottom: 1px solid var(--border-subtle);
+  padding: 12px 18px;
+  background: #101522;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 16px;
 }
 
-.app-window__dots {
+.real-app-traffic-lights {
   display: flex;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .dot {
@@ -486,223 +444,506 @@ code {
   height: 12px;
   border-radius: 50%;
 }
+.dot--red { background-color: #ff5f56; }
+.dot--yellow { background-color: #ffbd2e; }
+.dot--green { background-color: #27c93f; }
 
-.dot--red {
-  background-color: #ff5f56;
+.real-app-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
 }
 
-.dot--yellow {
-  background-color: #ffbd2e;
+.real-app-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
 }
 
-.dot--green {
-  background-color: #27c93f;
+.real-app-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f1f5f9;
 }
 
-.app-window__title {
+.real-app-sub {
+  font-size: 0.78rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.real-app-header-actions {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-mid);
+  flex-shrink: 0;
 }
 
-.badge {
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: var(--radius-pill);
-}
-
-.badge--online {
-  background: var(--success-bg);
-  color: var(--success);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.app-window__body {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* Barre de tunnel public */
-.tunnel-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
-  background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  gap: 16px;
-}
-
-.tunnel-bar__info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.tunnel-bar__pulse {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--success);
-  box-shadow: 0 0 10px var(--success);
-}
-
-.tunnel-bar__label {
-  font-size: 0.8rem;
-  color: var(--text-lo);
-  display: block;
-}
-
-.tunnel-bar__address {
-  font-family: var(--font-mono);
-  font-size: 1.05rem;
-  color: #a5b4fc;
-}
-
-.btn--copy {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-hi);
-  padding: 8px 14px;
-  font-size: 0.82rem;
-  border-radius: var(--radius-pill);
-  cursor: pointer;
-  display: flex;
+.real-btn-secondary {
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.15s ease;
-}
-
-.btn--copy:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: var(--border-strong);
-}
-
-.btn--copy.copied {
-  background: var(--success-bg);
-  border-color: rgba(16, 185, 129, 0.4);
-  color: var(--success);
-}
-
-/* Grille de stats */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-}
-
-.stat-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-card__label {
+  padding: 6px 12px;
   font-size: 0.78rem;
-  color: var(--text-lo);
-  margin-bottom: 6px;
+  font-weight: 600;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  cursor: default;
 }
 
-.stat-card__val {
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: var(--text-hi);
-  line-height: 1.2;
+.real-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: var(--accent-gradient);
+  border-radius: var(--radius-sm);
+  cursor: default;
 }
 
-.stat-card__val small {
-  font-size: 0.8rem;
-  color: var(--text-lo);
-  font-weight: 400;
+/* Disposition 2 colonnes réelle */
+.real-app-layout {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  min-height: 440px;
+  background: #0a0d14;
 }
 
-.stat-card__sub {
-  font-size: 0.75rem;
-  color: var(--text-mid);
-  margin-top: 6px;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 5px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-pill);
-  margin-top: 10px;
-  overflow: hidden;
-}
-
-.progress-bar__fill {
-  height: 100%;
-  background: var(--accent-primary);
-  border-radius: var(--radius-pill);
-}
-
-.player-avatars {
-  display: flex;
-  gap: 4px;
-  margin-top: 8px;
-  font-size: 1.1rem;
-}
-
-/* Boîte de console */
-.console-box {
-  background: #090a0f;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-}
-
-.console-box__header {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 14px;
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid var(--border-subtle);
-  color: var(--text-lo);
-  font-size: 0.75rem;
-}
-
-.console-box__status {
-  color: var(--success);
-}
-
-.console-box__logs {
-  padding: 12px 14px;
+/* Volet Gauche : Mondes Disponibles */
+.real-worlds-panel {
+  background: #101522;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  max-height: 160px;
+}
+
+.real-panel-header {
+  height: 52px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.real-panel-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.real-panel-title-wrap h3 {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.real-badge {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.real-btn-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  cursor: default;
+}
+
+.real-worlds-grid {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   overflow-y: auto;
 }
 
-.log-line {
-  color: #cbd5e1;
-  white-space: pre-wrap;
-  word-break: break-all;
+/* Cartes de mondes authentiques */
+.real-world-card {
+  background: #151c2e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
-.log-time {
-  color: var(--text-lo);
+.real-world-card--running {
+  border-color: #10b981;
+  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.2);
 }
 
-.log-line--success {
+.real-world-card.is-pinned {
+  border-color: rgba(99, 102, 241, 0.35);
+  background: linear-gradient(180deg, rgba(99, 102, 241, 0.05) 0%, #151c2e 100%);
+}
+
+.real-world-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.real-world-title-box {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.real-world-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.real-world-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: -0.01em;
+}
+
+.real-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #64748b;
+  flex-shrink: 0;
+}
+
+.real-pulse-dot--running {
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: real-pulse 1.8s infinite;
+}
+
+@keyframes real-pulse {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.8; }
+}
+
+.real-type-badge {
+  align-self: flex-start;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.real-type-badge--modded {
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.real-type-badge--vanilla {
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.real-world-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #64748b;
+}
+
+.real-pin-btn.active {
+  color: #818cf8;
+}
+
+.real-world-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.real-meta-launcher {
+  grid-column: span 2;
+}
+
+.real-meta-item strong {
+  color: #94a3b8;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.real-world-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.real-btn-stop {
+  height: 28px;
+  padding: 0 12px;
+  background: rgba(239, 68, 68, 0.16);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: default;
+}
+
+.real-btn-launch {
+  height: 28px;
+  padding: 0 12px;
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: default;
+}
+
+.real-btn-action {
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  color: #94a3b8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+
+/* Volet Droit : Console Panel Authentique */
+.real-console-panel {
+  display: flex;
+  flex-direction: column;
+  background: #0a0d14;
+  overflow: hidden;
+}
+
+.real-console-header {
+  height: 52px;
+  padding: 0 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #101522;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.real-console-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.real-active-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.real-console-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Pillule de Tunnel Authentique avec bouton copier interactif */
+.real-tunnel-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  background: #151c2e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-pill);
+  padding: 0 4px 0 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.real-tunnel-pill:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: #1b243b;
+}
+
+.real-tunnel-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+  flex-shrink: 0;
+}
+
+.real-tunnel-ip {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #f1f5f9;
+}
+
+.real-btn-copy {
+  height: 22px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-pill);
+  color: #f1f5f9;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.real-btn-copy:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+.real-btn-copy.copied {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.5);
   color: #34d399;
 }
 
-.log-line--player {
+.real-btn-restart-tunnel {
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.real-btn-danger {
+  height: 30px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  background: rgba(239, 68, 68, 0.16);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  cursor: default;
+}
+
+.real-btn-small {
+  height: 30px;
+  padding: 0 10px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-pill);
+  cursor: default;
+}
+
+/* Corps du Terminal */
+.real-terminal-body {
+  flex: 1;
+  background: #07090e;
+  padding: 16px 20px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: #cbd5e1;
+  overflow-y: auto;
+  max-height: 320px;
+}
+
+.real-terminal-line {
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin-bottom: 3px;
+}
+
+.real-terminal-line.info {
+  color: #cbd5e1;
+}
+
+.real-terminal-line.tunnel {
+  color: #34d399;
+  font-weight: 600;
+}
+
+.real-terminal-line.player {
   color: #93c5fd;
+}
+
+/* Barre de commande en bas */
+.real-console-footer {
+  background: #07090e;
+  padding: 0 16px 14px 16px;
+}
+
+.real-cmd-wrap {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  padding: 0 8px 0 12px;
+  height: 38px;
+}
+
+.real-cmd-prompt {
+  font-family: var(--font-mono);
+  color: #818cf8;
+  font-weight: 700;
+  margin-right: 8px;
+}
+
+.real-cmd-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: #e2e8f0;
+}
+
+.real-cmd-send {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  padding: 4px;
 }
 
 /* --------------------------------------------------------------------------
@@ -723,18 +964,6 @@ code {
   text-align: center;
   max-width: 720px;
   margin: 0 auto 56px;
-}
-
-.section__header--with-badge {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  text-align: left;
-  max-width: 100%;
-}
-
-.section__header--with-badge .section__title {
-  margin-bottom: 8px;
 }
 
 .section__title {
@@ -783,8 +1012,8 @@ code {
 }
 
 .bento-card__icon-wrapper {
-  width: 48px;
-  height: 48px;
+  width: 46px;
+  height: 46px;
   border-radius: 12px;
   background: rgba(99, 102, 241, 0.12);
   color: #a5b4fc;
@@ -805,16 +1034,6 @@ code {
   font-size: 0.95rem;
   color: var(--text-mid);
   line-height: 1.6;
-}
-
-.bento-card__badge-tech {
-  margin-top: auto;
-  padding-top: 18px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #818cf8;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
 }
 
 /* --------------------------------------------------------------------------
@@ -863,25 +1082,6 @@ code {
 /* --------------------------------------------------------------------------
    Changelog & Versions Dynamique
    -------------------------------------------------------------------------- */
-.live-sync-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border-subtle);
-  font-size: 0.82rem;
-  color: var(--text-lo);
-}
-
-.live-sync-indicator__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--success);
-}
-
 .changelog-timeline {
   display: flex;
   flex-direction: column;
@@ -908,9 +1108,7 @@ code {
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 /* Carte de Release */
@@ -1168,21 +1366,26 @@ code {
   .hero__title {
     font-size: 2.7rem;
   }
+  
+  .real-app-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .real-worlds-panel {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
 
   .bento-grid {
     grid-template-columns: 1fr;
   }
-
+  
   .bento-card--large {
     grid-column: span 1;
   }
 
   .specs-grid {
     grid-template-columns: 1fr;
-  }
-
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
   }
 
   .footer__container {
@@ -1217,32 +1420,28 @@ code {
     width: 100%;
   }
 
+  .real-app-sub {
+    display: none;
+  }
+
+  .real-console-header {
+    flex-direction: column;
+    height: auto;
+    padding: 12px;
+    align-items: flex-start;
+  }
+
+  .real-console-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
   .section {
     padding: 64px 0;
   }
 
   .section__title {
     font-size: 1.8rem;
-  }
-
-  .section__header--with-badge {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .tunnel-bar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .btn--copy {
-    width: 100%;
-    justify-content: center;
   }
 }
 
@@ -1260,8 +1459,8 @@ code {
     display: none;
   }
 
-  .app-window__body {
-    padding: 16px;
+  .real-app-header-actions span {
+    display: none;
   }
 
   .release-card {

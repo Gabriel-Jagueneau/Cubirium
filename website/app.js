@@ -85,13 +85,13 @@ function initOsDetection() {
  * Bouton interactif pour copier l'adresse de connexion du serveur dans la démo
  */
 function initCopyAddress() {
-  const copyBtn = document.getElementById("btn-copy-address");
-  const addressEl = document.getElementById("sample-address");
-  const copyLabel = document.getElementById("copy-label");
+  const copyBtn = document.getElementById("btnCopyTunnel") || document.getElementById("btn-copy-address");
+  const addressEl = document.getElementById("tunnelShareIp") || document.getElementById("sample-address");
 
-  if (!copyBtn || !addressEl || !copyLabel) return;
+  if (!copyBtn || !addressEl) return;
 
-  copyBtn.addEventListener("click", async () => {
+  const handleCopy = async (e) => {
+    if (e) e.stopPropagation();
     const textToCopy = addressEl.textContent.trim();
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -106,15 +106,22 @@ function initCopyAddress() {
       }
 
       copyBtn.classList.add("copied");
-      copyLabel.textContent = "Adresse copiée !";
+      const prevText = copyBtn.textContent;
+      copyBtn.textContent = "Copié !";
       setTimeout(() => {
         copyBtn.classList.remove("copied");
-        copyLabel.textContent = "Copier l'adresse";
-      }, 2500);
+        copyBtn.textContent = prevText;
+      }, 2000);
     } catch (err) {
       console.warn("Échec de la copie :", err);
     }
-  });
+  };
+
+  copyBtn.addEventListener("click", handleCopy);
+  const pill = document.getElementById("tunnelSharePill");
+  if (pill) {
+    pill.addEventListener("click", handleCopy);
+  }
 }
 
 /**
