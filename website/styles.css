@@ -8,7 +8,7 @@
   --bg-surface: #11131c;
   --bg-surface-elevated: #161926;
   --bg-surface-hover: #1c2030;
-  
+
   --border-subtle: rgba(255, 255, 255, 0.07);
   --border-strong: rgba(255, 255, 255, 0.14);
   --border-highlight: rgba(99, 102, 241, 0.4);
@@ -16,12 +16,12 @@
   --text-hi: #f8fafc;
   --text-mid: #94a3b8;
   --text-lo: #64748b;
-  
+
   --accent-primary: #6366f1;
   --accent-hover: #4f46e5;
   --accent-secondary: #8b5cf6;
   --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-  
+
   --success: #10b981;
   --success-bg: rgba(16, 185, 129, 0.12);
   --warning: #f59e0b;
@@ -35,7 +35,7 @@
 
   --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
   --shadow-glow: 0 0 40px -10px rgba(99, 102, 241, 0.25);
-  
+
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
@@ -43,7 +43,9 @@
 /* --------------------------------------------------------------------------
    Reset & Base
    -------------------------------------------------------------------------- */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -70,13 +72,16 @@ body {
   width: 5px;
   height: 5px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.18);
   border-radius: var(--radius-pill);
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.35);
 }
@@ -444,9 +449,18 @@ code {
   height: 12px;
   border-radius: 50%;
 }
-.dot--red { background-color: #ff5f56; }
-.dot--yellow { background-color: #ffbd2e; }
-.dot--green { background-color: #27c93f; }
+
+.dot--red {
+  background-color: #ff5f56;
+}
+
+.dot--yellow {
+  background-color: #ffbd2e;
+}
+
+.dot--green {
+  background-color: #27c93f;
+}
 
 .real-app-brand {
   display: flex;
@@ -642,9 +656,20 @@ code {
 }
 
 @keyframes real-pulse {
-  0% { transform: scale(0.9); opacity: 0.8; }
-  50% { transform: scale(1.15); opacity: 1; }
-  100% { transform: scale(0.9); opacity: 0.8; }
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
 }
 
 .real-type-badge {
@@ -1033,12 +1058,6 @@ code {
   overflow: hidden;
 }
 
-.bento-card:hover {
-  border-color: var(--border-strong);
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-card);
-}
-
 .bento-card--large {
   grid-column: span 2;
   background: linear-gradient(145deg, #131622 0%, #0d0f17 100%);
@@ -1142,7 +1161,9 @@ code {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Carte de Release */
@@ -1400,7 +1421,7 @@ code {
   .hero__title {
     font-size: 2.7rem;
   }
-  
+
   .real-app-layout {
     grid-template-columns: 1fr;
   }
@@ -1413,7 +1434,7 @@ code {
   .bento-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .bento-card--large {
     grid-column: span 1;
   }

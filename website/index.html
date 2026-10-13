@@ -1,27 +1,33 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cubirium · Gestionnaire & Hébergement de Serveurs Minecraft</title>
-  <meta name="description" content="Application desktop pour la gestion, l'hébergement et l'administration de serveurs Minecraft locaux avec tunnel public instantané, auto-réparation et Java 21 géré automatiquement.">
+  <meta name="description"
+    content="Application desktop pour la gestion, l'hébergement et l'administration de serveurs Minecraft locaux avec tunnel public instantané, auto-réparation et Java 21 géré automatiquement.">
   <link rel="icon" type="image/png" href="./favicon.png">
   <link rel="apple-touch-icon" href="./app-icon.png">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="Cubirium · Hébergez vos serveurs Minecraft en toute simplicité">
-  <meta property="og:description" content="Lancez vos mondes Vanilla et Moddés en quelques secondes. Tunnel public instantané sans ouvrir de ports, auto-réparation et Java 21 géré automatiquement.">
+  <meta property="og:description"
+    content="Lancez vos mondes Vanilla et Moddés en quelques secondes. Tunnel public instantané sans ouvrir de ports, auto-réparation et Java 21 géré automatiquement.">
   <meta property="og:url" content="https://cubirium.fr">
   <meta property="og:image" content="https://cubirium.fr/app-icon.png">
   <meta name="theme-color" content="#0a0b0e">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
 
   <link rel="stylesheet" href="./styles.css">
 </head>
+
 <body>
   <!-- Fond d'ambiance avec lueurs discrètes -->
   <div class="ambient-glow ambient-glow--primary"></div>
@@ -41,9 +47,11 @@
         <a href="#fonctionnalites" class="navbar__link">Fonctionnalités</a>
         <a href="#changelog" class="navbar__link">Changelog</a>
         <a href="#compatibilite" class="navbar__link">Compatibilité</a>
-        <a href="https://github.com/Gabriel-Jagueneau/Cubirium" target="_blank" rel="noopener noreferrer" class="navbar__link navbar__link--github">
+        <a href="https://github.com/Gabriel-Jagueneau/Cubirium" target="_blank" rel="noopener noreferrer"
+          class="navbar__link navbar__link--github">
           <svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+            <path
+              d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
           </svg>
           <span>GitHub</span>
         </a>
@@ -53,7 +61,9 @@
         <a href="#telecharger" class="btn btn--primary btn--compact">
           <span>Télécharger</span>
           <svg class="icon" viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
-            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            <path fill-rule="evenodd"
+              d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+              clip-rule="evenodd" />
           </svg>
         </a>
       </div>
@@ -77,11 +87,11 @@
         <div class="hero__download-zone">
           <div class="hero__download-buttons" id="download-buttons-group">
             <a href="https://github.com/Gabriel-Jagueneau/Cubirium/releases/latest/download/mac-Cubirium.pkg"
-               id="btn-download-mac"
-               class="download-btn download-btn--primary">
+              id="btn-download-mac" class="download-btn download-btn--primary">
               <div class="download-btn__icon">
                 <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
-                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 1.01-2.87-.9.04-2.03.62-2.67 1.38-.56.65-1.07 1.71-1.01 2.76 1.01.08 2.06-.52 2.67-1.27z"/>
+                  <path
+                    d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 1.01-2.87-.9.04-2.03.62-2.67 1.38-.56.65-1.07 1.71-1.01 2.76 1.01.08 2.06-.52 2.67-1.27z" />
                 </svg>
               </div>
               <div class="download-btn__content">
@@ -91,11 +101,11 @@
             </a>
 
             <a href="https://github.com/Gabriel-Jagueneau/Cubirium/releases/latest/download/win-Cubirium.exe"
-               id="btn-download-win"
-               class="download-btn download-btn--secondary">
+              id="btn-download-win" class="download-btn download-btn--secondary">
               <div class="download-btn__icon">
                 <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                  <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.95-1.801"/>
+                  <path
+                    d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.95-1.801" />
                 </svg>
               </div>
               <div class="download-btn__content">
@@ -131,9 +141,12 @@
               </div>
               <div class="real-app-header-actions">
                 <div class="real-btn-secondary">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    <path
+                      d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                    </path>
                   </svg>
                   <span>Paramètres</span>
                 </div>
@@ -158,7 +171,9 @@
                   </div>
                   <div class="real-btn-icon" title="Actualiser la liste">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                      <path
+                        d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15">
+                      </path>
                     </svg>
                   </div>
                 </div>
@@ -170,20 +185,23 @@
                       <div class="real-world-title-box">
                         <div class="real-world-title-row">
                           <span class="real-world-name">Survie Entre Potes</span>
-                          <span class="real-pulse-dot real-pulse-dot--running" title="Serveur en cours d'exécution"></span>
+                          <span class="real-pulse-dot real-pulse-dot--running"
+                            title="Serveur en cours d'exécution"></span>
                         </div>
                         <span class="real-type-badge real-type-badge--modded">MODDÉ (38 mods)</span>
                       </div>
                       <div class="real-world-header-actions">
                         <span class="real-pin-btn active" title="Monde épinglé">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor"
+                            stroke-width="2">
                             <line x1="12" y1="17" x2="12" y2="22"></line>
                             <path d="M5 17h14v-2l-2-2V5a1 1 0 0 0-1-1h-8a1 1 0 0 0-1 1v8l-2 2v2z"></path>
                             <circle cx="12" cy="3" r="1"></circle>
                           </svg>
                         </span>
                         <span class="real-chevron-btn">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.2">
                             <polyline points="6 9 12 15 18 9"></polyline>
                           </svg>
                         </span>
@@ -208,7 +226,8 @@
                     <div class="real-world-actions">
                       <button class="real-btn-stop" type="button">Arrêter</button>
                       <button class="real-btn-action" title="Gestion des Joueurs">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2">
                           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                           <circle cx="9" cy="7" r="4"></circle>
                           <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -216,9 +235,12 @@
                         </svg>
                       </button>
                       <button class="real-btn-action" title="Options du serveur">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2">
                           <circle cx="12" cy="12" r="3"></circle>
-                          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                          <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                          </path>
                         </svg>
                       </button>
                     </div>
@@ -236,14 +258,16 @@
                       </div>
                       <div class="real-world-header-actions">
                         <span class="real-pin-btn" title="Épingler ce monde">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
                             <line x1="12" y1="17" x2="12" y2="22"></line>
                             <path d="M5 17h14v-2l-2-2V5a1 1 0 0 0-1-1h-8a1 1 0 0 0-1 1v8l-2 2v2z"></path>
                             <circle cx="12" cy="3" r="1"></circle>
                           </svg>
                         </span>
                         <span class="real-chevron-btn">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.2">
                             <polyline points="6 9 12 15 18 9"></polyline>
                           </svg>
                         </span>
@@ -273,7 +297,8 @@
                         <span>Lancer</span>
                       </button>
                       <button class="real-btn-action" title="Gestion des Joueurs">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2">
                           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                           <circle cx="9" cy="7" r="4"></circle>
                           <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -281,9 +306,12 @@
                         </svg>
                       </button>
                       <button class="real-btn-action" title="Options du serveur">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2">
                           <circle cx="12" cy="12" r="3"></circle>
-                          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                          <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                          </path>
                         </svg>
                       </button>
                     </div>
@@ -306,8 +334,9 @@
                       <span class="real-tunnel-ip" id="tunnelShareIp">bore.pub:38421</span>
                       <button type="button" class="real-btn-copy" id="btnCopyTunnel">Copier l'IP</button>
                       <span class="real-btn-restart-tunnel" title="Actualiser le tunnel">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
                         </svg>
                       </span>
                     </div>
@@ -319,25 +348,37 @@
 
                 <!-- Logs Terminal Authentiques -->
                 <div class="real-terminal-body">
-                  <div class="real-terminal-line info">[18:24:02] [Server thread/INFO]: Starting minecraft server version 1.21.1</div>
-                  <div class="real-terminal-line info">[18:24:05] [Server thread/INFO]: Loading 38 mods from Fabric Loader</div>
-                  <div class="real-terminal-line info">[18:24:08] [Server thread/INFO]: Preparing start region for dimension minecraft:overworld</div>
-                  <div class="real-terminal-line tunnel">[18:24:10] [Cubirium/TUNNEL]: Tunnel public actif sécurisé sur bore.pub:38421</div>
-                  <div class="real-terminal-line info">[18:25:31] [Server thread/INFO]: Steve[/127.0.0.1:51420] logged in with entity id 142</div>
+                  <div class="real-terminal-line info">[18:24:02] [Server thread/INFO]: Starting minecraft server
+                    version 1.21.1</div>
+                  <div class="real-terminal-line info">[18:24:05] [Server thread/INFO]: Loading 38 mods from Fabric
+                    Loader</div>
+                  <div class="real-terminal-line info">[18:24:08] [Server thread/INFO]: Preparing start region for
+                    dimension minecraft:overworld</div>
+                  <div class="real-terminal-line tunnel">[18:24:10] [Cubirium/TUNNEL]: Tunnel public actif sécurisé sur
+                    bore.pub:38421</div>
+                  <div class="real-terminal-line info">[18:25:31] [Server thread/INFO]: Steve[/127.0.0.1:51420] logged
+                    in with entity id 142</div>
                   <div class="real-terminal-line info">[18:26:14] [Server thread/INFO]: Alex joined the game</div>
-                  <div class="real-terminal-line player">[18:28:40] [Server thread/INFO]: &lt;Steve&gt; Quelqu'un a du fer ?</div>
-                  <div class="real-terminal-line player">[18:29:02] [Server thread/INFO]: &lt;Alex&gt; J'en ai miné 32 près du spawn</div>
-                  <div class="real-terminal-line info">[18:30:15] [Server thread/INFO]: Steve issued server command: /whitelist list</div>
-                  <div class="real-terminal-line info">[18:30:15] [Server thread/INFO]: Joueurs sur liste blanche : Steve, Alex, Pixel</div>
+                  <div class="real-terminal-line player">[18:28:40] [Server thread/INFO]: &lt;Steve&gt; Quelqu'un a du
+                    fer ?</div>
+                  <div class="real-terminal-line player">[18:29:02] [Server thread/INFO]: &lt;Alex&gt; J'en ai miné 32
+                    près du spawn</div>
+                  <div class="real-terminal-line info">[18:30:15] [Server thread/INFO]: Steve issued server command:
+                    /whitelist list</div>
+                  <div class="real-terminal-line info">[18:30:15] [Server thread/INFO]: Joueurs sur liste blanche :
+                    Steve, Alex, Pixel</div>
                 </div>
 
                 <!-- Saisie de commande console en bas -->
                 <div class="real-console-footer">
                   <div class="real-cmd-wrap">
                     <span class="real-cmd-prompt">&gt;</span>
-                    <input type="text" class="real-cmd-input" placeholder="Entrer une commande Minecraft... (ex: /say, /whitelist, /op)" readonly value="/whitelist add Pixel" />
+                    <input type="text" class="real-cmd-input"
+                      placeholder="Entrer une commande Minecraft... (ex: /say, /whitelist, /op)" readonly
+                      value="/whitelist add Pixel" />
                     <button class="real-cmd-send" type="button" title="Envoyer">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="22" y1="2" x2="11" y2="13"></line>
                         <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                       </svg>
@@ -357,7 +398,8 @@
         <div class="section__header">
           <h2 class="section__title">Tout ce dont votre serveur a besoin.</h2>
           <p class="section__description">
-            Conçu pour que vous passiez plus de temps à jouer avec vos amis et moins de temps à régler des problèmes techniques.
+            Conçu pour que vous passiez plus de temps à jouer avec vos amis et moins de temps à régler des problèmes
+            techniques.
           </p>
         </div>
 
@@ -365,9 +407,11 @@
           <!-- Carte 1 : Tunnel -->
           <div class="bento-card bento-card--large">
             <div class="bento-card__icon-wrapper">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path
+                  d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
               </svg>
             </div>
             <h3 class="bento-card__title">Tunnel public zéro-configuration</h3>
@@ -380,11 +424,12 @@
           <!-- Carte 2 : Java 21 portable -->
           <div class="bento-card">
             <div class="bento-card__icon-wrapper">
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
               </svg>
             </div>
             <h3 class="bento-card__title">Java 21 LTS autonome</h3>
@@ -397,8 +442,10 @@
           <!-- Carte 3 : Auto-réparation -->
           <div class="bento-card">
             <div class="bento-card__icon-wrapper">
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" />
               </svg>
             </div>
             <h3 class="bento-card__title">Auto-réparation des crashs</h3>
@@ -411,10 +458,11 @@
           <!-- Carte 4 : Filtrage Modpacks -->
           <div class="bento-card">
             <div class="bento-card__icon-wrapper">
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="12 2 2 7 12 12 22 7 12 2"/>
-                <polyline points="2 17 12 22 22 17"/>
-                <polyline points="2 12 12 17 22 12"/>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                <polyline points="2 17 12 22 22 17" />
+                <polyline points="2 12 12 17 22 12" />
               </svg>
             </div>
             <h3 class="bento-card__title">Filtrage de modpacks</h3>
@@ -427,10 +475,11 @@
           <!-- Carte 5 : Sauvegarde et Persistance -->
           <div class="bento-card">
             <div class="bento-card__icon-wrapper">
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
-                <polyline points="17 21 17 13 7 13 7 21"/>
-                <polyline points="7 3 7 8 15 8"/>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
               </svg>
             </div>
             <h3 class="bento-card__title">Persistance totale des données</h3>
@@ -443,8 +492,9 @@
           <!-- Carte 6 : Mises à jour transparentes -->
           <div class="bento-card">
             <div class="bento-card__icon-wrapper">
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 11-.57-8.38l5.67-5.67"/>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 11-.57-8.38l5.67-5.67" />
               </svg>
             </div>
             <h3 class="bento-card__title">Mises à jour in-app en 1 clic</h3>
@@ -471,7 +521,8 @@
           <div class="spec-card">
             <div class="spec-card__os">
               <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 1.01-2.87-.9.04-2.03.62-2.67 1.38-.56.65-1.07 1.71-1.01 2.76 1.01.08 2.06-.52 2.67-1.27z"/>
+                <path
+                  d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 1.01-2.87-.9.04-2.03.62-2.67 1.38-.56.65-1.07 1.71-1.01 2.76 1.01.08 2.06-.52 2.67-1.27z" />
               </svg>
               <span>macOS</span>
             </div>
@@ -486,7 +537,8 @@
           <div class="spec-card">
             <div class="spec-card__os">
               <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.95-1.801"/>
+                <path
+                  d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.95-1.801" />
               </svg>
               <span>Windows</span>
             </div>
@@ -500,8 +552,11 @@
 
           <div class="spec-card">
             <div class="spec-card__os">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                </path>
                 <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
                 <line x1="12" y1="22.08" x2="12" y2="12"></line>
               </svg>
@@ -547,30 +602,35 @@
 
         <div class="faq-list">
           <details class="faq-item">
-            <summary class="faq-item__question">Mes amis doivent-ils aussi installer Cubirium pour me rejoindre ?</summary>
+            <summary class="faq-item__question">Mes amis doivent-ils aussi installer Cubirium pour me rejoindre ?
+            </summary>
             <div class="faq-item__answer">
-              Non. Seul l'hôte installe Cubirium. Vos amis lancent simplement leur jeu Minecraft officiel normal et se connectent à l'adresse de connexion générée par Cubirium (ex: <code>play.cubirium.fr:25565</code>).
+              Non. Seul l'hôte installe Cubirium. Vos amis lancent simplement leur jeu Minecraft officiel normal et se
+              connectent à l'adresse de connexion générée par Cubirium (ex: <code>bore.pub:25565</code>).
             </div>
           </details>
 
           <details class="faq-item">
             <summary class="faq-item__question">Dois-je ouvrir des ports sur mon routeur ou ma box internet ?</summary>
             <div class="faq-item__answer">
-              Non, aucun réglage n'est requis sur votre box internet. Cubirium utilise un tunnel sortant sécurisé qui permet à vos amis de se connecter directement sans ouverture de port NAT.
+              Non, aucun réglage n'est requis sur votre box internet. Cubirium utilise un tunnel sortant sécurisé qui
+              permet à vos amis de se connecter directement sans ouverture de port NAT.
             </div>
           </details>
 
           <details class="faq-item">
             <summary class="faq-item__question">Dois-je installer Java moi-même ?</summary>
             <div class="faq-item__answer">
-              Non. Cubirium détecte automatiquement vos runtimes existants et télécharge si besoin un JRE 21 LTS portable autonome adapté à votre système, sans polluer vos variables d'environnement.
+              Non. Cubirium détecte automatiquement vos runtimes existants et télécharge si besoin un JRE 21 LTS
+              portable autonome adapté à votre système, sans polluer vos variables d'environnement.
             </div>
           </details>
 
           <details class="faq-item">
             <summary class="faq-item__question">Est-ce gratuit et sans publicité ?</summary>
             <div class="faq-item__answer">
-              Oui, Cubirium est un projet open-source sous licence MIT développé par Gabriel Jagueneau. Il n'y a aucun abonnement, aucune publicité et aucune revente de données.
+              Oui, Cubirium est un projet open-source sous licence MIT développé par Gabriel Jagueneau. Il n'y a aucun
+              abonnement, aucune publicité et aucune revente de données.
             </div>
           </details>
         </div>
@@ -597,8 +657,10 @@
       <div class="footer__col">
         <h4 class="footer__heading">Téléchargement direct</h4>
         <ul class="footer__links">
-          <li><a href="https://github.com/Gabriel-Jagueneau/Cubirium/releases/latest/download/mac-Cubirium.pkg">macOS (mac-Cubirium.pkg)</a></li>
-          <li><a href="https://github.com/Gabriel-Jagueneau/Cubirium/releases/latest/download/win-Cubirium.exe">Windows (win-Cubirium.exe)</a></li>
+          <li><a href="https://github.com/Gabriel-Jagueneau/Cubirium/releases/latest/download/mac-Cubirium.pkg">macOS
+              (mac-Cubirium.pkg)</a></li>
+          <li><a href="https://github.com/Gabriel-Jagueneau/Cubirium/releases/latest/download/win-Cubirium.exe">Windows
+              (win-Cubirium.exe)</a></li>
           <li><a href="#changelog">Toutes les versions</a></li>
         </ul>
       </div>
@@ -606,9 +668,12 @@
       <div class="footer__col">
         <h4 class="footer__heading">Ressources</h4>
         <ul class="footer__links">
-          <li><a href="https://github.com/Gabriel-Jagueneau/Cubirium" target="_blank" rel="noopener noreferrer">Dépôt GitHub</a></li>
-          <li><a href="https://github.com/Gabriel-Jagueneau/Cubirium/issues" target="_blank" rel="noopener noreferrer">Signaler un bug</a></li>
-          <li><a href="https://github.com/Gabriel-Jagueneau/Cubirium/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">Licence MIT</a></li>
+          <li><a href="https://github.com/Gabriel-Jagueneau/Cubirium" target="_blank" rel="noopener noreferrer">Dépôt
+              GitHub</a></li>
+          <li><a href="https://github.com/Gabriel-Jagueneau/Cubirium/issues" target="_blank"
+              rel="noopener noreferrer">Signaler un bug</a></li>
+          <li><a href="https://github.com/Gabriel-Jagueneau/Cubirium/blob/main/LICENSE" target="_blank"
+              rel="noopener noreferrer">Licence MIT</a></li>
         </ul>
       </div>
     </div>
@@ -616,4 +681,5 @@
 
   <script src="./app.js"></script>
 </body>
+
 </html>
