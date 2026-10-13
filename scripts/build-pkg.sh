@@ -25,7 +25,7 @@ swiftc -module-cache-path "$PROJECT_ROOT/.swift-cache" \
   "$PROJECT_ROOT/manager/src/native-app/main.swift" \
   -o "$PROJECT_ROOT/Cubirium.app/Contents/MacOS/Cubirium"
 
-# 2.1 Synchronisation des sources et de la version dans le bundle local
+# 2.1 Synchronisation des sources, icônes et métadonnées dans le bundle local
 LOCAL_RESOURCES="$PROJECT_ROOT/Cubirium.app/Contents/Resources"
 mkdir -p "$LOCAL_RESOURCES/manager"
 rm -rf "$LOCAL_RESOURCES/manager/src" "$LOCAL_RESOURCES/manager/public"
@@ -36,9 +36,20 @@ rm -rf "$LOCAL_RESOURCES/manager/logs" "$LOCAL_RESOURCES/manager/app-settings.js
 rm -f "$LOCAL_RESOURCES/manager/.welcome-completed"
 find "$LOCAL_RESOURCES/bin" -type f ! -name "node" -delete 2>/dev/null || true
 
+# Intégration de l'icône macOS (.icns)
+if [ -f "$PROJECT_ROOT/AppIcon.icns" ]; then
+  cp "$PROJECT_ROOT/AppIcon.icns" "$LOCAL_RESOURCES/AppIcon.icns"
+fi
+
+# Création du fichier standard PkgInfo
+echo -n "APPL????" > "$PROJECT_ROOT/Cubirium.app/Contents/PkgInfo"
+
 # Mise à jour automatique de Info.plist avec la version de package.json
 APP_VERSION=$(node -e "try{console.log(require('$PROJECT_ROOT/manager/package.json').version)}catch(_){console.log('1.1.0')}")
 PLIST_FILE="$PROJECT_ROOT/Cubirium.app/Contents/Info.plist"
+if [ -f "$PROJECT_ROOT/manager/src/native-app/Info.plist" ]; then
+  cp "$PROJECT_ROOT/manager/src/native-app/Info.plist" "$PLIST_FILE"
+fi
 if [ -f "$PLIST_FILE" ]; then
   sed -i '' "s/<string>[0-9]*\.[0-9]*\.[0-9]*<\/string>/<string>$APP_VERSION<\/string>/g" "$PLIST_FILE" 2>/dev/null || true
 fi
@@ -50,6 +61,10 @@ cp -R "$PROJECT_ROOT/Cubirium.app" "$STAGING_APP"
 RESOURCES_DIR="$STAGING_APP/Contents/Resources"
 BIN_DIR="$RESOURCES_DIR/bin"
 mkdir -p "$BIN_DIR"
+
+if [ -f "$PROJECT_ROOT/AppIcon.icns" ]; then
+  cp "$PROJECT_ROOT/AppIcon.icns" "$RESOURCES_DIR/AppIcon.icns"
+fi
 
 # 4. Intégration du binaire autonome Node.js
 NODE_SRC="$(which node 2>/dev/null || true)"
@@ -132,6 +147,15 @@ if [ -n "$LOGGED_USER" ] && [ "$LOGGED_USER" != "root" ]; then
     ln -sf "$APP_TARGET" "$DESKTOP_SHORTCUT"
     chown -h "$LOGGED_USER" "$DESKTOP_SHORTCUT" 2>/dev/null || true
   fi
+
+  # Enregistrer l'application auprès de LaunchServices et rafraîchir l'icône du Bureau
+  /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$APP_TARGET" 2>/dev/null || true
+  launchctl asuser "$USER_UID" /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$APP_TARGET" 2>/dev/null || true
+  touch "$APP_TARGET" 2>/dev/null || true
+  if [ -e "$DESKTOP_SHORTCUT" ]; then
+    touch -h "$DESKTOP_SHORTCUT" 2>/dev/null || true
+  fi
+  killall Finder 2>/dev/null || true
 
   # Lancer l'application dans la session graphique de l'utilisateur
   launchctl asuser "$USER_UID" open "$APP_TARGET" 2>/dev/null || \

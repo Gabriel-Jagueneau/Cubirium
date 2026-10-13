@@ -7,6 +7,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMe
     var serverProcess: Process?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // 0. Définir explicitement l'icône de l'application
+        if let iconURL = Bundle.main.url(forResource: "AppIcon", withExtension: "icns"),
+           let iconImage = NSImage(contentsOf: iconURL) {
+            NSApp.applicationIconImage = iconImage
+        }
+
         // 1. Démarrer le serveur Node.js s'il n'est pas déjà actif
         ensureServerRunning()
 
@@ -77,13 +83,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMe
             try? FileManager.default.removeItem(at: legacyAppShortcut)
         }
 
-        // Si le raccourci .app existe déjà, ne rien faire
+        let targetURL = FileManager.default.fileExists(atPath: "/Applications/Cubirium.app")
+            ? URL(fileURLWithPath: "/Applications/Cubirium.app")
+            : Bundle.main.bundleURL
+
+        // Si le raccourci .app existe déjà, vérifier s'il pointe vers la bonne cible
         if FileManager.default.fileExists(atPath: appNameURL.path) {
-            return
+            if let dest = try? FileManager.default.destinationOfSymbolicLink(atPath: appNameURL.path),
+               dest == targetURL.path {
+                return
+            }
+            try? FileManager.default.removeItem(at: appNameURL)
         }
 
-        let appURL = Bundle.main.bundleURL
-        try? FileManager.default.createSymbolicLink(at: appNameURL, withDestinationURL: appURL)
+        try? FileManager.default.createSymbolicLink(at: appNameURL, withDestinationURL: targetURL)
     }
 
     func ensureServerRunning() {
