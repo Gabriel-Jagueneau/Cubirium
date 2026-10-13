@@ -876,23 +876,40 @@ const server = http.createServer(async (req, res) => {
     // 6f. API Open World Folder in Explorer / Finder
     if (pathname === '/api/worlds/open-folder' && method === 'POST') {
       const { worldId, customPath } = await parseBody(req);
-      const targetPath = customPath || (worldId ? path.join(minecraftService.gamesDir, worldId) : null);
+      let targetPath = customPath || (worldId ? path.join(minecraftService.gamesDir, worldId) : null);
       if (!targetPath) return sendJson(res, 400, { error: 'Chemin ou worldId manquant.' });
-      if (fs.existsSync(targetPath)) {
-        const isWin = process.platform === 'win32';
-        const isMac = process.platform === 'darwin';
 
+      const isWin = process.platform === 'win32';
+      const isMac = process.platform === 'darwin';
+
+      // S'assurer que le dossier cible existe sur le disque
+      if (!fs.existsSync(targetPath)) {
+        try {
+          fs.mkdirSync(targetPath, { recursive: true });
+        } catch (_) {}
+      }
+
+      if (fs.existsSync(targetPath)) {
         if (isWin) {
+          const winPath = path.normalize(targetPath);
           try {
-            const stat = fs.statSync(targetPath);
-            const winPath = targetPath.replace(/\//g, '\\');
-            if (stat.isFile()) {
-              exec(`explorer.exe /select,"${winPath}"`);
-            } else {
-              exec(`explorer.exe "${winPath}"`);
-            }
+            const isFile = fs.existsSync(winPath) && fs.statSync(winPath).isFile();
+            const explorerArgs = isFile ? `/select,"${winPath}"` : `"${winPath}"`;
+            
+            // Invoquer via cmd start pour activer la fenêtre dans la session interactive de bureau
+            exec(`start "" explorer.exe ${explorerArgs}`, (err) => {
+              if (err) {
+                exec(`explorer.exe ${explorerArgs}`, (err2) => {
+                  if (err2 && err2.code !== 1) {
+                    const psSafe = winPath.replace(/'/g, "''");
+                    const psArgs = isFile ? `/select,\`"${psSafe}\`"` : `\`"${psSafe}\`"`;
+                    exec(`powershell -NoProfile -Command "Start-Process explorer.exe -ArgumentList '${psArgs}'"`);
+                  }
+                });
+              }
+            });
           } catch (_) {
-            exec(`explorer.exe "${targetPath.replace(/\//g, '\\')}"`);
+            try { exec(`start "" "${winPath}"`); } catch (__) {}
           }
         } else if (isMac) {
           const safePath = targetPath.replace(/"/g, '\\"');
@@ -975,14 +992,34 @@ const server = http.createServer(async (req, res) => {
     }
     if (pathname === '/api/settings/choose-folder' && method === 'POST') {
       try {
-        const { exec } = require('child_process');
+        const { exec, execFile } = require('child_process');
         if (process.platform === 'win32') {
-          const ps = 'Add-Type -AssemblyName System.Windows.Forms; $d = New-Object System.Windows.Forms.FolderBrowserDialog; $d.Description = "Sélectionnez le dossier de téléchargement"; if ($d.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { Write-Output $d.SelectedPath }';
-          exec(`powershell -NoProfile -NonInteractive -Command "${ps}"`, (err, stdout) => {
+          const psScript = `
+Add-Type -AssemblyName System.Windows.Forms
+$dialog = New-Object System.Windows.Forms.FolderBrowserDialog
+$dialog.Description = 'Sélectionnez le dossier de destination des sauvegardes Cubirium'
+$dialog.ShowNewFolderButton = $true
+$topForm = New-Object System.Windows.Forms.Form
+$topForm.TopMost = $true
+$topForm.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
+$res = $dialog.ShowDialog($topForm)
+if ($res -eq [System.Windows.Forms.DialogResult]::OK) {
+  [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+  [Console]::Out.WriteLine($dialog.SelectedPath)
+} else {
+  [Console]::Out.WriteLine('')
+}
+`;
+          const encoded = Buffer.from(psScript, 'utf16le').toString('base64');
+          execFile('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-STA', '-EncodedCommand', encoded], { timeout: 120000 }, (err, stdout) => {
             if (err || !stdout || !stdout.trim()) {
               return sendJson(res, 200, { cancelled: true });
             }
-            const chosen = stdout.trim().replace(/\r?\n/g, '');
+            const lines = stdout.trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+            const chosen = lines[lines.length - 1];
+            if (!chosen) {
+              return sendJson(res, 200, { cancelled: true });
+            }
             return sendJson(res, 200, { success: true, folder: chosen });
           });
           return;

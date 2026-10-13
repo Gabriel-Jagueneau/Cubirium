@@ -7,6 +7,8 @@ let tunnelAddress = null;
 let currentAnalysis = null;
 let uploadedFilePath = null;
 let autoScroll = true;
+let isDownloadingJava = false;
+let javaDownloadStep = '';
 
 // DOM Elements
 const worldsList = document.getElementById('worldsList');
@@ -149,6 +151,10 @@ async function startWorld(worldId) {
 }
 
 async function stopActiveWorld() {
+  if (isDownloadingJava) {
+    showToast("Installation de Java en cours. L'arrêt du serveur est bloqué pendant cette étape.", 'warning');
+    return;
+  }
   try {
     showToast("Arrêt du serveur en cours...", 'info');
     const res = await fetch('/api/worlds/stop', {
@@ -172,7 +178,7 @@ async function openWorldFolder(worldId, customPath = null) {
     const foundWorld = (typeof worldsListCache !== 'undefined' && Array.isArray(worldsListCache))
       ? worldsListCache.find(w => w.id === worldId)
       : null;
-    const targetPath = customPath || (foundWorld && foundWorld.path) ? (customPath || foundWorld.path) : null;
+    const targetPath = customPath || (foundWorld ? foundWorld.path : null);
 
     if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.openFinder && targetPath) {
       window.webkit.messageHandlers.openFinder.postMessage(targetPath);
@@ -523,7 +529,7 @@ function buildWorldCardHtml(w, opts) {
         <div class="world-title-box">
           <div class="world-title-row">
             <span class="world-name">${escapeHtml(w.name)}</span>
-            <span class="pulse-dot ${isRunning ? 'online' : ''}" title="${isRunning ? 'Serveur en ligne' : 'Serveur arrêté'}"></span>
+            <span class="pulse-dot ${isRunning ? (isDownloadingJava ? 'downloading' : 'online') : ''}" title="${isRunning ? (isDownloadingJava ? (javaDownloadStep || 'Téléchargement de Java...') : 'Serveur en ligne') : 'Serveur arrêté'}"></span>
           </div>
           <span class="world-type-badge ${typeClass}">${w.type} ${w.modsCount > 0 ? `(${w.modsCount} mods)` : ''}</span>
         </div>
@@ -565,7 +571,14 @@ function buildWorldCardHtml(w, opts) {
 
       <div class="world-actions" onclick="event.stopPropagation()">
         ${isRunning
-      ? `<button class="btn-stop-world" onclick="stopActiveWorld()">Arrêter</button>`
+      ? (isDownloadingJava
+        ? `<button class="btn-downloading-java" disabled title="${escapeHtml(javaDownloadStep || 'Téléchargement de Java 21 LTS en cours...')}">
+            <svg class="spinner-icon-inline" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/>
+            </svg>
+            <span>Téléchargement</span>
+          </button>`
+        : `<button class="btn-stop-world" onclick="stopActiveWorld()">Arrêter</button>`)
       : w.isCorrupted
         ? `<button class="btn-corrupted" onclick="openWorldFolder('${w.id}')" title="Ce monde est corrompu. Cliquez pour ouvrir son dossier dans l'explorateur.">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -791,8 +804,13 @@ function renderWorlds(worlds) {
 
       const dot = card.querySelector('.world-title-row .pulse-dot');
       if (dot) {
-        dot.className = 'pulse-dot ' + (isRunning ? 'online' : '');
-        dot.title = isRunning ? 'Serveur en ligne' : 'Serveur arrêté';
+        if (isRunning && isDownloadingJava) {
+          dot.className = 'pulse-dot downloading';
+          dot.title = javaDownloadStep || 'Téléchargement de Java 21...';
+        } else {
+          dot.className = 'pulse-dot ' + (isRunning ? 'online' : '');
+          dot.title = isRunning ? 'Serveur en ligne' : 'Serveur arrêté';
+        }
       }
 
       const nameEl = card.querySelector('.world-name');
@@ -831,12 +849,17 @@ function renderWorlds(worlds) {
 
       const actionsDiv = card.querySelector('.world-actions');
       if (actionsDiv) {
-        const primaryBtn = actionsDiv.querySelector('.btn-stop-world, .btn-launch, .btn-repair, .btn-corrupted');
+        const primaryBtn = actionsDiv.querySelector('.btn-stop-world, .btn-launch, .btn-repair, .btn-corrupted, .btn-downloading-java');
         let expectedBtnHtml = '';
         let expectedType = '';
         if (isRunning) {
-          expectedType = 'stop';
-          expectedBtnHtml = `<button class="btn-stop-world" onclick="stopActiveWorld()">Arrêter</button>`;
+          if (isDownloadingJava) {
+            expectedType = 'downloading';
+            expectedBtnHtml = `<button class="btn-downloading-java" disabled title="${escapeHtml(javaDownloadStep || 'Téléchargement de Java 21 LTS en cours...')}"><svg class="spinner-icon-inline" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg><span>Téléchargement</span></button>`;
+          } else {
+            expectedType = 'stop';
+            expectedBtnHtml = `<button class="btn-stop-world" onclick="stopActiveWorld()">Arrêter</button>`;
+          }
         } else if (w.isCorrupted) {
           expectedType = 'corrupted';
           expectedBtnHtml = `<button class="btn-corrupted" onclick="openWorldFolder('${w.id}')" title="Ce monde est corrompu. Cliquez pour ouvrir son dossier dans l'explorateur."><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>Corrompu</button>`;
@@ -849,10 +872,11 @@ function renderWorlds(worlds) {
         }
 
         if (primaryBtn) {
-          const currentType = primaryBtn.classList.contains('btn-stop-world') ? 'stop'
+          const currentType = primaryBtn.classList.contains('btn-downloading-java') ? 'downloading'
+            : primaryBtn.classList.contains('btn-stop-world') ? 'stop'
             : primaryBtn.classList.contains('btn-corrupted') ? 'corrupted'
-              : primaryBtn.classList.contains('btn-repair') ? 'repair'
-                : 'launch';
+            : primaryBtn.classList.contains('btn-repair') ? 'repair'
+            : 'launch';
           if (currentType !== expectedType) {
             primaryBtn.outerHTML = expectedBtnHtml;
           } else if (expectedType === 'launch' || expectedType === 'repair') {
@@ -897,6 +921,8 @@ function updateMinecraftState(state) {
   serverStatus = state.status;
   activeWorld = state.activeWorld;
   currentPlayersList = state.players || [];
+  isDownloadingJava = !!state.isDownloadingJava;
+  javaDownloadStep = state.javaDownloadStep || '';
   if (state.startTime) {
     currentServerStartTime = state.startTime;
   } else if (serverStatus === 'STOPPED') {
@@ -907,6 +933,9 @@ function updateMinecraftState(state) {
   }
 
   updateTerminalHeader();
+  if (typeof updateWorldCardsLive === 'function') {
+    updateWorldCardsLive();
+  }
 
   // Si la fenêtre de gestion des joueurs est ouverte, rafraîchir ses données
   if (playersModal && playersModal.style.display !== 'none') {
@@ -1009,16 +1038,38 @@ function updateTerminalHeader() {
 
   activeWorldTitle.textContent = `Terminal : ${selectedTerminalWorldId}`;
 
-  if (isViewedRunning) {
+  if ((isViewedRunning || isViewedStarting) && isDownloadingJava) {
+    serverPulseDot.className = 'pulse-dot downloading';
+    serverPulseDot.title = javaDownloadStep || 'Téléchargement de Java 21...';
+    btnStopActiveServer.style.display = 'inline-flex';
+    btnStopActiveServer.disabled = true;
+    btnStopActiveServer.className = 'btn-stop btn-downloading-java-header';
+    btnStopActiveServer.innerHTML = `<svg class="spinner-icon-inline" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg><span>Téléchargement</span>`;
+    btnStopActiveServer.title = javaDownloadStep || "Téléchargement automatique de Java en cours, arrêt bloqué.";
+    btnLaunchViewedWorld.style.display = 'none';
+    cmdInput.disabled = true;
+    btnSendCmd.disabled = true;
+    cmdInput.placeholder = javaDownloadStep || `Installation de Java 21 en cours pour ${selectedTerminalWorldId}...`;
+  } else if (isViewedRunning) {
     serverPulseDot.className = 'pulse-dot online';
+    serverPulseDot.title = 'Serveur en ligne';
     btnStopActiveServer.style.display = 'inline-block';
+    btnStopActiveServer.disabled = false;
+    btnStopActiveServer.className = 'btn-stop';
+    btnStopActiveServer.innerHTML = 'Arrêter';
+    btnStopActiveServer.title = '';
     btnLaunchViewedWorld.style.display = 'none';
     cmdInput.disabled = false;
     btnSendCmd.disabled = false;
     cmdInput.placeholder = `Commande pour ${selectedTerminalWorldId} (ex: op Gabriel, tp, say...)`;
   } else if (isViewedStarting) {
     serverPulseDot.className = 'pulse-dot warning';
+    serverPulseDot.title = 'Serveur en cours de démarrage';
     btnStopActiveServer.style.display = 'inline-block';
+    btnStopActiveServer.disabled = false;
+    btnStopActiveServer.className = 'btn-stop';
+    btnStopActiveServer.innerHTML = 'Arrêter';
+    btnStopActiveServer.title = '';
     btnLaunchViewedWorld.style.display = 'none';
     cmdInput.disabled = true;
     btnSendCmd.disabled = true;
@@ -5375,7 +5426,14 @@ async function browseSettingsFolder() {
     }
   }
 
-  // 2. Fallback via route serveur
+  // 2. Fallback via route serveur avec indicateur visuel de chargement
+  const btn = document.getElementById('btnBrowseSettingsDownloadPath');
+  const originalHtml = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<svg class="spinner-icon-inline" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> <span>Sélection...</span>`;
+  }
+
   try {
     const res = await fetch('/api/settings/choose-folder', { method: 'POST' });
     if (res.ok) {
@@ -5383,10 +5441,19 @@ async function browseSettingsFolder() {
       if (data.folder && settingsDownloadPath) {
         settingsDownloadPath.value = data.folder;
         showToast('Dossier sélectionné : ' + data.folder, 'info');
+        if (typeof autoSaveAppSettings === 'function') {
+          autoSaveAppSettings();
+        }
       }
     }
   } catch (err) {
     console.warn('Erreur sélection dossier:', err);
+    showToast('Erreur sélection dossier: ' + err.message, 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalHtml;
+    }
   }
 }
 

@@ -151,6 +151,8 @@ class MinecraftService {
     this._isJava25Installing = false;
     this.worldHealth = {}; // worldId -> { status: 'healthy' | 'needs_repair' | 'corrupted', reason: string, lastCrashAt: number }
     this.worldLaunchTimes = {}; // worldId -> timestamp
+    this.isDownloadingJava = false;
+    this.javaDownloadStep = '';
 
     // Vérification et pré-chargement silencieux de Java 21 en arrière-plan
     this.checkJavaInBackground();
@@ -377,11 +379,22 @@ class MinecraftService {
       return javaInfo;
     }
 
+    this.isDownloadingJava = true;
+    this.javaDownloadStep = 'Téléchargement de Java 21...';
+    this.broadcast('status', this.getState());
+
     this.appendLog('[Système] Java n\'a pas été détecté sur cet ordinateur.', worldId);
     this.appendLog('[Système] Téléchargement automatique de Java 21 LTS (Adoptium Temurin) en cours...', worldId);
 
     try {
-      const installed = await this.downloadAndSetupJava21();
+      const installed = await this.downloadAndSetupJava21((step) => {
+        this.javaDownloadStep = step;
+        this.broadcast('status', this.getState());
+        this.appendLog(`[Système] ${step}`, worldId);
+      });
+      this.isDownloadingJava = false;
+      this.javaDownloadStep = '';
+      this.broadcast('status', this.getState());
       this.appendLog('[Système] Java 21 a été installé et configuré avec succès !', worldId);
       return {
         execFile: installed.execFile,
@@ -389,6 +402,9 @@ class MinecraftService {
         isWorking: true
       };
     } catch (err) {
+      this.isDownloadingJava = false;
+      this.javaDownloadStep = '';
+      this.broadcast('status', this.getState());
       this.appendLog(`[Système] Échec de l'auto-installation de Java 21: ${err.message}`, worldId);
       throw new Error(`Java n'est pas installé et le téléchargement automatique a échoué: ${err.message}`);
     }
@@ -415,7 +431,7 @@ class MinecraftService {
   /**
    * Télécharge et extrait Eclipse Temurin JRE 21 portable dans le dossier runtime de Cubirium
    */
-  async downloadAndSetupJava21() {
+  async downloadAndSetupJava21(onProgress = null) {
     const isWin = process.platform === 'win32';
     const isMac = process.platform === 'darwin';
     const arch = os.arch();
@@ -443,8 +459,10 @@ class MinecraftService {
     const extractDir = path.join(tempDir, 'extracted');
 
     try {
+      if (typeof onProgress === 'function') onProgress('Téléchargement de Java 21 LTS...');
       await this._downloadHttpFile(downloadUrl, archivePath);
 
+      if (typeof onProgress === 'function') onProgress('Extraction du runtime Java 21...');
       if (fs.existsSync(extractDir)) {
         try { fs.rmSync(extractDir, { recursive: true, force: true }); } catch (_) {}
       }
@@ -486,6 +504,7 @@ class MinecraftService {
         throw new Error('Runtime Java extrait non détecté');
       }
 
+      if (typeof onProgress === 'function') onProgress('Configuration finale de Java 21...');
       if (fs.existsSync(targetJavaDir)) {
         try { fs.rmSync(targetJavaDir, { recursive: true, force: true }); } catch (_) {}
       }
@@ -852,7 +871,9 @@ class MinecraftService {
       runtime: activeRuntime,
       uptime: activeRuntime,
       players: this.players,
-      tunnel: tunnelService.getState()
+      tunnel: tunnelService.getState(),
+      isDownloadingJava: !!this.isDownloadingJava,
+      javaDownloadStep: this.javaDownloadStep || ''
     };
   }
 
@@ -1404,6 +1425,10 @@ class MinecraftService {
    * Arrêt propre du serveur Minecraft
    */
   async stopWorld(force = false) {
+    if (this.isDownloadingJava && !force) {
+      throw new Error("Téléchargement de Java en cours. L'arrêt du serveur est temporairement bloqué pendant cette étape.");
+    }
+
     if (this.status === 'STOPPED') {
       return this.getState();
     }
