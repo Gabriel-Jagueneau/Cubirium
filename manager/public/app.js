@@ -505,12 +505,62 @@ function handlePinnedDrop(e, targetWorldId) {
   handlePinnedDragEnd();
 }
 
+function getWorldPulseDotInfo(worldId) {
+  const isThisActive = (worldId === activeWorld);
+  if (!isThisActive) {
+    return {
+      className: 'pulse-dot',
+      title: 'Serveur arrêté'
+    };
+  }
+
+  if (isDownloadingJava) {
+    return {
+      className: 'pulse-dot downloading',
+      title: javaDownloadStep || 'Téléchargement de Java 21...'
+    };
+  }
+
+  if (serverStatus === 'RUNNING') {
+    return {
+      className: 'pulse-dot online',
+      title: 'Serveur en ligne'
+    };
+  }
+
+  if (serverStatus === 'STARTING') {
+    return {
+      className: 'pulse-dot warning',
+      title: 'Serveur en cours de démarrage'
+    };
+  }
+
+  if (serverStatus === 'STOPPING') {
+    return {
+      className: 'pulse-dot warning',
+      title: 'Serveur en cours d\'arrêt'
+    };
+  }
+
+  return {
+    className: 'pulse-dot',
+    title: 'Serveur arrêté'
+  };
+}
+
 let lastRenderedWorldsSignature = null;
 
 function buildWorldCardHtml(w, opts) {
   const { isRunning, typeClass, isSelected, isActionDisabled, isServerRunning, isPinned, isCollapsed, displayRuntime, baseRuntimeSecs, runtimeSecs, effectiveStartTime } = opts;
   const lockAttr = isActionDisabled ? 'disabled class="btn-card-action disabled"' : 'class="btn-card-action"';
   const lockDeleteAttr = isActionDisabled ? 'disabled class="btn-card-action btn-card-delete disabled"' : 'class="btn-card-action btn-card-delete"';
+
+  const dotInfo = getWorldPulseDotInfo(w.id);
+  const isThisActive = (w.id === activeWorld);
+  const isCardRunning = isThisActive && serverStatus === 'RUNNING';
+  const isCardStarting = isThisActive && serverStatus === 'STARTING';
+  const isCardStopping = isThisActive && serverStatus === 'STOPPING';
+  const isCardDownloading = isThisActive && isDownloadingJava;
 
   const dropZoneAttrs = isPinned ? `
     ondragend="handlePinnedDragEnd()"
@@ -521,7 +571,7 @@ function buildWorldCardHtml(w, opts) {
   ` : '';
 
   return `
-    <div class="world-card ${isRunning ? 'running' : ''} ${isSelected ? 'selected' : ''} ${isPinned ? 'is-pinned' : ''} ${isCollapsed ? 'collapsed' : ''}" 
+    <div class="world-card ${isCardRunning ? 'running' : ''} ${isCardStarting && !isCardDownloading ? 'starting' : ''} ${isCardStopping ? 'stopping' : ''} ${isCardDownloading ? 'downloading' : ''} ${isSelected ? 'selected' : ''} ${isPinned ? 'is-pinned' : ''} ${isCollapsed ? 'collapsed' : ''}" 
          data-id="${w.id}" 
          ${dropZoneAttrs}
          onclick="selectTerminalWorld('${w.id}')">
@@ -529,7 +579,7 @@ function buildWorldCardHtml(w, opts) {
         <div class="world-title-box">
           <div class="world-title-row">
             <span class="world-name">${escapeHtml(w.name)}</span>
-            <span class="pulse-dot ${isRunning ? (isDownloadingJava ? 'downloading' : 'online') : ''}" title="${isRunning ? (isDownloadingJava ? (javaDownloadStep || 'Téléchargement de Java...') : 'Serveur en ligne') : 'Serveur arrêté'}"></span>
+            <span class="${dotInfo.className}" title="${escapeHtml(dotInfo.title)}"></span>
           </div>
           <span class="world-type-badge ${typeClass}">${w.type} ${w.modsCount > 0 ? `(${w.modsCount} mods)` : ''}</span>
         </div>
@@ -797,20 +847,23 @@ function renderWorlds(worlds) {
       existingCardsMap.set(w.id, card);
     } else {
       // Mise à jour chirurgicale in-place sur le noeud existant
-      card.classList.toggle('running', isRunning);
+      const isCardRunning = (w.id === activeWorld && serverStatus === 'RUNNING');
+      const isCardStarting = (w.id === activeWorld && serverStatus === 'STARTING');
+      const isCardStopping = (w.id === activeWorld && serverStatus === 'STOPPING');
+      const isCardDownloading = (w.id === activeWorld && isDownloadingJava);
+      card.classList.toggle('running', isCardRunning);
+      card.classList.toggle('starting', isCardStarting && !isCardDownloading);
+      card.classList.toggle('stopping', isCardStopping);
+      card.classList.toggle('downloading', isCardDownloading);
       card.classList.toggle('selected', isSelected);
       card.classList.toggle('is-pinned', isPinned);
       card.classList.toggle('collapsed', isCollapsed);
 
       const dot = card.querySelector('.world-title-row .pulse-dot');
       if (dot) {
-        if (isRunning && isDownloadingJava) {
-          dot.className = 'pulse-dot downloading';
-          dot.title = javaDownloadStep || 'Téléchargement de Java 21...';
-        } else {
-          dot.className = 'pulse-dot ' + (isRunning ? 'online' : '');
-          dot.title = isRunning ? 'Serveur en ligne' : 'Serveur arrêté';
-        }
+        const dotInfo = getWorldPulseDotInfo(w.id);
+        dot.className = dotInfo.className;
+        dot.title = dotInfo.title;
       }
 
       const nameEl = card.querySelector('.world-name');
@@ -1038,12 +1091,14 @@ function updateTerminalHeader() {
 
   activeWorldTitle.textContent = `Terminal : ${selectedTerminalWorldId}`;
 
+  const terminalDotInfo = getWorldPulseDotInfo(selectedTerminalWorldId);
+  serverPulseDot.className = terminalDotInfo.className;
+  serverPulseDot.title = terminalDotInfo.title;
+
   if ((isViewedRunning || isViewedStarting) && isDownloadingJava) {
-    serverPulseDot.className = 'pulse-dot downloading';
-    serverPulseDot.title = javaDownloadStep || 'Téléchargement de Java 21...';
     btnStopActiveServer.style.display = 'inline-flex';
     btnStopActiveServer.disabled = true;
-    btnStopActiveServer.className = 'btn-stop btn-downloading-java-header';
+    btnStopActiveServer.className = 'btn-danger btn-downloading-java-header';
     btnStopActiveServer.innerHTML = `<svg class="spinner-icon-inline" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg><span>Téléchargement</span>`;
     btnStopActiveServer.title = javaDownloadStep || "Téléchargement automatique de Java en cours, arrêt bloqué.";
     btnLaunchViewedWorld.style.display = 'none';
@@ -1051,25 +1106,21 @@ function updateTerminalHeader() {
     btnSendCmd.disabled = true;
     cmdInput.placeholder = javaDownloadStep || `Installation de Java 21 en cours pour ${selectedTerminalWorldId}...`;
   } else if (isViewedRunning) {
-    serverPulseDot.className = 'pulse-dot online';
-    serverPulseDot.title = 'Serveur en ligne';
-    btnStopActiveServer.style.display = 'inline-block';
+    btnStopActiveServer.style.display = 'inline-flex';
     btnStopActiveServer.disabled = false;
-    btnStopActiveServer.className = 'btn-stop';
+    btnStopActiveServer.className = 'btn-danger';
     btnStopActiveServer.innerHTML = 'Arrêter';
-    btnStopActiveServer.title = '';
+    btnStopActiveServer.title = 'Arrêter le serveur';
     btnLaunchViewedWorld.style.display = 'none';
     cmdInput.disabled = false;
     btnSendCmd.disabled = false;
     cmdInput.placeholder = `Commande pour ${selectedTerminalWorldId} (ex: op Gabriel, tp, say...)`;
   } else if (isViewedStarting) {
-    serverPulseDot.className = 'pulse-dot warning';
-    serverPulseDot.title = 'Serveur en cours de démarrage';
-    btnStopActiveServer.style.display = 'inline-block';
+    btnStopActiveServer.style.display = 'inline-flex';
     btnStopActiveServer.disabled = false;
-    btnStopActiveServer.className = 'btn-stop';
+    btnStopActiveServer.className = 'btn-danger';
     btnStopActiveServer.innerHTML = 'Arrêter';
-    btnStopActiveServer.title = '';
+    btnStopActiveServer.title = 'Interrompre le démarrage';
     btnLaunchViewedWorld.style.display = 'none';
     cmdInput.disabled = true;
     btnSendCmd.disabled = true;

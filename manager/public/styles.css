@@ -745,16 +745,54 @@ body {
   background: #059669;
 }
 
-.console-actions .btn-danger {
+#btnStopActiveServer,
+.console-actions .btn-danger,
+.console-actions .btn-stop {
   height: 32px;
   padding: 0 14px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   font-size: 0.8rem;
   font-weight: 600;
   box-sizing: border-box;
   white-space: nowrap;
+  border-radius: var(--radius-pill);
+  background: rgba(239, 68, 68, 0.16);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#btnStopActiveServer:hover:not(:disabled),
+.console-actions .btn-danger:hover:not(:disabled),
+.console-actions .btn-stop:hover:not(:disabled) {
+  background: var(--accent-red);
+  border-color: var(--accent-red);
+  color: #ffffff;
+}
+
+#btnStopActiveServer:disabled,
+.console-actions .btn-danger:disabled,
+.console-actions .btn-stop:disabled {
+  opacity: 0.95;
+  cursor: not-allowed;
+}
+
+#btnStopActiveServer.btn-downloading-java-header,
+.console-actions .btn-downloading-java-header {
+  background: rgba(56, 189, 248, 0.18) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  cursor: not-allowed !important;
+  opacity: 0.95 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.2) !important;
+  border-radius: var(--radius-pill) !important;
 }
 
 .console-actions .btn-small {
