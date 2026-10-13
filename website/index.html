@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cubirium · Gestionnaire & Hébergement de Serveurs Minecraft</title>
+  <meta name="description" content="Application desktop pour la gestion, l'hébergement et l'administration de serveurs Minecraft locaux avec tunnel public instantané, auto-réparation et Java 21 géré automatiquement.">
+  <link rel="icon" type="image/png" href="./favicon.png">
+  <link rel="apple-touch-icon" href="./app-icon.png">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Cubirium · Hébergez vos serveurs Minecraft en toute simplicité">
+  <meta property="og:description" content="Lancez vos mondes Vanilla et Moddés en quelques secondes. Tunnel public instantané sans ouvrir de ports, auto-réparation et Java 21 géré automatiquement.">
+  <meta property="og:url" content="https://cubirium.fr">
+  <meta property="og:image" content="https://cubirium.fr/app-icon.png">
+  <meta name="theme-color" content="#0a0b0e">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <!-- Fond d'ambiance avec lueurs discrètes -->
+  <div class="ambient-glow ambient-glow--primary"></div>
+  <div class="ambient-glow ambient-glow--secondary"></div>
+
+  <!-- Barre de navigation -->
+  <header class="navbar">
+    <div class="navbar__container">
+      <a href="#" class="navbar__brand">
+        <img src="./app-icon.png" alt="Logo Cubirium" class="navbar__logo">
+        <span class="navbar__name">Cubirium</span>
+        <span class="navbar__version-tag" id="nav-version-badge">v1.1.0</span>
+      </a>
+
+      <nav class="navbar__nav">
+        <a href="#apercu" class="navbar__link">Aperçu</a>
+        <a href="#fonctionnalites" class="navbar__link">Fonctionnalités</a>
+        <a href="#changelog" class="navbar__link">Changelog</a>
+        <a href="#compatibilite" class="navbar__link">Compatibilité</a>
+        <a href="https://github.com/Gabriel-Jagueneau/Cubirium" target="_blank" rel="noopener noreferrer" class="navbar__link navbar__link--github">
+          <svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          <span>GitHub</span>
+        </a>
+      </nav>
+
+      <div class="navbar__actions">
+        <a href="#telecharger" class="btn btn--primary btn--compact">
+          <span>Télécharger</span>
+          <svg class="icon" viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main>
+    <section class="hero" id="telecharger">
+      <div class="container hero__container">
+        <div class="hero__badge">
+          <span class="hero__badge-pulse"></span>
+          <span id="hero-badge-text">Dernière version v1.1.0 disponible</span>
+        </div>
+
+        <h1 class="hero__title">
+          L'hébergement de serveurs Minecraft <span class="gradient-text">simplifié</span>.
+        </h1>
+
+        <p class="hero__description">
+          Lancez vos mondes Vanilla, Fabric, Forge et NeoForge en quelques secondes.
+          Tunnel public instantané sans ouvrir de ports, gestion automatique de Java 21 et auto-réparation des crashs.
+        </p>
+
+        <!-- Boutons de téléchargement intelligents -->
+        <div class="hero__download-zone">
+          <div class="hero__download-buttons" id="download-buttons-group">
+            <!-- macOS primary button (par défaut si mac ou non déterminé) -->
+            <a href="https://github.com/Gabriel-Jagueneau/Cubirium/releases/latest/download/mac-Cubirium.pkg"
+               id="btn-download-mac"
+               class="download-btn download-btn--primary">
+              <div class="download-btn__icon">
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 1.01-2.87-.9.04-2.03.62-2.67 1.38-.56.65-1.07 1.71-1.01 2.76 1.01.08 2.06-.52 2.67-1.27z"/>
+                </svg>
+              </div>
+              <div class="download-btn__content">
+                <span class="download-btn__action">Télécharger pour macOS</span>
+                <span class="download-btn__sub">mac-Cubirium.pkg · Apple Silicon & Intel</span>
+              </div>
+            </a>
+
+            <!-- Windows primary/secondary button -->
+            <a href="https://github.com/Gabriel-Jagueneau/Cubirium/releases/latest/download/win-Cubirium.exe"
+               id="btn-download-win"
+               class="download-btn download-btn--secondary">
+              <div class="download-btn__icon">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                  <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.95-1.801"/>
+                </svg>
+              </div>
+              <div class="download-btn__content">
+                <span class="download-btn__action">Télécharger pour Windows</span>
+                <span class="download-btn__sub">win-Cubirium.exe · Windows 10 & 11 (64-bit)</span>
+              </div>
+            </a>
+          </div>
+
+          <div class="hero__meta">
+            <span>Version actuelle : <strong id="hero-version-text">v1.1.0</strong></span>
+            <span class="meta-separator">•</span>
+            <span>100% Gratuit & Open Source</span>
+            <span class="meta-separator">•</span>
+            <span>Minecraft 1.7.10 → 26.3</span>
+          </div>
+        </div>
+
+        <!-- Aperçu de l'interface / Démo interactive -->
+        <div class="hero__preview" id="apercu">
+          <div class="app-window">
+            <div class="app-window__header">
+              <div class="app-window__dots">
+                <span class="dot dot--red"></span>
+                <span class="dot dot--yellow"></span>
+                <span class="dot dot--green"></span>
+              </div>
+              <div class="app-window__title">
+                <span class="app-window__title-icon">⛏️</span>
+                Cubirium — Serveur Survie (Fabric 1.21.1)
+              </div>
+              <div class="app-window__actions">
+                <span class="badge badge--online">En ligne</span>
+              </div>
+            </div>
+
+            <div class="app-window__body">
+              <!-- Barre d'adresse publique instantanée -->
+              <div class="tunnel-bar">
+                <div class="tunnel-bar__info">
+                  <div class="tunnel-bar__pulse"></div>
+                  <div>
+                    <span class="tunnel-bar__label">Adresse publique directe :</span>
+                    <strong class="tunnel-bar__address" id="sample-address">play.cubirium.fr:25565</strong>
+                  </div>
+                </div>
+                <button class="btn btn--copy" id="btn-copy-address" title="Copier l'adresse de connexion">
+                  <svg class="icon icon--copy" viewBox="0 0 20 20" width="15" height="15" fill="currentColor">
+                    <path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z"/>
+                    <path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h8a2 2 0 00-2-2H5z"/>
+                  </svg>
+                  <span id="copy-label">Copier l'adresse</span>
+                </button>
+              </div>
+
+              <!-- Cartes de métriques en direct -->
+              <div class="stats-grid">
+                <div class="stat-card">
+                  <span class="stat-card__label">Charge CPU</span>
+                  <div class="stat-card__val">14%</div>
+                  <div class="progress-bar"><div class="progress-bar__fill" style="width: 14%;"></div></div>
+                </div>
+                <div class="stat-card">
+                  <span class="stat-card__label">Mémoire RAM</span>
+                  <div class="stat-card__val">3.2 <small>/ 8.0 Go</small></div>
+                  <div class="progress-bar"><div class="progress-bar__fill" style="width: 40%;"></div></div>
+                </div>
+                <div class="stat-card">
+                  <span class="stat-card__label">Joueurs en ligne</span>
+                  <div class="stat-card__val">4 <small>/ 20</small></div>
+                  <div class="player-avatars">
+                    <span class="avatar" title="Steve">👨‍🌾</span>
+                    <span class="avatar" title="Alex">🧑‍🌾</span>
+                    <span class="avatar" title="Gab">🧙‍♂️</span>
+                    <span class="avatar" title="Pixel">🐱</span>
+                  </div>
+                </div>
+                <div class="stat-card">
+                  <span class="stat-card__label">Moteur & Version</span>
+                  <div class="stat-card__val">Fabric</div>
+                  <span class="stat-card__sub">Minecraft 1.21.1 · Java 21</span>
+                </div>
+              </div>
+
+              <!-- Console en direct simulée -->
+              <div class="console-box">
+                <div class="console-box__header">
+                  <span>Console serveur en temps réel</span>
+                  <span class="console-box__status">Flux SSE connecté</span>
+                </div>
+                <div class="console-box__logs">
+                  <div class="log-line log-line--info"><span class="log-time">[18:24:02]</span> [Server thread/INFO]: Starting minecraft server version 1.21.1</div>
+                  <div class="log-line log-line--info"><span class="log-time">[18:24:05]</span> [Server thread/INFO]: Loading 38 mods from Fabric Loader</div>
+                  <div class="log-line log-line--info"><span class="log-time">[18:24:08]</span> [Server thread/INFO]: Preparing start region for dimension minecraft:overworld</div>
+                  <div class="log-line log-line--success"><span class="log-time">[18:24:10]</span> [Cubirium/TUNNEL]: Tunnel public actif sécurisé sur play.cubirium.fr:25565</div>
+                  <div class="log-line log-line--player"><span class="log-time">[18:25:31]</span> [Server thread/INFO]: Steve[/127.0.0.1:51420] logged in with entity id 142</div>
+                  <div class="log-line log-line--player"><span class="log-time">[18:26:14]</span> [Server thread/INFO]: Alex joined the game</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section Fonctionnalités (Bento Grid) -->
+    <section class="section" id="fonctionnalites">
+      <div class="container">
+        <div class="section__header">
+          <h2 class="section__title">Tout ce dont votre serveur a besoin.</h2>
+          <p class="section__description">
+            Conçu pour que vous passiez plus de temps à jouer avec vos amis et moins de temps à régler des problèmes techniques.
+          </p>
+        </div>
+
+        <div class="bento-grid">
+          <!-- Carte 1 : Tunnel -->
+          <div class="bento-card bento-card--large">
+            <div class="bento-card__icon-wrapper">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+              </svg>
+            </div>
+            <h3 class="bento-card__title">Tunnel public zéro-configuration</h3>
+            <p class="bento-card__text">
+              Invitez vos amis à distance en un clic. Pas besoin d'ouvrir de ports sur votre box internet,
+              ni de bidouiller les tables NAT ou d'installer des logiciels tiers chez vos invités.
+            </p>
+            <div class="bento-card__badge-tech">Reverse-proxy sécurisé</div>
+          </div>
+
+          <!-- Carte 2 : Java 21 portable -->
+          <div class="bento-card">
+            <div class="bento-card__icon-wrapper">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+            </div>
+            <h3 class="bento-card__title">Java 21 LTS autonome</h3>
+            <p class="bento-card__text">
+              Détection intelligente et approvisionnement automatique du bon runtime JRE portable.
+              Plus aucune erreur d'incompatibilité de version Java.
+            </p>
+          </div>
+
+          <!-- Carte 3 : Auto-réparation -->
+          <div class="bento-card">
+            <div class="bento-card__icon-wrapper">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>
+              </svg>
+            </div>
+            <h3 class="bento-card__title">Auto-réparation des crashs</h3>
+            <p class="bento-card__text">
+              Détection proactive des arrêts brutaux, déverrouillage des sessions corrompues (<code>session.lock</code>)
+              et bouton de réparation automatisée en un clic.
+            </p>
+          </div>
+
+          <!-- Carte 4 : Filtrage Modpacks -->
+          <div class="bento-card">
+            <div class="bento-card__icon-wrapper">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                <polyline points="2 17 12 22 22 17"/>
+                <polyline points="2 12 12 17 22 12"/>
+              </svg>
+            </div>
+            <h3 class="bento-card__title">Filtrage de modpacks</h3>
+            <p class="bento-card__text">
+              Importez des packs CurseForge ou Modrinth. Cubirium isole les mods serveur et exclut
+              automatiquement les shaders, interfaces et cosmétiques clients.
+            </p>
+          </div>
+
+          <!-- Carte 5 : Sauvegarde et Persistance -->
+          <div class="bento-card">
+            <div class="bento-card__icon-wrapper">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+              </svg>
+            </div>
+            <h3 class="bento-card__title">Persistance totale des données</h3>
+            <p class="bento-card__text">
+              Conservation intégrale du temps de jeu cumulé, des logs de console et des profils
+              joueurs (<code>usercache.json</code> Forge/NeoForge) lors des exports et restaurations.
+            </p>
+          </div>
+
+          <!-- Carte 6 : Mises à jour transparentes -->
+          <div class="bento-card">
+            <div class="bento-card__icon-wrapper">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 11-.57-8.38l5.67-5.67"/>
+              </svg>
+            </div>
+            <h3 class="bento-card__title">Mises à jour in-app en 1 clic</h3>
+            <p class="bento-card__text">
+              Dès qu'une nouvelle version de Cubirium est publiée, l'application vous alerte et se met à jour
+              directement, sans devoir retélécharger d'installateur manuellement.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section Compatibilité & Spécifications -->
+    <section class="section section--alt" id="compatibilite">
+      <div class="container">
+        <div class="section__header">
+          <h2 class="section__title">Compatibilité & Spécifications</h2>
+          <p class="section__description">
+            Une application optimisée pour tirer le meilleur de votre machine, que vous soyez sur Mac ou PC.
+          </p>
+        </div>
+
+        <div class="specs-grid">
+          <div class="spec-card">
+            <div class="spec-card__os">
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 1.01-2.87-.9.04-2.03.62-2.67 1.38-.56.65-1.07 1.71-1.01 2.76 1.01.08 2.06-.52 2.67-1.27z"/>
+              </svg>
+              <span>macOS</span>
+            </div>
+            <ul class="spec-list">
+              <li><strong>Version minimale :</strong> macOS 11 (Big Sur) ou ultérieur</li>
+              <li><strong>Architectures :</strong> Apple Silicon (M1, M2, M3, M4) & Intel x64</li>
+              <li><strong>Format du paquet :</strong> Installeur <code>mac-Cubirium.pkg</code></li>
+              <li><strong>Mémoire RAM :</strong> 4 Go minimum (8 Go conseillé pour modpacks)</li>
+            </ul>
+          </div>
+
+          <div class="spec-card">
+            <div class="spec-card__os">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+                <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.95-1.801"/>
+              </svg>
+              <span>Windows</span>
+            </div>
+            <ul class="spec-list">
+              <li><strong>Version minimale :</strong> Windows 10 & 11 (64-bit)</li>
+              <li><strong>Architectures :</strong> x64 (AMD64 / Intel 64)</li>
+              <li><strong>Format du paquet :</strong> Assistant <code>win-Cubirium.exe</code></li>
+              <li><strong>Mémoire RAM :</strong> 4 Go minimum (8 Go conseillé pour modpacks)</li>
+            </ul>
+          </div>
+
+          <div class="spec-card">
+            <div class="spec-card__os">
+              <span style="font-size: 28px;">⛏️</span>
+              <span>Minecraft & Moteurs</span>
+            </div>
+            <ul class="spec-list">
+              <li><strong>Versions :</strong> De Minecraft 1.7.10 jusqu'aux versions récentes (26.3)</li>
+              <li><strong>Moteurs supportés :</strong> Vanilla, Fabric, Forge, NeoForge, Quilt</li>
+              <li><strong>Environnement Java :</strong> JRE 21 LTS portable approvisionné automatiquement</li>
+              <li><strong>Réseau :</strong> Tunnel public chiffré TLS sans ouverture de ports</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section Changelog & Versions Dynamique -->
+    <section class="section" id="changelog">
+      <div class="container">
+        <div class="section__header section__header--with-badge">
+          <div>
+            <h2 class="section__title">Historique des versions & Changelog</h2>
+            <p class="section__description">
+              Toutes les mises à jour publiées depuis la toute première version de Cubirium.
+            </p>
+          </div>
+          <div class="live-sync-indicator" id="sync-status">
+            <span class="live-sync-indicator__dot"></span>
+            <span id="sync-status-text">Synchronisation GitHub...</span>
+          </div>
+        </div>
+
+        <!-- Timeline dynamique injectée par app.js -->
+        <div class="changelog-timeline" id="changelog-container">
+          <div class="changelog-loading">
+            <div class="spinner"></div>
+            <span>Chargement des versions depuis GitHub...</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="section section--alt" id="faq">
+      <div class="container container--narrow">
+        <div class="section__header">
+          <h2 class="section__title">Questions fréquentes</h2>
+        </div>
+
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary class="faq-item__question">Mes amis doivent-ils aussi installer Cubirium pour me rejoindre ?</summary>
+            <div class="faq-item__answer">
+              Non ! Seul l'hôte (vous) installe Cubirium. Vos amis lancent simplement leur jeu Minecraft officiel normal et se connectent à l'adresse de connexion générée par Cubirium (ex: <code>play.cubirium.fr:25565</code>).
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-item__question">Dois-je ouvrir des ports sur mon routeur ou ma box internet ?</summary>
+            <div class="faq-item__answer">
+              Non, aucun réglage n'est requis sur votre box internet. Cubirium utilise un tunnel sortant sécurisé qui permet à vos amis de se connecter directement sans ouverture de port NAT.
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-item__question">Dois-je installer Java moi-même ?</summary>
+            <div class="faq-item__answer">
+              Non. Cubirium détecte automatiquement vos runtimes existants et télécharge si besoin un JRE 21 LTS portable autonome adapté à votre système, sans polluer vos variables d'environnement.
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-item__question">Est-ce vraiment 100% gratuit et sans publicité ?</summary>
+            <div class="faq-item__answer">
+              Oui, Cubirium est un projet open-source sous licence MIT développé par Gabriel Jagueneau. Il n'y a aucun abonnement, aucune publicité et aucune revente de données.
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Pied de page -->
+  <footer class="footer">
+    <div class="container footer__container">
+      <div class="footer__col footer__col--brand">
+        <div class="footer__brand">
+          <img src="./app-icon.png" alt="Logo Cubirium" width="32" height="32" class="footer__logo">
+          <span class="footer__brand-name">Cubirium</span>
+        </div>
+        <p class="footer__brand-text">
+          Gestionnaire et hébergement de serveurs Minecraft locaux avec tunnel instantané.
+        </p>
+        <div class="footer__copyright">
+          © 2026 Gabriel Jagueneau. Distribué sous licence MIT.
+        </div>
+      </div>
+
+      <div class="footer__col">
+        <h4 class="footer__heading">Téléchargement direct</h4>
+        <ul class="footer__links">
+          <li><a href="https://github.com/Gabriel-Jagueneau/Cubirium/releases/latest/download/mac-Cubirium.pkg">macOS (mac-Cubirium.pkg)</a></li>
+          <li><a href="https://github.com/Gabriel-Jagueneau/Cubirium/releases/latest/download/win-Cubirium.exe">Windows (win-Cubirium.exe)</a></li>
+          <li><a href="#changelog">Toutes les versions</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h4 class="footer__heading">Ressources</h4>
+        <ul class="footer__links">
+          <li><a href="https://github.com/Gabriel-Jagueneau/Cubirium" target="_blank" rel="noopener noreferrer">Dépôt GitHub</a></li>
+          <li><a href="https://github.com/Gabriel-Jagueneau/Cubirium/issues" target="_blank" rel="noopener noreferrer">Signaler un bug</a></li>
+          <li><a href="https://github.com/Gabriel-Jagueneau/Cubirium/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">Licence MIT</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -7,6 +7,7 @@
     "start": "cd manager && node src/server.js",
     "package:pkg": "bash scripts/build-pkg.sh",
     "package:win": "bash scripts/build-win.sh",
-    "package:mac": "bash scripts/build-pkg.sh"
+    "package:mac": "bash scripts/build-pkg.sh",
+    "site:preview": "npx -y serve website -l 5000"
   }
 }
