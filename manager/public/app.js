@@ -403,9 +403,11 @@ function toggleCollapseWorld(worldId) {
   }
 }
 
-// Drag & drop pour réordonner les mondes épinglés avec déplacement dynamique fluide
+// Drag & drop pour réordonner les mondes épinglés avec suivi souris en temps réel et déplacement dynamique fluide
 let draggedPinnedWorldId = null;
 let currentHoverPinnedIdx = null;
+let floatingCardEl = null;
+let dragOriginCardEl = null;
 
 function activateDropHighlights() {
   const grid = document.getElementById('worldsList');
@@ -422,14 +424,14 @@ function updatePinnedDisplacements(fromIdx, toIdx) {
   currentHoverPinnedIdx = toIdx;
 
   const pinned = getPinnedWorldIds();
-  const draggedCard = document.querySelector(`.world-card[data-id="${draggedPinnedWorldId}"]`);
+  const draggedCard = document.querySelector(`.world-card[data-id="${draggedPinnedWorldId}"]:not(.floating-drag-card)`);
   if (!draggedCard) return;
 
   const cardHeight = draggedCard.offsetHeight + 14; // Hauteur carte + gap 14px
 
   pinned.forEach((id, idx) => {
     if (id === draggedPinnedWorldId) return;
-    const card = document.querySelector(`.world-card[data-id="${id}"]`);
+    const card = document.querySelector(`.world-card[data-id="${id}"]:not(.floating-drag-card)`);
     if (!card) return;
 
     let shift = 0;
@@ -459,124 +461,173 @@ function clearPinnedDisplacements() {
   currentHoverPinnedIdx = null;
   const pinned = getPinnedWorldIds();
   pinned.forEach(id => {
-    const card = document.querySelector(`.world-card[data-id="${id}"]`);
+    const card = document.querySelector(`.world-card[data-id="${id}"]:not(.floating-drag-card)`);
     if (card) {
       card.style.transform = '';
     }
   });
 }
 
-function handlePinnedMouseDown(e, worldId) {
-  draggedPinnedWorldId = worldId;
-  activateDropHighlights();
-
-  const onMouseUp = () => {
-    deactivateDropHighlights();
-    clearPinnedDisplacements();
-    document.removeEventListener('mouseup', onMouseUp);
-  };
-  document.addEventListener('mouseup', onMouseUp);
-}
-
-const transparentDragImage = new Image();
-transparentDragImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-
-function handlePinnedDragStart(e, worldId) {
-  draggedPinnedWorldId = worldId;
-  currentHoverPinnedIdx = null;
-  activateDropHighlights();
-  e.dataTransfer.effectAllowed = 'move';
-  try {
-    // Ne JAMAIS utiliser 'text/plain' pour éviter que macOS AppKit n'affiche le badge rouge de texte
-    e.dataTransfer.setData('application/x-world-id', worldId);
-  } catch (_) { }
-
-  if (e.dataTransfer.setDragImage) {
-    e.dataTransfer.setDragImage(transparentDragImage, 0, 0);
-  }
-
-  const card = document.querySelector(`.world-card[data-id="${worldId}"]`);
-  if (card) card.classList.add('dragging');
-}
-
-function handlePinnedDragEnd() {
-  clearPinnedDisplacements();
-  draggedPinnedWorldId = null;
-  deactivateDropHighlights();
-  document.querySelectorAll('.world-card').forEach(c => {
-    c.classList.remove('dragging', 'drag-over');
-    c.style.transform = '';
-  });
-}
-
-function handlePinnedDragOver(e, targetWorldId) {
-  if (!draggedPinnedWorldId) return;
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'move';
-
+function handlePinnedPointerDown(e, worldId) {
+  if (e.button !== 0) return; // Uniquement clic gauche
   const pinned = getPinnedWorldIds();
-  const fromIdx = pinned.indexOf(draggedPinnedWorldId);
-  const toIdx = pinned.indexOf(targetWorldId);
+  if (pinned.length === 0) return;
 
-  if (fromIdx !== -1 && toIdx !== -1) {
-    updatePinnedDisplacements(fromIdx, toIdx);
+  e.preventDefault();
+  e.stopPropagation();
+
+  const handleEl = e.currentTarget;
+  if (handleEl && handleEl.setPointerCapture) {
+    try {
+      handleEl.setPointerCapture(e.pointerId);
+    } catch (err) {}
   }
 
-  if (targetWorldId && targetWorldId !== draggedPinnedWorldId) {
-    const card = document.querySelector(`.world-card[data-id="${targetWorldId}"]`);
-    if (card && card.classList.contains('is-pinned') && !card.classList.contains('drag-over')) {
-      document.querySelectorAll('.world-card.drag-over').forEach(c => {
-        if (c !== card) c.classList.remove('drag-over');
+  const startX = e.clientX;
+  const startY = e.clientY;
+  const origCard = document.querySelector(`.world-card[data-id="${worldId}"]`);
+  if (!origCard) return;
+
+  const fromIdx = pinned.indexOf(worldId);
+  if (fromIdx === -1) return;
+
+  let isDraggingActive = false;
+  let grabOffsetX = 0;
+  let grabOffsetY = 0;
+  let initialSlots = [];
+  let targetDropIdx = fromIdx;
+
+  const onPointerMove = (moveEvt) => {
+    if (!isDraggingActive) {
+      const dist = Math.hypot(moveEvt.clientX - startX, moveEvt.clientY - startY);
+      if (dist < 4) return; // Seuil d'activation de 4px
+
+      isDraggingActive = true;
+      document.body.classList.add('is-dragging-card');
+      draggedPinnedWorldId = worldId;
+      dragOriginCardEl = origCard;
+      activateDropHighlights();
+
+      const rect = origCard.getBoundingClientRect();
+      grabOffsetX = startX - rect.left;
+      grabOffsetY = startY - rect.top;
+
+      // Mesure des centres verticaux initiaux pour chaque emplacement épinglé
+      const grid = document.getElementById('worldsList');
+      const gridRect = grid ? grid.getBoundingClientRect() : { top: 0 };
+      const gridScrollTop = grid ? grid.scrollTop : 0;
+
+      initialSlots = pinned.map((id, idx) => {
+        const c = document.querySelector(`.world-card[data-id="${id}"]`);
+        if (!c) return { id, idx, midYInGrid: 0, scrollTop: gridScrollTop };
+        const r = c.getBoundingClientRect();
+        return {
+          id,
+          idx,
+          midYInGrid: (r.top - gridRect.top) + r.height / 2,
+          scrollTop: gridScrollTop
+        };
       });
-      card.classList.add('drag-over');
+
+      // Création de la carte flottante qui suit le curseur en temps réel
+      floatingCardEl = origCard.cloneNode(true);
+      floatingCardEl.className = origCard.className + ' floating-drag-card';
+      floatingCardEl.style.width = rect.width + 'px';
+      floatingCardEl.style.height = rect.height + 'px';
+      floatingCardEl.style.left = (moveEvt.clientX - grabOffsetX) + 'px';
+      floatingCardEl.style.top = (moveEvt.clientY - grabOffsetY) + 'px';
+      floatingCardEl.style.transform = '';
+      floatingCardEl.style.margin = '0';
+      document.body.appendChild(floatingCardEl);
+
+      origCard.classList.add('dragging-origin');
     }
-  }
-}
 
-function handlePinnedDragEnter(e, targetWorldId) {
-  if (!draggedPinnedWorldId || draggedPinnedWorldId === targetWorldId) return;
-  const pinned = getPinnedWorldIds();
-  const fromIdx = pinned.indexOf(draggedPinnedWorldId);
-  const toIdx = pinned.indexOf(targetWorldId);
+    if (isDraggingActive && floatingCardEl) {
+      // Suivi de la souris 1:1
+      floatingCardEl.style.left = (moveEvt.clientX - grabOffsetX) + 'px';
+      floatingCardEl.style.top = (moveEvt.clientY - grabOffsetY) + 'px';
 
-  if (fromIdx !== -1 && toIdx !== -1) {
-    updatePinnedDisplacements(fromIdx, toIdx);
-  }
+      // Auto-scroll du panneau si proche des bords haut/bas
+      const grid = document.getElementById('worldsList');
+      if (grid) {
+        const gRect = grid.getBoundingClientRect();
+        if (moveEvt.clientY < gRect.top + 45) {
+          grid.scrollTop -= 8;
+        } else if (moveEvt.clientY > gRect.bottom - 45) {
+          grid.scrollTop += 8;
+        }
+      }
 
-  const card = document.querySelector(`.world-card[data-id="${targetWorldId}"]`);
-  if (card && card.classList.contains('is-pinned')) {
-    document.querySelectorAll('.world-card.drag-over').forEach(c => {
-      if (c !== card) c.classList.remove('drag-over');
-    });
-    card.classList.add('drag-over');
-  }
-}
+      // Si au moins 2 cartes sont épinglées, calculer l'emplacement cible et animer les autres cartes
+      if (pinned.length >= 2) {
+        const gRect = grid ? grid.getBoundingClientRect() : { top: 0 };
+        const currentScrollTop = grid ? grid.scrollTop : 0;
+        let closestIdx = fromIdx;
+        let minDistance = Infinity;
 
-function handlePinnedDragLeave(e, targetWorldId) {
-  const card = document.querySelector(`.world-card[data-id="${targetWorldId}"]`);
-  if (!card) return;
-  if (e.relatedTarget && card.contains(e.relatedTarget)) {
-    return;
-  }
-  card.classList.remove('drag-over');
-}
+        initialSlots.forEach(slot => {
+          const slotScreenMidY = gRect.top + slot.midYInGrid - (currentScrollTop - slot.scrollTop);
+          const dist = Math.abs(moveEvt.clientY - slotScreenMidY);
+          if (dist < minDistance) {
+            minDistance = dist;
+            closestIdx = slot.idx;
+          }
+        });
 
-function handlePinnedDrop(e, targetWorldId) {
-  e.preventDefault();
-  if (!draggedPinnedWorldId || draggedPinnedWorldId === targetWorldId) {
-    handlePinnedDragEnd();
-    return;
-  }
-  let pinned = getPinnedWorldIds();
-  const fromIdx = pinned.indexOf(draggedPinnedWorldId);
-  const toIdx = pinned.indexOf(targetWorldId);
-  if (fromIdx !== -1 && toIdx !== -1) {
-    const [moved] = pinned.splice(fromIdx, 1);
-    pinned.splice(toIdx, 0, moved);
-    savePinnedWorldIds(pinned);
-    renderWorlds(worldsListCache);
-  }
-  handlePinnedDragEnd();
+        targetDropIdx = closestIdx;
+        updatePinnedDisplacements(fromIdx, targetDropIdx);
+      }
+    }
+  };
+
+  const onPointerUp = () => {
+    window.removeEventListener('pointermove', onPointerMove);
+    window.removeEventListener('pointerup', onPointerUp);
+    window.removeEventListener('pointercancel', onPointerUp);
+
+    if (handleEl && handleEl.releasePointerCapture) {
+      try {
+        if (handleEl.hasPointerCapture(e.pointerId)) {
+          handleEl.releasePointerCapture(e.pointerId);
+        }
+      } catch (err) {}
+    }
+
+    document.body.classList.remove('is-dragging-card');
+
+    if (isDraggingActive) {
+      if (floatingCardEl) {
+        floatingCardEl.remove();
+        floatingCardEl = null;
+      }
+      if (dragOriginCardEl) {
+        dragOriginCardEl.classList.remove('dragging-origin');
+        dragOriginCardEl = null;
+      }
+
+      clearPinnedDisplacements();
+      deactivateDropHighlights();
+
+      if (targetDropIdx !== null && targetDropIdx !== fromIdx && pinned.length >= 2) {
+        let curPinned = getPinnedWorldIds();
+        const fIdx = curPinned.indexOf(worldId);
+        if (fIdx !== -1 && targetDropIdx >= 0 && targetDropIdx < curPinned.length) {
+          const [moved] = curPinned.splice(fIdx, 1);
+          curPinned.splice(targetDropIdx, 0, moved);
+          savePinnedWorldIds(curPinned);
+          renderWorlds(worldsListCache);
+        }
+      }
+
+      draggedPinnedWorldId = null;
+      currentHoverPinnedIdx = null;
+    }
+  };
+
+  window.addEventListener('pointermove', onPointerMove, { passive: false });
+  window.addEventListener('pointerup', onPointerUp);
+  window.addEventListener('pointercancel', onPointerUp);
 }
 
 function getWorldPulseDotInfo(worldId) {
@@ -636,18 +687,9 @@ function buildWorldCardHtml(w, opts) {
   const isCardStopping = isThisActive && serverStatus === 'STOPPING';
   const isCardDownloading = isThisActive && isDownloadingJava;
 
-  const dropZoneAttrs = isPinned ? `
-    ondragend="handlePinnedDragEnd()"
-    ondragover="handlePinnedDragOver(event, '${w.id}')"
-    ondragenter="handlePinnedDragEnter(event, '${w.id}')"
-    ondragleave="handlePinnedDragLeave(event, '${w.id}')"
-    ondrop="handlePinnedDrop(event, '${w.id}')"
-  ` : '';
-
   return `
     <div class="world-card ${isCardRunning ? 'running' : ''} ${isCardStarting && !isCardDownloading ? 'starting' : ''} ${isCardStopping ? 'stopping' : ''} ${isCardDownloading ? 'downloading' : ''} ${isSelected ? 'selected' : ''} ${isPinned ? 'is-pinned' : ''} ${isCollapsed ? 'collapsed' : ''}" 
          data-id="${w.id}" 
-         ${dropZoneAttrs}
          onclick="selectTerminalWorld('${w.id}')">
       <div class="world-header">
         <div class="world-title-box">
@@ -758,9 +800,7 @@ function buildWorldCardHtml(w, opts) {
       ${isPinned ? `
         <div class="drag-handle-right" 
              title="Glisser pour réorganiser" 
-             draggable="true" 
-             onmousedown="event.stopPropagation(); handlePinnedMouseDown(event, '${w.id}')"
-             ondragstart="handlePinnedDragStart(event, '${w.id}')"
+             onpointerdown="event.stopPropagation(); handlePinnedPointerDown(event, '${w.id}')"
              onclick="event.stopPropagation()">
           <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
             <circle cx="2.5" cy="2.5" r="1.5"></circle>
@@ -937,14 +977,10 @@ function renderWorlds(worlds) {
       let dragHandle = card.querySelector('.drag-handle-right');
       if (isPinned) {
         if (!dragHandle) {
-          const handleDiv = document.createElement('div');
-          handleDiv.className = 'drag-handle-right';
-          handleDiv.title = 'Glisser pour réorganiser';
-          handleDiv.setAttribute('draggable', 'true');
-          handleDiv.setAttribute('onmousedown', `event.stopPropagation(); handlePinnedMouseDown(event, '${w.id}')`);
-          handleDiv.setAttribute('ondragstart', `handlePinnedDragStart(event, '${w.id}')`);
-          handleDiv.setAttribute('onclick', 'event.stopPropagation()');
-          handleDiv.innerHTML = `
+          dragHandle = document.createElement('div');
+          dragHandle.className = 'drag-handle-right';
+          dragHandle.title = 'Glisser pour réorganiser';
+          dragHandle.innerHTML = `
             <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
               <circle cx="2.5" cy="2.5" r="1.5"></circle>
               <circle cx="7.5" cy="2.5" r="1.5"></circle>
@@ -954,23 +990,26 @@ function renderWorlds(worlds) {
               <circle cx="7.5" cy="13.5" r="1.5"></circle>
             </svg>
           `;
-          card.appendChild(handleDiv);
+          card.appendChild(dragHandle);
         }
-        card.setAttribute('ondragend', 'handlePinnedDragEnd()');
-        card.setAttribute('ondragover', `handlePinnedDragOver(event, '${w.id}')`);
-        card.setAttribute('ondragenter', `handlePinnedDragEnter(event, '${w.id}')`);
-        card.setAttribute('ondragleave', `handlePinnedDragLeave(event, '${w.id}')`);
-        card.setAttribute('ondrop', `handlePinnedDrop(event, '${w.id}')`);
+        dragHandle.onpointerdown = (e) => {
+          e.stopPropagation();
+          handlePinnedPointerDown(e, w.id);
+        };
+        dragHandle.onclick = (e) => e.stopPropagation();
+        dragHandle.removeAttribute('draggable');
+        dragHandle.removeAttribute('ondragstart');
+        dragHandle.removeAttribute('onmousedown');
       } else {
         if (dragHandle) {
           dragHandle.remove();
         }
-        card.removeAttribute('ondragend');
-        card.removeAttribute('ondragover');
-        card.removeAttribute('ondragenter');
-        card.removeAttribute('ondragleave');
-        card.removeAttribute('ondrop');
       }
+      card.removeAttribute('ondragend');
+      card.removeAttribute('ondragover');
+      card.removeAttribute('ondragenter');
+      card.removeAttribute('ondragleave');
+      card.removeAttribute('ondrop');
 
       const dot = card.querySelector('.world-title-row .pulse-dot');
       if (dot) {
