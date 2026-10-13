@@ -408,6 +408,7 @@ let draggedPinnedWorldId = null;
 let currentHoverPinnedIdx = null;
 let floatingCardEl = null;
 let dragOriginCardEl = null;
+let initialPinnedSlots = [];
 
 function activateDropHighlights() {
   const grid = document.getElementById('worldsList');
@@ -424,27 +425,39 @@ function updatePinnedDisplacements(fromIdx, toIdx) {
   currentHoverPinnedIdx = toIdx;
 
   const pinned = getPinnedWorldIds();
-  const draggedCard = document.querySelector(`.world-card[data-id="${draggedPinnedWorldId}"]:not(.floating-drag-card)`);
-  if (!draggedCard) return;
+  const draggedSlot = initialPinnedSlots[fromIdx];
+  if (!draggedSlot) return;
 
-  const cardHeight = draggedCard.offsetHeight + 14; // Hauteur carte + gap 14px
+  const draggedHeight = draggedSlot.height;
+  const GAP = 14;
 
   pinned.forEach((id, idx) => {
-    if (id === draggedPinnedWorldId) return;
     const card = document.querySelector(`.world-card[data-id="${id}"]:not(.floating-drag-card)`);
     if (!card) return;
 
     let shift = 0;
     if (toIdx !== null && toIdx !== -1 && toIdx !== fromIdx) {
-      if (fromIdx > toIdx) {
+      if (idx === fromIdx) {
+        // La carte déplacée (fantôme) se place directement à son emplacement d'arrivée
+        const targetSlot = initialPinnedSlots[toIdx];
+        if (targetSlot) {
+          if (fromIdx > toIdx) {
+            // Déplacement vers le haut : aligne le haut de la carte avec le slot d'arrivée
+            shift = targetSlot.initialTop - draggedSlot.initialTop;
+          } else {
+            // Déplacement vers le bas : aligne le bas de la carte avec le bas du slot d'arrivée
+            shift = (targetSlot.initialTop + targetSlot.height - draggedHeight) - draggedSlot.initialTop;
+          }
+        }
+      } else if (fromIdx > toIdx) {
         // Déplacement vers le haut : les cartes entre toIdx et fromIdx-1 descendent
         if (idx >= toIdx && idx < fromIdx) {
-          shift = cardHeight;
+          shift = draggedHeight + GAP;
         }
       } else if (fromIdx < toIdx) {
         // Déplacement vers le bas : les cartes entre fromIdx+1 et toIdx montent
         if (idx > fromIdx && idx <= toIdx) {
-          shift = -cardHeight;
+          shift = -(draggedHeight + GAP);
         }
       }
     }
@@ -517,17 +530,20 @@ function handlePinnedPointerDown(e, worldId) {
       const gridRect = grid ? grid.getBoundingClientRect() : { top: 0 };
       const gridScrollTop = grid ? grid.scrollTop : 0;
 
-      initialSlots = pinned.map((id, idx) => {
+      initialPinnedSlots = pinned.map((id, idx) => {
         const c = document.querySelector(`.world-card[data-id="${id}"]`);
-        if (!c) return { id, idx, midYInGrid: 0, scrollTop: gridScrollTop };
+        if (!c) return { id, idx, initialTop: 0, height: 0, midYInGrid: 0, scrollTop: gridScrollTop };
         const r = c.getBoundingClientRect();
         return {
           id,
           idx,
+          initialTop: r.top,
+          height: r.height,
           midYInGrid: (r.top - gridRect.top) + r.height / 2,
           scrollTop: gridScrollTop
         };
       });
+      initialSlots = initialPinnedSlots;
 
       // Création de la carte flottante qui suit le curseur en temps réel
       floatingCardEl = origCard.cloneNode(true);
@@ -622,6 +638,7 @@ function handlePinnedPointerDown(e, worldId) {
 
       draggedPinnedWorldId = null;
       currentHoverPinnedIdx = null;
+      initialPinnedSlots = [];
     }
   };
 

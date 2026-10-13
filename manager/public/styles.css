@@ -4346,10 +4346,10 @@ body.is-dragging-card * {
 }
 
 .world-card.dragging-origin {
-  opacity: 0.22 !important;
-  border: 1.5px dashed rgba(99, 102, 241, 0.5) !important;
-  background: rgba(99, 102, 241, 0.03) !important;
-  box-shadow: none !important;
+  opacity: 0.42 !important;
+  border: 1.5px dashed rgba(99, 102, 241, 0.7) !important;
+  background: rgba(99, 102, 241, 0.05) !important;
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.2) !important;
 }
 
 /* ==========================================================================
@@ -4363,7 +4363,7 @@ body.is-dragging-card * {
   pointer-events: auto;
 }
 
-.worlds-grid.is-dragging-pinned .world-card.is-pinned:not(.dragging-origin) {
+.worlds-grid.is-dragging-pinned .world-card.is-pinned {
   transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1) !important;
   will-change: transform;
 }
