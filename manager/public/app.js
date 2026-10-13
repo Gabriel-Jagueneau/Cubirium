@@ -5458,11 +5458,35 @@ async function closeAppSettingsModal() {
   }
 }
 
+// Auto-sauvegarde transparente des paramètres (sélection ou modification de champ)
+async function autoSaveAppSettings() {
+  const current = getSettingsFromInputs();
+  try {
+    const res = await fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(current)
+    });
+    if (res.ok) {
+      initialSettingsState = { ...current };
+    }
+  } catch (err) {
+    console.warn('Erreur auto-sauvegarde paramètres:', err);
+  }
+}
+
+if (settingsDownloadPath) {
+  settingsDownloadPath.addEventListener('change', () => {
+    autoSaveAppSettings();
+  });
+}
+
 // Callback appelé par le bridge natif Cocoa (main.swift)
 window.onFolderChosen = function (folderPath) {
   if (folderPath && settingsDownloadPath) {
     settingsDownloadPath.value = folderPath;
     showToast('Dossier sélectionné : ' + folderPath, 'info');
+    autoSaveAppSettings();
   }
 };
 

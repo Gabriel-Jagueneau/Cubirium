@@ -966,10 +966,13 @@ const server = http.createServer(async (req, res) => {
 
     // 6h. API Export World Zip
     if (pathname === '/api/worlds/export-destination' && method === 'GET') {
-      const systemDownloads = path.join(os.homedir(), 'Downloads');
+      const systemDownloads = configService.getRealSystemDownloadsDir
+        ? configService.getRealSystemDownloadsDir()
+        : path.join(os.homedir(), 'Downloads');
       const currentDest = configService.getSettings().downloadPath || systemDownloads;
       return sendJson(res, 200, {
         destDir: currentDest,
+        destination: currentDest,
         defaultDestDir: systemDownloads
       });
     }
@@ -994,11 +997,16 @@ const server = http.createServer(async (req, res) => {
       try {
         const { exec, execFile } = require('child_process');
         if (process.platform === 'win32') {
+          const currentDest = configService.getSettings().downloadPath || (configService.getRealSystemDownloadsDir ? configService.getRealSystemDownloadsDir() : '');
+          const escapedPath = (currentDest || '').replace(/'/g, "''");
           const psScript = `
 Add-Type -AssemblyName System.Windows.Forms
 $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
 $dialog.Description = 'Sélectionnez le dossier de destination des sauvegardes Cubirium'
 $dialog.ShowNewFolderButton = $true
+if ('${escapedPath}' -and (Test-Path '${escapedPath}')) {
+  $dialog.SelectedPath = '${escapedPath}'
+}
 $topForm = New-Object System.Windows.Forms.Form
 $topForm.TopMost = $true
 $topForm.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
@@ -1016,10 +1024,11 @@ if ($res -eq [System.Windows.Forms.DialogResult]::OK) {
               return sendJson(res, 200, { cancelled: true });
             }
             const lines = stdout.trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-            const chosen = lines[lines.length - 1];
+            let chosen = lines[lines.length - 1];
             if (!chosen) {
               return sendJson(res, 200, { cancelled: true });
             }
+            chosen = path.resolve(chosen);
             return sendJson(res, 200, { success: true, folder: chosen });
           });
           return;
