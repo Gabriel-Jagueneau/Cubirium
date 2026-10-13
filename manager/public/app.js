@@ -403,8 +403,9 @@ function toggleCollapseWorld(worldId) {
   }
 }
 
-// Drag & drop pour réordonner les mondes épinglés avec highlight des zones de drop
+// Drag & drop pour réordonner les mondes épinglés avec déplacement dynamique fluide
 let draggedPinnedWorldId = null;
+let currentHoverPinnedIdx = null;
 
 function activateDropHighlights() {
   const grid = document.getElementById('worldsList');
@@ -416,12 +417,62 @@ function deactivateDropHighlights() {
   if (grid) grid.classList.remove('is-dragging-pinned');
 }
 
+function updatePinnedDisplacements(fromIdx, toIdx) {
+  if (currentHoverPinnedIdx === toIdx) return;
+  currentHoverPinnedIdx = toIdx;
+
+  const pinned = getPinnedWorldIds();
+  const draggedCard = document.querySelector(`.world-card[data-id="${draggedPinnedWorldId}"]`);
+  if (!draggedCard) return;
+
+  const cardHeight = draggedCard.offsetHeight + 14; // Hauteur carte + gap 14px
+
+  pinned.forEach((id, idx) => {
+    if (id === draggedPinnedWorldId) return;
+    const card = document.querySelector(`.world-card[data-id="${id}"]`);
+    if (!card) return;
+
+    let shift = 0;
+    if (toIdx !== null && toIdx !== -1 && toIdx !== fromIdx) {
+      if (fromIdx > toIdx) {
+        // Déplacement vers le haut : les cartes entre toIdx et fromIdx-1 descendent
+        if (idx >= toIdx && idx < fromIdx) {
+          shift = cardHeight;
+        }
+      } else if (fromIdx < toIdx) {
+        // Déplacement vers le bas : les cartes entre fromIdx+1 et toIdx montent
+        if (idx > fromIdx && idx <= toIdx) {
+          shift = -cardHeight;
+        }
+      }
+    }
+
+    if (shift !== 0) {
+      card.style.transform = `translateY(${shift}px)`;
+    } else {
+      card.style.transform = '';
+    }
+  });
+}
+
+function clearPinnedDisplacements() {
+  currentHoverPinnedIdx = null;
+  const pinned = getPinnedWorldIds();
+  pinned.forEach(id => {
+    const card = document.querySelector(`.world-card[data-id="${id}"]`);
+    if (card) {
+      card.style.transform = '';
+    }
+  });
+}
+
 function handlePinnedMouseDown(e, worldId) {
   draggedPinnedWorldId = worldId;
   activateDropHighlights();
 
   const onMouseUp = () => {
     deactivateDropHighlights();
+    clearPinnedDisplacements();
     document.removeEventListener('mouseup', onMouseUp);
   };
   document.addEventListener('mouseup', onMouseUp);
@@ -432,6 +483,7 @@ transparentDragImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BA
 
 function handlePinnedDragStart(e, worldId) {
   draggedPinnedWorldId = worldId;
+  currentHoverPinnedIdx = null;
   activateDropHighlights();
   e.dataTransfer.effectAllowed = 'move';
   try {
@@ -448,10 +500,12 @@ function handlePinnedDragStart(e, worldId) {
 }
 
 function handlePinnedDragEnd() {
+  clearPinnedDisplacements();
   draggedPinnedWorldId = null;
   deactivateDropHighlights();
   document.querySelectorAll('.world-card').forEach(c => {
     c.classList.remove('dragging', 'drag-over');
+    c.style.transform = '';
   });
 }
 
@@ -459,6 +513,15 @@ function handlePinnedDragOver(e, targetWorldId) {
   if (!draggedPinnedWorldId) return;
   e.preventDefault();
   e.dataTransfer.dropEffect = 'move';
+
+  const pinned = getPinnedWorldIds();
+  const fromIdx = pinned.indexOf(draggedPinnedWorldId);
+  const toIdx = pinned.indexOf(targetWorldId);
+
+  if (fromIdx !== -1 && toIdx !== -1) {
+    updatePinnedDisplacements(fromIdx, toIdx);
+  }
+
   if (targetWorldId && targetWorldId !== draggedPinnedWorldId) {
     const card = document.querySelector(`.world-card[data-id="${targetWorldId}"]`);
     if (card && card.classList.contains('is-pinned') && !card.classList.contains('drag-over')) {
@@ -472,6 +535,14 @@ function handlePinnedDragOver(e, targetWorldId) {
 
 function handlePinnedDragEnter(e, targetWorldId) {
   if (!draggedPinnedWorldId || draggedPinnedWorldId === targetWorldId) return;
+  const pinned = getPinnedWorldIds();
+  const fromIdx = pinned.indexOf(draggedPinnedWorldId);
+  const toIdx = pinned.indexOf(targetWorldId);
+
+  if (fromIdx !== -1 && toIdx !== -1) {
+    updatePinnedDisplacements(fromIdx, toIdx);
+  }
+
   const card = document.querySelector(`.world-card[data-id="${targetWorldId}"]`);
   if (card && card.classList.contains('is-pinned')) {
     document.querySelectorAll('.world-card.drag-over').forEach(c => {
@@ -492,7 +563,10 @@ function handlePinnedDragLeave(e, targetWorldId) {
 
 function handlePinnedDrop(e, targetWorldId) {
   e.preventDefault();
-  if (!draggedPinnedWorldId || draggedPinnedWorldId === targetWorldId) return;
+  if (!draggedPinnedWorldId || draggedPinnedWorldId === targetWorldId) {
+    handlePinnedDragEnd();
+    return;
+  }
   let pinned = getPinnedWorldIds();
   const fromIdx = pinned.indexOf(draggedPinnedWorldId);
   const toIdx = pinned.indexOf(targetWorldId);

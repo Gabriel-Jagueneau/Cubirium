@@ -403,15 +403,24 @@ body {
 .world-card.is-pinned {
   border-color: rgba(99, 102, 241, 0.35);
   background: linear-gradient(180deg, rgba(99, 102, 241, 0.05) 0%, var(--bg-card) 100%);
-  padding-right: 32px;
 }
 
 .world-card.is-pinned:hover {
   border-color: rgba(99, 102, 241, 0.55);
 }
 
-.world-card.is-pinned.collapsed {
-  padding-right: 32px;
+/* En mode non-collapse : boutons d'entête collés à la bordure droite comme s'ils n'étaient pas pinned */
+.world-card.is-pinned:not(.collapsed) .world-header-actions {
+  margin-right: 0 !important;
+}
+
+.world-card.is-pinned:not(.collapsed) .world-meta {
+  padding-right: 18px;
+}
+
+/* En mode collapse : marge à droite pour loger les 6 points */
+.world-card.is-pinned.collapsed .world-header-actions {
+  margin-right: 18px;
 }
 
 .world-card.drag-over {
@@ -4283,9 +4292,6 @@ select option {
 /* ==========================================================================
    Drag Handle 6 Points (Centré tout à droite de la carte, en position absolute)
    ========================================================================== */
-.world-card.is-pinned .world-header-actions {
-  margin-right: 4px;
-}
 
 .drag-handle-right {
   position: absolute;
@@ -4315,7 +4321,7 @@ select option {
 }
 
 /* ==========================================================================
-   Highlights dynamiques lors du click & drop des cartes
+   Highlights et transitions dynamiques lors du click & drop des cartes
    ========================================================================== */
 .worlds-grid.is-dragging-pinned .world-card * {
   pointer-events: none;
@@ -4329,15 +4335,14 @@ select option {
   border: 1.5px dashed rgba(99, 102, 241, 0.65) !important;
   background: linear-gradient(180deg, rgba(99, 102, 241, 0.08) 0%, rgba(15, 23, 42, 0.95) 100%) !important;
   box-shadow: 0 0 14px rgba(99, 102, 241, 0.2) !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+  will-change: transform;
 }
 
 .worlds-grid.is-dragging-pinned .world-card.is-pinned.drag-over {
   border: 2px solid #818cf8 !important;
-  border-style: solid !important;
   background: linear-gradient(180deg, rgba(99, 102, 241, 0.22) 0%, rgba(30, 41, 59, 0.95) 100%) !important;
   box-shadow: 0 0 24px rgba(99, 102, 241, 0.5) !important;
-  transform: scale(1.02);
 }
 
 .worlds-grid.is-dragging-pinned .world-card:not(.is-pinned) {
