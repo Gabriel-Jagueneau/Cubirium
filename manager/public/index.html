@@ -15,41 +15,14 @@
 </head>
 
 <body>
-  <!-- Loader d'animation du logo et du texte Cubirium au lancement -->
-  <div id="appSplashLoader" class="app-splash-loader">
+  <!-- Loader simple (à partir du second lancement) -->
+  <div id="appSplashLoader" class="app-splash-loader" style="display: none;">
     <div class="splash-loader-content">
       <div class="splash-logo-wrap">
-        <div class="splash-logo-glow"></div>
         <img src="/assets/logo.png?v=5" alt="Logo" class="splash-logo-img" />
       </div>
-
-      <!-- Scène du texte Cubirium animé -->
-      <div class="splash-brand-text">
-        <div class="char-box"><span class="letter">C</span></div>
-        <div class="char-box"><span class="letter">u</span></div>
-        <div class="char-box"><span class="letter">b</span></div>
-        <div class="char-box">
-          <div class="custom-dot cube-dot"></div>
-          <span class="letter">ı</span>
-        </div>
-        <div class="char-box"><span class="letter">r</span></div>
-        <div class="char-box">
-          <div class="custom-dot led-dot"></div>
-          <span class="letter">ı</span>
-        </div>
-        <div class="char-box"><span class="letter">u</span></div>
-        <div class="char-box"><span class="letter">m</span></div>
-      </div>
-
-      <!-- Indicateur subtil de chargement -->
-      <div class="splash-loader-status">
-        <div class="splash-status-text">Chargement</div>
-        <div class="splash-dots">
-          <div class="splash-dot"></div>
-          <div class="splash-dot"></div>
-          <div class="splash-dot"></div>
-        </div>
-      </div>
+      <div class="splash-spinner"></div>
+      <div class="splash-text">Connexion et chargement...</div>
     </div>
   </div>
 
