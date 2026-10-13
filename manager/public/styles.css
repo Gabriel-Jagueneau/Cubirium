@@ -33,6 +33,7 @@ body {
   color-scheme: dark;
   scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
   scrollbar-width: thin;
+  scrollbar-gutter: stable;
 }
 
 * {
@@ -75,7 +76,7 @@ body {
   background: transparent !important;
 }
 
-/* Règle globale pour garantir que toute zone à défilement utilise overlay et ne rogne pas le contenu */
+/* Règle globale pour garantir que toute zone à défilement ne compresse jamais le contenu */
 .worlds-grid,
 .terminal-body,
 .modal-content,
@@ -88,9 +89,14 @@ body {
 .welcome-modal-content,
 .uninstall-body,
 .excluded-mods-list,
-.suggestions-list {
+.suggestions-list,
+[style*="overflow-y: auto"],
+[style*="overflow: auto"],
+[style*="overflow-y: scroll"],
+[style*="overflow: scroll"] {
   overflow-y: auto;
   overflow-y: overlay;
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -298,6 +304,7 @@ body {
   padding: 18px;
   overflow-y: auto;
   overflow-y: overlay;
+  scrollbar-gutter: stable;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -864,6 +871,7 @@ body {
   padding: 16px 20px;
   overflow-y: auto;
   overflow-y: overlay;
+  scrollbar-gutter: stable;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.83rem;
   line-height: 1.6;
@@ -1445,6 +1453,7 @@ body {
   padding: 24px;
   overflow-y: auto;
   overflow-y: overlay;
+  scrollbar-gutter: stable;
   flex: 1;
 }
 
