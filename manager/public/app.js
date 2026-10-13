@@ -6368,21 +6368,15 @@ document.addEventListener('click', (e) => {
 // ==========================================================================
 // Splash Loader Simple (actif dès le 2e lancement de l'application)
 // ==========================================================================
+// Splash Loader Animé (Logo + Texte Cubirium au lancement)
+// ==========================================================================
 const HAS_LAUNCHED_KEY = 'msm_app_has_launched';
 let splashDismissed = false;
 
 function initSplashLoader() {
   const splash = document.getElementById('appSplashLoader');
   if (!splash) return;
-
-  const hasLaunched = localStorage.getItem(HAS_LAUNCHED_KEY);
-  if (hasLaunched === 'true') {
-    // 2e lancement et suivants : afficher immédiatement le loader
-    splash.style.display = 'flex';
-  } else {
-    // 1er lancement : masquer le loader pour laisser apparaître le panneau de configuration
-    splash.style.display = 'none';
-  }
+  splash.style.display = 'flex';
 }
 
 function dismissSplashLoader() {
@@ -6399,7 +6393,7 @@ function dismissSplashLoader() {
   splash.classList.add('fade-out');
   setTimeout(() => {
     splash.style.display = 'none';
-  }, 350);
+  }, 450);
 }
 
 // Initialisation
@@ -6416,7 +6410,6 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   const hasLaunched = localStorage.getItem(HAS_LAUNCHED_KEY);
-  const isSecondOrMore = (hasLaunched === 'true');
 
   const loadDataPromises = [
     fetchWorlds().catch(() => { }),
@@ -6425,24 +6418,16 @@ window.addEventListener('DOMContentLoaded', async () => {
     initSSE()
   ];
 
-  if (isSecondOrMore) {
-    // Attendre que l'application soit connectée et chargée (min 500ms pour fluidité, max 2500ms)
-    const timeoutPromise = new Promise(resolve => setTimeout(resolve, 2500));
-    const readyPromise = Promise.all([
-      Promise.all(loadDataPromises),
-      new Promise(resolve => setTimeout(resolve, 500))
-    ]);
+  // Laisser l'animation du logo et du texte se dérouler fluidement (min 1400ms, max 3000ms)
+  const timeoutPromise = new Promise(resolve => setTimeout(resolve, 3000));
+  const readyPromise = Promise.all([
+    Promise.all(loadDataPromises),
+    new Promise(resolve => setTimeout(resolve, 1400))
+  ]);
 
-    await Promise.race([readyPromise, timeoutPromise]);
-    dismissSplashLoader();
-    checkWelcomeModal();
-  } else {
-    // 1er lancement : afficher le modal de bienvenue et enregistrer que l'app a été ouverte
-    try {
-      localStorage.setItem(HAS_LAUNCHED_KEY, 'true');
-    } catch (e) { }
-    checkWelcomeModal();
-  }
+  await Promise.race([readyPromise, timeoutPromise]);
+  dismissSplashLoader();
+  checkWelcomeModal();
 
   // Rafraîchissement économique de secours (uniquement si SSE inactif, toutes les 30s)
   setInterval(async () => {

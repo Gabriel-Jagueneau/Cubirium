@@ -5362,17 +5362,19 @@ body.is-dragging-card * {
 }
 
 /* ==========================================================================
-   Splash Loader Simple (Affiché à partir du second lancement)
+   Splash Loader Animé (Logo + Texte Cubirium au lancement)
    ========================================================================== */
 .app-splash-loader {
   position: fixed;
   inset: 0;
-  background: var(--bg-main);
+  background-color: #070a13;
+  background-image: radial-gradient(circle at 50% 48%, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.05) 35%, transparent 70%);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 99999;
-  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s;
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.45s ease;
+  user-select: none;
 }
 
 .app-splash-loader.fade-out {
@@ -5381,55 +5383,275 @@ body.is-dragging-card * {
   pointer-events: none;
 }
 
+.app-splash-loader.fade-out .splash-loader-content {
+  transform: scale(1.03);
+  filter: blur(2px);
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), filter 0.45s ease;
+}
+
 .splash-loader-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  animation: splashFadeIn 0.3s ease;
+  justify-content: center;
+  gap: 22px;
+  animation: splashEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+@keyframes splashEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* --- LOGO ANIMÉ --- */
 .splash-logo-wrap {
-  width: 52px;
-  height: 52px;
-  border-radius: var(--radius-md);
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  position: relative;
+  width: 72px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  animation: splashLogoFloat 2.4s ease-in-out infinite alternate;
+}
+
+.splash-logo-glow {
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.45) 0%, rgba(6, 182, 212, 0.2) 40%, transparent 70%);
+  filter: blur(14px);
+  z-index: 1;
+  animation: splashGlowPulse 2.4s ease-in-out infinite alternate;
 }
 
 .splash-logo-img {
-  width: 32px;
-  height: 32px;
+  position: relative;
+  z-index: 2;
+  width: 64px;
+  height: 64px;
   object-fit: contain;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.6));
 }
 
-.splash-spinner {
-  width: 22px;
-  height: 22px;
-  border: 2px solid rgba(255, 255, 255, 0.12);
-  border-top-color: var(--accent-indigo);
+@keyframes splashLogoFloat {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    transform: translateY(-6px) scale(1.04);
+  }
+}
+
+@keyframes splashGlowPulse {
+  0% {
+    opacity: 0.6;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+/* --- TEXTE DE MARQUE ANIMÉ CUBIRIUM --- */
+.splash-brand-text {
+  display: flex;
+  align-items: baseline;
+  position: relative;
+  height: 60px;
+}
+
+.splash-brand-text .char-box {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 60px;
+  padding: 0 1px;
+}
+
+.splash-brand-text .letter {
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 3.2rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  display: inline-block;
+  transform-origin: bottom center;
+  animation: splashElastic 1.4s cubic-bezier(0.25, 0.1, 0.25, 1.4) infinite;
+}
+
+/* Dégradés alternés vert émeraude / cyan */
+.splash-brand-text .char-box:nth-child(odd) .letter {
+  background: linear-gradient(135deg, #10b981, #059669);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.splash-brand-text .char-box:nth-child(even) .letter {
+  background: linear-gradient(135deg, #34d399, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Décalage en onde sur chaque lettre */
+.splash-brand-text .char-box:nth-child(1) .letter { animation-delay: 0.0s; }
+.splash-brand-text .char-box:nth-child(2) .letter { animation-delay: 0.1s; }
+.splash-brand-text .char-box:nth-child(3) .letter { animation-delay: 0.2s; }
+.splash-brand-text .char-box:nth-child(4) .letter { animation-delay: 0.3s; }
+.splash-brand-text .char-box:nth-child(5) .letter { animation-delay: 0.4s; }
+.splash-brand-text .char-box:nth-child(6) .letter { animation-delay: 0.5s; }
+.splash-brand-text .char-box:nth-child(7) .letter { animation-delay: 0.6s; }
+.splash-brand-text .char-box:nth-child(8) .letter { animation-delay: 0.7s; }
+
+@keyframes splashElastic {
+  0%, 100% {
+    transform: translateY(0) scale(1, 1);
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  25% {
+    transform: translateY(0) scale(1.12, 0.85);
+  }
+  50% {
+    transform: translateY(-16px) scale(0.9, 1.2);
+    filter: drop-shadow(0 10px 14px rgba(16, 185, 129, 0.4));
+  }
+  70% {
+    transform: translateY(-10px) scale(0.95, 1.12);
+  }
+  85% {
+    transform: translateY(0) scale(1.06, 0.93);
+  }
+}
+
+/* Points interactifs sur les "i" (C-u-b-ı-r-ı-u-m) */
+.splash-brand-text .custom-dot {
+  position: absolute;
+  top: 9px;
+  width: 9px;
+  height: 9px;
+  transform-origin: center;
+}
+
+.splash-brand-text .cube-dot {
+  background: linear-gradient(135deg, #34d399, #059669);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.45);
+  animation: splashCubeHop 1.4s cubic-bezier(0.25, 0.1, 0.25, 1.4) infinite;
+  animation-delay: 0.3s;
+}
+
+@keyframes splashCubeHop {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translateY(1px) scale(1.1, 0.85);
+  }
+  50% {
+    transform: translateY(-26px) rotate(45deg) scale(0.9, 1.2);
+  }
+  75% {
+    transform: translateY(-14px) rotate(180deg) scale(1);
+  }
+  85% {
+    transform: translateY(0) scale(1.08, 0.92);
+  }
+}
+
+.splash-brand-text .led-dot {
+  background-color: #10b981;
   border-radius: 50%;
-  animation: splashSpin 0.75s linear infinite;
+  box-shadow: 0 0 10px #10b981;
+  animation: splashLedHop 1.4s cubic-bezier(0.25, 0.1, 0.25, 1.4) infinite;
+  animation-delay: 0.5s;
 }
 
-.splash-text {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  font-weight: 500;
-  letter-spacing: 0.01em;
+@keyframes splashLedHop {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 0 6px #10b981;
+  }
+  25% {
+    transform: translateY(1px) scale(1.15, 0.85);
+  }
+  50% {
+    transform: translateY(-22px) scale(0.85, 1.2);
+    box-shadow: 0 0 14px #06b6d4;
+  }
+  85% {
+    transform: translateY(0) scale(1.08, 0.92);
+  }
 }
 
-@keyframes splashSpin {
-  to { transform: rotate(360deg); }
+/* --- INDICATEURS DE CHARGEMENT SUBTILS --- */
+.splash-loader-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
 }
 
-@keyframes splashFadeIn {
-  from { opacity: 0; transform: scale(0.97); }
-  to { opacity: 1; transform: scale(1); }
+.splash-status-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 600;
+  animation: splashTextPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes splashTextPulse {
+  0%, 100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.95;
+    color: #06b6d4;
+  }
+}
+
+.splash-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.splash-dot {
+  width: 5px;
+  height: 5px;
+  background-color: #10b981;
+  border-radius: 2px;
+  opacity: 0.25;
+  animation: splashDotPulse 1.2s infinite;
+}
+
+.splash-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.splash-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes splashDotPulse {
+  0%, 100% {
+    opacity: 0.25;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+    background-color: #06b6d4;
+    box-shadow: 0 0 6px rgba(6, 182, 212, 0.5);
+  }
 }
 
 /* ==========================================================================
