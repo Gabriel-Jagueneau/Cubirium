@@ -414,7 +414,7 @@ code {
 }
 
 .real-app-window {
-  background: #0a0d14;
+  background: #07090e;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-xl);
   overflow: hidden;
@@ -513,9 +513,9 @@ code {
 /* Disposition 2 colonnes réelle */
 .real-app-layout {
   display: grid;
-  grid-template-columns: 310px 1fr;
-  min-height: 480px;
-  background: #0a0d14;
+  grid-template-columns: 275px 1fr;
+  background: #07090e;
+  align-items: stretch;
 }
 
 /* Volet Gauche : Mondes Disponibles */
@@ -524,6 +524,8 @@ code {
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
 
 .real-panel-header {
@@ -747,59 +749,66 @@ code {
 .real-console-panel {
   display: flex;
   flex-direction: column;
-  background: #0a0d14;
+  background: #07090e;
+  height: 100%;
+  min-height: 0;
   overflow: hidden;
 }
 
 .real-console-header {
   height: 52px;
-  padding: 0 16px;
+  padding: 0 14px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: #101522;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   flex-shrink: 0;
+  white-space: nowrap !important;
+  overflow: hidden;
 }
 
 .real-console-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;
-  white-space: nowrap;
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+  min-width: 0;
 }
 
 .real-active-title {
   font-size: 0.92rem;
   font-weight: 700;
   color: #f1f5f9;
-  white-space: nowrap;
+  white-space: nowrap !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .real-console-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-  white-space: nowrap;
+  gap: 6px;
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
 }
 
 /* Pillule de Tunnel Authentique avec bouton copier interactif */
 .real-tunnel-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   height: 30px;
   background: #151c2e;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-pill);
-  padding: 0 4px 0 10px;
+  padding: 0 4px 0 8px;
   cursor: pointer;
   transition: all 0.15s ease;
-  white-space: nowrap;
-  flex-shrink: 0;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
 }
 
 .real-tunnel-pill:hover {
@@ -813,15 +822,15 @@ code {
   border-radius: 50%;
   background: #10b981;
   box-shadow: 0 0 6px #10b981;
-  flex-shrink: 0;
+  flex-shrink: 0 !important;
 }
 
 .real-tunnel-ip {
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: 0.77rem;
   font-weight: 500;
   color: #f1f5f9;
-  white-space: nowrap;
+  white-space: nowrap !important;
   user-select: all;
 }
 
@@ -836,8 +845,8 @@ code {
   padding: 0 8px;
   cursor: pointer;
   transition: all 0.15s ease;
-  white-space: nowrap;
-  flex-shrink: 0;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
 }
 
 .real-btn-copy:hover {
@@ -856,6 +865,7 @@ code {
   display: inline-flex;
   align-items: center;
   padding: 0 4px;
+  flex-shrink: 0 !important;
 }
 
 .real-btn-danger {
@@ -870,8 +880,8 @@ code {
   color: #fca5a5;
   border: 1px solid rgba(239, 68, 68, 0.35);
   cursor: default;
-  white-space: nowrap;
-  flex-shrink: 0;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
 }
 
 .real-btn-small {
@@ -883,13 +893,14 @@ code {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-pill);
   cursor: default;
-  white-space: nowrap;
-  flex-shrink: 0;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
 }
 
 /* Corps du Terminal (Pleine hauteur sans gap) */
 .real-terminal-body {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   background: #07090e;
   padding: 16px 20px;
   font-family: var(--font-mono);
@@ -927,6 +938,8 @@ code {
   padding: 0 16px 14px 16px;
   margin-top: auto;
   flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .real-cmd-wrap {
