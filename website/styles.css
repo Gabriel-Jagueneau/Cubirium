@@ -409,7 +409,7 @@ code {
    ========================================================================== */
 .hero__preview {
   width: 100%;
-  max-width: 980px;
+  max-width: 1040px;
   margin-top: 10px;
 }
 
@@ -513,8 +513,8 @@ code {
 /* Disposition 2 colonnes réelle */
 .real-app-layout {
   display: grid;
-  grid-template-columns: 360px 1fr;
-  min-height: 440px;
+  grid-template-columns: 310px 1fr;
+  min-height: 480px;
   background: #0a0d14;
 }
 
@@ -753,38 +753,44 @@ code {
 
 .real-console-header {
   height: 52px;
-  padding: 0 18px;
+  padding: 0 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: #101522;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .real-console-title {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .real-active-title {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 700;
   color: #f1f5f9;
+  white-space: nowrap;
 }
 
 .real-console-actions {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* Pillule de Tunnel Authentique avec bouton copier interactif */
 .real-tunnel-pill {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   height: 30px;
   background: #151c2e;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -792,6 +798,8 @@ code {
   padding: 0 4px 0 10px;
   cursor: pointer;
   transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .real-tunnel-pill:hover {
@@ -813,6 +821,8 @@ code {
   font-size: 0.78rem;
   font-weight: 500;
   color: #f1f5f9;
+  white-space: nowrap;
+  user-select: all;
 }
 
 .real-btn-copy {
@@ -826,6 +836,8 @@ code {
   padding: 0 8px;
   cursor: pointer;
   transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .real-btn-copy:hover {
@@ -858,6 +870,8 @@ code {
   color: #fca5a5;
   border: 1px solid rgba(239, 68, 68, 0.35);
   cursor: default;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .real-btn-small {
@@ -869,25 +883,29 @@ code {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-pill);
   cursor: default;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-/* Corps du Terminal */
+/* Corps du Terminal (Pleine hauteur sans gap) */
 .real-terminal-body {
   flex: 1;
   background: #07090e;
   padding: 16px 20px;
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: 0.81rem;
   line-height: 1.6;
   color: #cbd5e1;
   overflow-y: auto;
-  max-height: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .real-terminal-line {
   white-space: pre-wrap;
   word-break: break-all;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
 }
 
 .real-terminal-line.info {
@@ -903,10 +921,12 @@ code {
   color: #93c5fd;
 }
 
-/* Barre de commande en bas */
+/* Barre de commande en bas collée au pied du terminal */
 .real-console-footer {
   background: #07090e;
   padding: 0 16px 14px 16px;
+  margin-top: auto;
+  flex-shrink: 0;
 }
 
 .real-cmd-wrap {

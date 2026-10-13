@@ -50,10 +50,49 @@ const FALLBACK_RELEASES = [
 ];
 
 document.addEventListener("DOMContentLoaded", () => {
+  initCleanScrollNavigation();
   initOsDetection();
   initCopyAddress();
   fetchReleases();
 });
+
+/**
+ * Navigation fluide sans aucun '#' dans la barre d'adresse
+ */
+function initCleanScrollNavigation() {
+  // Supprimer tout hash résiduel dès le chargement
+  if (window.location.hash) {
+    history.replaceState(null, "", window.location.pathname + window.location.search);
+  }
+
+  window.addEventListener("hashchange", (e) => {
+    e.preventDefault();
+    history.replaceState(null, "", window.location.pathname + window.location.search);
+  });
+
+  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+    anchor.addEventListener("click", (e) => {
+      e.preventDefault();
+      const href = anchor.getAttribute("href");
+      if (!href || href === "#") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      const targetId = href.replace(/^#/, "");
+      const targetEl = document.getElementById(targetId);
+      if (targetEl) {
+        const nav = document.querySelector(".navbar");
+        const navHeight = nav ? nav.offsetHeight : 64;
+        const targetPos = targetEl.getBoundingClientRect().top + window.pageYOffset - navHeight - 16;
+        window.scrollTo({
+          top: targetPos,
+          behavior: "smooth"
+        });
+      }
+    });
+  });
+}
 
 /**
  * Détection intelligente de l'OS pour mettre en avant le bon installeur
