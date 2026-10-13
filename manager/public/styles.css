@@ -301,7 +301,7 @@ body {
 }
 
 .worlds-grid {
-  padding: 18px 13px 18px 18px;
+  padding: 18px 4px 18px 18px;
   overflow-y: auto;
   overflow-y: overlay;
   scrollbar-gutter: stable;
@@ -868,7 +868,7 @@ body {
 .terminal-body {
   flex: 1;
   background-color: var(--bg-terminal);
-  padding: 16px 15px 16px 20px;
+  padding: 16px 6px 16px 20px;
   overflow-y: auto;
   overflow-y: overlay;
   scrollbar-gutter: stable;
@@ -1450,7 +1450,7 @@ body {
 }
 
 .modal-content {
-  padding: 24px 19px 24px 24px;
+  padding: 24px 9px 24px 24px;
   overflow-y: auto;
   overflow-y: overlay;
   scrollbar-gutter: stable;
@@ -2242,8 +2242,10 @@ select option {
 }
 
 .options-modal-content {
-  padding: 20px 24px;
+  padding: 20px 9px 20px 24px;
   overflow-y: auto;
+  overflow-y: overlay;
+  scrollbar-gutter: stable;
   max-height: 580px;
 }
 
@@ -2948,8 +2950,10 @@ select option {
 }
 
 .player-detail-body {
-  padding: 20px 24px;
+  padding: 20px 9px 20px 24px;
   overflow-y: auto;
+  overflow-y: overlay;
+  scrollbar-gutter: stable;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -5486,7 +5490,9 @@ body.is-dragging-card * {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 22px 24px 18px 24px;
+  overflow-y: overlay;
+  scrollbar-gutter: stable;
+  padding: 22px 9px 18px 24px;
 }
 
 .welcome-title {
@@ -5905,10 +5911,12 @@ body.is-dragging-card * {
 }
 
 .uninstall-body {
-  padding: 20px 24px;
+  padding: 20px 9px 20px 24px;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  overflow-y: overlay;
+  scrollbar-gutter: stable;
 }
 
 .uninstall-intro-title {
