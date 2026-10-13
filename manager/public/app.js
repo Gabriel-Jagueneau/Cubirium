@@ -5816,13 +5816,13 @@ function goToWelcomePage(pageNumber) {
 
   if (pageNumber === 2) {
     if (p1) p1.style.display = 'none';
-    if (p2) p2.style.display = 'block';
+    if (p2) p2.style.display = 'flex';
     if (stepBadge) stepBadge.textContent = '2 / 2';
     if (headerTitle) headerTitle.textContent = 'Cubirium';
     runSystemBenchmark();
   } else {
     if (p2) p2.style.display = 'none';
-    if (p1) p1.style.display = 'block';
+    if (p1) p1.style.display = 'flex';
     if (stepBadge) stepBadge.textContent = '1 / 2';
     if (headerTitle) headerTitle.textContent = 'Cubirium';
   }

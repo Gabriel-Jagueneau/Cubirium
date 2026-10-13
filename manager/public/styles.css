@@ -5263,8 +5263,11 @@ select option {
    Welcome / Intro Modal (Premier lancement)
    ========================================================================== */
 .welcome-modal-card {
-  width: 480px;
+  width: 540px;
   max-width: 92vw;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
@@ -5311,6 +5314,9 @@ select option {
 }
 
 .welcome-modal-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   padding: 22px 24px 18px 24px;
 }
 
@@ -5436,10 +5442,12 @@ select option {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
-  padding: 14px 24px;
+  gap: 12px;
+  padding: 16px 24px 20px 24px;
   border-top: 1px solid var(--border-color);
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.22);
+  flex-shrink: 0;
+  margin-top: auto;
 }
 
 .welcome-footer-single {
@@ -5451,6 +5459,11 @@ select option {
 }
 
 .welcome-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
   animation: fadeIn 0.2s ease-out;
 }
 
