@@ -403,10 +403,15 @@ body {
 .world-card.is-pinned {
   border-color: rgba(99, 102, 241, 0.35);
   background: linear-gradient(180deg, rgba(99, 102, 241, 0.05) 0%, var(--bg-card) 100%);
+  padding-right: 32px;
 }
 
 .world-card.is-pinned:hover {
   border-color: rgba(99, 102, 241, 0.55);
+}
+
+.world-card.is-pinned.collapsed {
+  padding-right: 32px;
 }
 
 .world-card.drag-over {
@@ -4279,7 +4284,7 @@ select option {
    Drag Handle 6 Points (Centré tout à droite de la carte, en position absolute)
    ========================================================================== */
 .world-card.is-pinned .world-header-actions {
-  margin-right: 12px;
+  margin-right: 4px;
 }
 
 .drag-handle-right {
@@ -4290,7 +4295,7 @@ select option {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-dim);
+  color: var(--text-muted, #94a3b8);
   cursor: grab;
   padding: 6px 4px;
   border-radius: var(--radius-sm);
@@ -4301,8 +4306,8 @@ select option {
 }
 
 .drag-handle-right:hover {
-  color: #a5b4fc;
-  background: rgba(99, 102, 241, 0.2);
+  color: #c7d2fe;
+  background: rgba(99, 102, 241, 0.25);
 }
 
 .drag-handle-right:active {

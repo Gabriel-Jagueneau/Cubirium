@@ -685,7 +685,7 @@ function buildWorldCardHtml(w, opts) {
         <div class="drag-handle-right" 
              title="Glisser pour réorganiser" 
              draggable="true" 
-             onmousedown="handlePinnedMouseDown(event, '${w.id}')"
+             onmousedown="event.stopPropagation(); handlePinnedMouseDown(event, '${w.id}')"
              ondragstart="handlePinnedDragStart(event, '${w.id}')"
              onclick="event.stopPropagation()">
           <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
@@ -858,6 +858,45 @@ function renderWorlds(worlds) {
       card.classList.toggle('selected', isSelected);
       card.classList.toggle('is-pinned', isPinned);
       card.classList.toggle('collapsed', isCollapsed);
+
+      // Synchronisation du Drag Handle 6 points pour les cartes épinglées
+      let dragHandle = card.querySelector('.drag-handle-right');
+      if (isPinned) {
+        if (!dragHandle) {
+          const handleDiv = document.createElement('div');
+          handleDiv.className = 'drag-handle-right';
+          handleDiv.title = 'Glisser pour réorganiser';
+          handleDiv.setAttribute('draggable', 'true');
+          handleDiv.setAttribute('onmousedown', `event.stopPropagation(); handlePinnedMouseDown(event, '${w.id}')`);
+          handleDiv.setAttribute('ondragstart', `handlePinnedDragStart(event, '${w.id}')`);
+          handleDiv.setAttribute('onclick', 'event.stopPropagation()');
+          handleDiv.innerHTML = `
+            <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
+              <circle cx="2.5" cy="2.5" r="1.5"></circle>
+              <circle cx="7.5" cy="2.5" r="1.5"></circle>
+              <circle cx="2.5" cy="8" r="1.5"></circle>
+              <circle cx="7.5" cy="8" r="1.5"></circle>
+              <circle cx="2.5" cy="13.5" r="1.5"></circle>
+              <circle cx="7.5" cy="13.5" r="1.5"></circle>
+            </svg>
+          `;
+          card.appendChild(handleDiv);
+        }
+        card.setAttribute('ondragend', 'handlePinnedDragEnd()');
+        card.setAttribute('ondragover', `handlePinnedDragOver(event, '${w.id}')`);
+        card.setAttribute('ondragenter', `handlePinnedDragEnter(event, '${w.id}')`);
+        card.setAttribute('ondragleave', `handlePinnedDragLeave(event, '${w.id}')`);
+        card.setAttribute('ondrop', `handlePinnedDrop(event, '${w.id}')`);
+      } else {
+        if (dragHandle) {
+          dragHandle.remove();
+        }
+        card.removeAttribute('ondragend');
+        card.removeAttribute('ondragover');
+        card.removeAttribute('ondragenter');
+        card.removeAttribute('ondragleave');
+        card.removeAttribute('ondrop');
+      }
 
       const dot = card.querySelector('.world-title-row .pulse-dot');
       if (dot) {
