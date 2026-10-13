@@ -1,53 +1,7 @@
 /**
  * Cubirium Website · Logiciel & Changelog dynamique
- * Récupération temps réel des releases GitHub avec fallback local robuste
+ * Récupération temps réel des releases GitHub en direct
  */
-
-// Données de secours locales complètes (garantit 0 échec même en cas de rate-limit API GitHub)
-const FALLBACK_RELEASES = [
-  {
-    tag_name: "v1.1.0",
-    name: "Cubirium v1.1.0",
-    published_at: "2026-10-13T09:17:13Z",
-    html_url: "https://github.com/Gabriel-Jagueneau/Cubirium/releases/tag/v1.1.0",
-    body: `Rebranding complet du projet en Cubirium.
-- Correction du bouton et du libellé de l'Explorateur sous Windows
-- Ouverture de tous les liens web externes dans le navigateur par défaut
-- Calcul natif et fiable de la taille des mondes sous Windows
-- Provisioning et détection automatique de Java 21 portable
-- Ajout d'un spinner animé et état désactivé sur le bouton de réparation
-- Diagnostic réseau honnête sans mention erronée de Fibre
-- Optimisation des requêtes et suppression du polling intensif SSE
-- Filtrage du spam de logs console (sauvegardes en jeu et sondages)
-- Amélioration ergonomique du modal de bienvenue (boutons et défilement)`,
-    assets: [
-      {
-        name: "mac-Cubirium.pkg",
-        browser_download_url: "https://github.com/Gabriel-Jagueneau/Cubirium/releases/download/v1.1.0/mac-Cubirium.pkg",
-        size: 104857600
-      },
-      {
-        name: "win-Cubirium.exe",
-        browser_download_url: "https://github.com/Gabriel-Jagueneau/Cubirium/releases/download/v1.1.0/win-Cubirium.exe",
-        size: 98566144
-      }
-    ]
-  },
-  {
-    tag_name: "v1.0.0",
-    name: "Release v1.0.0",
-    published_at: "2026-10-11T09:21:27Z",
-    html_url: "https://github.com/Gabriel-Jagueneau/Cubirium/releases/tag/v1.0.0",
-    body: `Version stable initiale de Minecraft Server Manager.
-- Auto-réparation et détection proactive des incidents de démarrage
-- Nettoyage et rollback stricts en cas d'échec d'installation ou d'importation
-- Système de vérification et notification des mises à jour applicatives via GitHub
-- Support étendu des runtimes Java 21 et Java 25 (Minecraft 26.3)
-- Outil de diagnostic matériel et recommandations d'hébergement
-- Filtrage intelligent des mods réservés au client`,
-    assets: []
-  }
-];
 
 document.addEventListener("DOMContentLoaded", () => {
   initCleanScrollNavigation();
@@ -168,11 +122,16 @@ function initCopyAddress() {
  */
 async function fetchReleases() {
   const container = document.getElementById("changelog-container");
-  const syncStatusText = document.getElementById("sync-status-text");
-  const apiUrl = "https://api.github.com/repos/Gabriel-Jagueneau/Cubirium/releases";
+  if (!container) return;
 
-  let releases = [];
-  let isLive = false;
+  container.innerHTML = `
+    <div class="changelog-loading">
+      <div class="spinner"></div>
+      <span>Chargement des versions depuis GitHub...</span>
+    </div>
+  `;
+
+  const apiUrl = "https://api.github.com/repos/Gabriel-Jagueneau/Cubirium/releases";
 
   try {
     const res = await fetch(apiUrl, {
@@ -181,30 +140,88 @@ async function fetchReleases() {
       }
     });
 
-    if (res.ok) {
-      releases = await res.json();
-      isLive = true;
-    } else {
-      console.warn("GitHub API a renvoyé un statut " + res.status + ", utilisation du fallback.");
-      releases = FALLBACK_RELEASES;
+    if (res.status === 403 || res.status === 429) {
+      renderError(
+        container,
+        "La limite de requêtes publiques de l'API GitHub a été atteinte (Rate Limit). Veuillez réessayer dans quelques minutes ou consulter les versions directement sur GitHub.",
+        true
+      );
+      return;
     }
+
+    if (!res.ok) {
+      renderError(
+        container,
+        `Impossible de charger les versions depuis GitHub (Code HTTP ${res.status}).`,
+        false
+      );
+      return;
+    }
+
+    const releases = await res.json();
+    if (!Array.isArray(releases) || releases.length === 0) {
+      renderError(
+        container,
+        "Aucune version n'est actuellement publiée sur le dépôt GitHub.",
+        false
+      );
+      return;
+    }
+
+    updateHeaderVersions(releases[0]);
+    renderReleases(releases, container);
   } catch (err) {
-    console.warn("Erreur réseau GitHub API, utilisation du fallback :", err);
-    releases = FALLBACK_RELEASES;
+    console.warn("Erreur réseau GitHub API :", err);
+    renderError(
+      container,
+      "Erreur de connexion aux serveurs GitHub. Impossible de charger l'historique des versions.",
+      false
+    );
   }
+}
 
-  // Si l'API retourne un tableau vide, utiliser le fallback
-  if (!Array.isArray(releases) || releases.length === 0) {
-    releases = FALLBACK_RELEASES;
-  }
+/**
+ * Affiche un message d'erreur sobre et clair si GitHub est inaccessible ou rate-limité
+ */
+function renderError(container, message, isRateLimit = false) {
+  if (!container) return;
 
-  updateHeaderVersions(releases[0]);
-  renderReleases(releases, container);
+  const title = isRateLimit
+    ? "Limite de requêtes atteinte (Rate Limit)"
+    : "Chargement impossible";
 
-  if (syncStatusText) {
-    syncStatusText.textContent = isLive
-      ? "Synchronisé avec GitHub"
-      : "Versions locales certifiées";
+  container.innerHTML = `
+    <div class="changelog-error">
+      <div class="changelog-error__icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <h3 class="changelog-error__title">${escapeHtml(title)}</h3>
+      <p class="changelog-error__text">${escapeHtml(message)}</p>
+      <div class="changelog-error__actions">
+        <a href="https://github.com/Gabriel-Jagueneau/Cubirium/releases" target="_blank" rel="noopener noreferrer" class="btn btn--secondary btn--compact">
+          <span>Ouvrir GitHub Releases</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+        </a>
+        <button type="button" class="btn btn--primary btn--compact" id="btn-retry-releases">
+          <span>Réessayer</span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  const retryBtn = document.getElementById("btn-retry-releases");
+  if (retryBtn) {
+    retryBtn.addEventListener("click", () => {
+      fetchReleases();
+    });
   }
 }
 
