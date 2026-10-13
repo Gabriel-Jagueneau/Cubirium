@@ -5,13 +5,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 echo "=== Packaging de l'Installeur macOS Natif (.pkg) ==="
-echo "Application : Minecraft Server Manager"
+echo "Application : Cubirium"
 
 # 1. Dossiers de construction
 BUILD_TMP="$PROJECT_ROOT/.build-pkg-tmp"
 DIST_DIR="$PROJECT_ROOT/dist"
-STAGING_APP="$BUILD_TMP/Minecraft Server Manager.app"
-PKG_OUT="$DIST_DIR/mac-McS-Manager.pkg"
+STAGING_APP="$BUILD_TMP/Cubirium.app"
+PKG_OUT="$DIST_DIR/mac-Cubirium.pkg"
 
 rm -rf "$BUILD_TMP"
 mkdir -p "$BUILD_TMP" "$DIST_DIR"
@@ -19,13 +19,14 @@ mkdir -p "$BUILD_TMP" "$DIST_DIR"
 # 2. Compilation de l'exécutable natif Swift
 echo "-> Compilation de l'exécutable natif Swift..."
 mkdir -p "$PROJECT_ROOT/.swift-cache"
+mkdir -p "$PROJECT_ROOT/Cubirium.app/Contents/MacOS"
 swiftc -module-cache-path "$PROJECT_ROOT/.swift-cache" \
   -O -framework Cocoa -framework WebKit \
   "$PROJECT_ROOT/manager/src/native-app/main.swift" \
-  -o "$PROJECT_ROOT/Minecraft Server Manager.app/Contents/MacOS/MinecraftServerManager"
+  -o "$PROJECT_ROOT/Cubirium.app/Contents/MacOS/Cubirium"
 
 # 2.1 Synchronisation des sources et de la version dans le bundle local
-LOCAL_RESOURCES="$PROJECT_ROOT/Minecraft Server Manager.app/Contents/Resources"
+LOCAL_RESOURCES="$PROJECT_ROOT/Cubirium.app/Contents/Resources"
 mkdir -p "$LOCAL_RESOURCES/manager"
 rm -rf "$LOCAL_RESOURCES/manager/src" "$LOCAL_RESOURCES/manager/public"
 cp -R "$PROJECT_ROOT/manager/src" "$LOCAL_RESOURCES/manager/"
@@ -36,15 +37,15 @@ rm -f "$LOCAL_RESOURCES/manager/.welcome-completed"
 find "$LOCAL_RESOURCES/bin" -type f ! -name "node" -delete 2>/dev/null || true
 
 # Mise à jour automatique de Info.plist avec la version de package.json
-APP_VERSION=$(node -e "try{console.log(require('$PROJECT_ROOT/manager/package.json').version)}catch(_){console.log('1.0.0')}")
-PLIST_FILE="$PROJECT_ROOT/Minecraft Server Manager.app/Contents/Info.plist"
+APP_VERSION=$(node -e "try{console.log(require('$PROJECT_ROOT/manager/package.json').version)}catch(_){console.log('1.1.0')}")
+PLIST_FILE="$PROJECT_ROOT/Cubirium.app/Contents/Info.plist"
 if [ -f "$PLIST_FILE" ]; then
   sed -i '' "s/<string>[0-9]*\.[0-9]*\.[0-9]*<\/string>/<string>$APP_VERSION<\/string>/g" "$PLIST_FILE" 2>/dev/null || true
 fi
 
 # 3. Préparation du bundle .app
 echo "-> Préparation du bundle .app..."
-cp -R "$PROJECT_ROOT/Minecraft Server Manager.app" "$STAGING_APP"
+cp -R "$PROJECT_ROOT/Cubirium.app" "$STAGING_APP"
 
 RESOURCES_DIR="$STAGING_APP/Contents/Resources"
 BIN_DIR="$RESOURCES_DIR/bin"
@@ -92,7 +93,7 @@ if [ -z "$LOGGED_USER" ] || [ "$LOGGED_USER" = "root" ]; then
   LOGGED_USER=$(who | awk 'NR==1{print $1}')
 fi
 
-APP_TARGET="/Applications/Minecraft Server Manager.app"
+APP_TARGET="/Applications/Cubirium.app"
 
 # Retirer les restrictions de quarantaine Apple Gatekeeper
 xattr -cr "$APP_TARGET" 2>/dev/null || true
@@ -106,6 +107,13 @@ if [ -n "$LOGGED_USER" ] && [ "$LOGGED_USER" != "root" ]; then
   chmod -R 775 "$APP_TARGET" 2>/dev/null || true
 
   # Nettoyer les anciens résidus WebKit pour réafficher le welcome à la réinstallation
+  rm -rf "$USER_HOME/Library/WebKit/com.gabriel.cubirium" 2>/dev/null || true
+  rm -rf "$USER_HOME/Library/WebKit/fr.gabriel.cubirium" 2>/dev/null || true
+  rm -rf "$USER_HOME/Library/WebKit/Cubirium" 2>/dev/null || true
+  rm -rf "$USER_HOME/Library/Caches/com.gabriel.cubirium" 2>/dev/null || true
+  rm -rf "$USER_HOME/Library/Caches/fr.gabriel.cubirium" 2>/dev/null || true
+  rm -rf "$USER_HOME/Library/Saved Application State/com.gabriel.cubirium.savedState" 2>/dev/null || true
+  rm -rf "$USER_HOME/Library/Saved Application State/fr.gabriel.cubirium.savedState" 2>/dev/null || true
   rm -rf "$USER_HOME/Library/WebKit/com.gabriel.minecraftservermanager" 2>/dev/null || true
   rm -rf "$USER_HOME/Library/WebKit/fr.gabriel.minecraftservermanager" 2>/dev/null || true
   rm -rf "$USER_HOME/Library/WebKit/Minecraft Server Manager" 2>/dev/null || true
@@ -117,17 +125,12 @@ if [ -n "$LOGGED_USER" ] && [ "$LOGGED_USER" != "root" ]; then
   # Créer le raccourci sur le Bureau
   if [ -d "$USER_HOME/Desktop" ]; then
     rm -rf "$USER_HOME/Desktop/Minecraft Server Manager" 2>/dev/null || true
-    DESKTOP_SHORTCUT="$USER_HOME/Desktop/Minecraft Server Manager.app"
+    rm -rf "$USER_HOME/Desktop/Minecraft Server Manager.app" 2>/dev/null || true
+    rm -rf "$USER_HOME/Desktop/Cubirium" 2>/dev/null || true
+    DESKTOP_SHORTCUT="$USER_HOME/Desktop/Cubirium.app"
     rm -rf "$DESKTOP_SHORTCUT" 2>/dev/null || true
     ln -sf "$APP_TARGET" "$DESKTOP_SHORTCUT"
     chown -h "$LOGGED_USER" "$DESKTOP_SHORTCUT" 2>/dev/null || true
-  fi
-
-  # Vérification et installation en arrière-plan d'OpenJDK 25 via Homebrew si manquant
-  if ! /usr/libexec/java_home -v 25 >/dev/null 2>&1 && [ ! -d "/opt/homebrew/opt/openjdk@25" ] && [ ! -d "/Library/Java/JavaVirtualMachines/jdk-25.jdk" ]; then
-    if su - "$LOGGED_USER" -c "which brew" >/dev/null 2>&1; then
-      su - "$LOGGED_USER" -c "brew install openjdk@25" >/dev/null 2>&1 &
-    fi
   fi
 
   # Lancer l'application dans la session graphique de l'utilisateur
@@ -152,7 +155,7 @@ cp -R "$STAGING_APP" "$PKG_ROOT/"
 echo "-> Génération du paquet natif .pkg..."
 rm -f "$PKG_OUT"
 pkgbuild --root "$PKG_ROOT" \
-  --identifier "com.gabriel.minecraftservermanager" \
+  --identifier "com.gabriel.cubirium" \
   --version "$APP_VERSION" \
   --install-location "/Applications" \
   --scripts "$PKG_SCRIPTS" \

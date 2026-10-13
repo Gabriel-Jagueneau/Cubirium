@@ -1,11 +1,11 @@
-; Script Inno Setup pour Minecraft Server Manager
-; Génère : Minecraft-Server-Manager-Setup.exe
+; Script Inno Setup pour Cubirium
+; Génère : Cubirium-Setup.exe
 
-#define MyAppName "Minecraft Server Manager"
-#define MyAppVersion "1.0.0"
+#define MyAppName "Cubirium"
+#define MyAppVersion "1.1.0"
 #define MyAppPublisher "Gabriel JAGUENEAU"
 #define MyAppURL "https://github.com/Gabriel-Jagueneau"
-#define MyAppExeName "Lancer-Manager.vbs"
+#define MyAppExeName "Cubirium.exe"
 
 [Setup]
 AppId={{D37E6B4A-5762-4C10-91B1-A4290130FA31}
@@ -18,7 +18,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=..\dist
-OutputBaseFilename=Minecraft-Server-Manager-Setup
+OutputBaseFilename=Cubirium-Setup
 SetupIconFile=..\AppIcon.ico
 UninstallDisplayIcon={app}\AppIcon.ico
 Compression=lzma2/ultra64

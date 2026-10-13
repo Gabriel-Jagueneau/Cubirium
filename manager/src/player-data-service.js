@@ -87,11 +87,19 @@ class PlayerDataService {
     if (minecraftService && minecraftService.gamesDir) {
       return minecraftService.gamesDir;
     }
-    const isBundled = __dirname.includes('.app/Contents');
+    const isWin = process.platform === 'win32';
+    const isBundled = __dirname.includes('.app/Contents') || process.env.APP_BUNDLED === 'true';
+    const appSupportGames = isWin
+      ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), 'Cubirium', 'games')
+      : path.join(os.homedir(), 'Library/Application Support/Cubirium/games');
+    const legacyGames = isWin
+      ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), 'MinecraftServerManager', 'games')
+      : path.join(os.homedir(), 'Library/Application Support/MinecraftServerManager/games');
+
     if (process.env.GAMES_DIR) {
       return path.resolve(process.env.GAMES_DIR);
-    } else if (isBundled) {
-      return path.join(os.homedir(), 'Library/Application Support/MinecraftServerManager/games');
+    } else if (isBundled || isWin) {
+      return fs.existsSync(appSupportGames) ? appSupportGames : (fs.existsSync(legacyGames) ? legacyGames : appSupportGames);
     } else {
       return path.resolve(__dirname, '../../games');
     }
@@ -102,10 +110,16 @@ class PlayerDataService {
     if (path.isAbsolute(worldId) && fs.existsSync(worldId)) {
       return worldId;
     }
+    const isWin = process.platform === 'win32';
     const candidateDirs = [
       this.getGamesDir(minecraftService),
       (minecraftService && minecraftService.gamesDir) ? minecraftService.gamesDir : null,
-      path.join(os.homedir(), 'Library/Application Support/MinecraftServerManager/games'),
+      isWin
+        ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), 'Cubirium', 'games')
+        : path.join(os.homedir(), 'Library/Application Support/Cubirium/games'),
+      isWin
+        ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), 'MinecraftServerManager', 'games')
+        : path.join(os.homedir(), 'Library/Application Support/MinecraftServerManager/games'),
       path.resolve(__dirname, '../../games')
     ].filter(Boolean);
 

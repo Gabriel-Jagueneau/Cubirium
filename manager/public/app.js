@@ -1,4 +1,4 @@
-// Minecraft Server Manager - Frontend Client Logic
+// Cubirium - Frontend Client Logic
 
 let activeWorld = null;
 let serverStatus = 'STOPPED';
@@ -122,12 +122,12 @@ async function fetchVanillaVersions() {
     const res = await fetch('/api/vanilla/versions');
     const data = await res.json();
     if (data.versions && data.versions.length > 0) {
-      vanillaVersion.innerHTML = data.versions.map(v => 
+      vanillaVersion.innerHTML = data.versions.map(v =>
         `<option value="${v.id}">${v.label || ('Minecraft ' + v.id)}</option>`
       ).join('');
       vanillaVersion.selectedIndex = 0;
     }
-  } catch (e) {}
+  } catch (e) { }
 }
 
 async function startWorld(worldId) {
@@ -165,7 +165,48 @@ async function stopActiveWorld() {
   }
 }
 
+async function openWorldFolder(worldId, customPath = null) {
+  const isWin = navigator.platform.includes('Win') || navigator.userAgent.includes('Windows');
+  const explorerName = isWin ? "l'Explorateur" : "le Finder";
+  try {
+    const foundWorld = (typeof worldsListCache !== 'undefined' && Array.isArray(worldsListCache))
+      ? worldsListCache.find(w => w.id === worldId)
+      : null;
+    const targetPath = customPath || (foundWorld && foundWorld.path) ? (customPath || foundWorld.path) : null;
+
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.openFinder && targetPath) {
+      window.webkit.messageHandlers.openFinder.postMessage(targetPath);
+      showToast(`Dossier ouvert dans ${explorerName}`, 'success');
+      return;
+    }
+
+    const res = await fetch('/api/worlds/open-folder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ worldId, customPath: targetPath })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showToast(`Dossier ouvert dans ${explorerName}`, 'success');
+    } else {
+      showToast(`Erreur ouverture : ${data.error || 'Dossier introuvable'}`, 'error');
+    }
+  } catch (err) {
+    showToast(`Erreur ouverture : ${err.message}`, 'error');
+  }
+}
+window.openWorldFolder = openWorldFolder;
+
 async function triggerWorldRepair(worldId) {
+  // Trouver tous les boutons de réparation associés pour afficher immédiatement un loader animé
+  const repairButtons = document.querySelectorAll(`button.btn-repair[onclick*="'${worldId}'"]`);
+  const originalHtmls = [];
+  repairButtons.forEach((btn, idx) => {
+    originalHtmls[idx] = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<svg class="spinner-icon-inline" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Réparation...`;
+  });
+
   try {
     showToast(`Réparation automatique de ${worldId}...`, 'info');
     const res = await fetch('/api/worlds/repair', {
@@ -187,6 +228,11 @@ async function triggerWorldRepair(worldId) {
     }
   } catch (err) {
     showToast(err.message, 'error');
+  } finally {
+    repairButtons.forEach((btn, idx) => {
+      btn.disabled = false;
+      if (originalHtmls[idx]) btn.innerHTML = originalHtmls[idx];
+    });
   }
 }
 
@@ -242,13 +288,13 @@ setInterval(() => {
     const baseRuntime = parseInt(el.getAttribute('data-base-runtime') || '0', 10);
     const currRuntime = parseInt(el.getAttribute('data-current-runtime') || el.getAttribute('data-base-runtime') || '0', 10);
     let startTimeStr = el.getAttribute('data-start-time');
-    
+
     // Si le monde tourne mais n'avait pas encore son timestamp d'origine
     if ((!startTimeStr || startTimeStr === '0') && isThisRunning && currentServerStartTime) {
       startTimeStr = String(currentServerStartTime);
       el.setAttribute('data-start-time', startTimeStr);
     }
-    
+
     if (isThisRunning && startTimeStr) {
       const st = parseInt(startTimeStr, 10);
       if (st > 0) {
@@ -260,7 +306,7 @@ setInterval(() => {
         return;
       }
     }
-    
+
     // Si le monde ne tourne pas : afficher son runtime actuel enregistré (persistant, jamais 00:00:00 arbitraire)
     const formatted = formatSeconds(currRuntime);
     if (el.textContent !== formatted) el.textContent = formatted;
@@ -285,7 +331,7 @@ function getPinnedWorldIds() {
 function savePinnedWorldIds(ids) {
   try {
     localStorage.setItem(STORAGE_PINNED_WORLDS, JSON.stringify(ids));
-  } catch (e) {}
+  } catch (e) { }
 }
 
 function getCollapsedWorldIds() {
@@ -300,7 +346,7 @@ function getCollapsedWorldIds() {
 function saveCollapsedWorldIds(ids) {
   try {
     localStorage.setItem(STORAGE_COLLAPSED_WORLDS, JSON.stringify(ids));
-  } catch (e) {}
+  } catch (e) { }
 }
 
 function togglePinWorld(worldId) {
@@ -385,7 +431,7 @@ function handlePinnedDragStart(e, worldId) {
   try {
     // Ne JAMAIS utiliser 'text/plain' pour éviter que macOS AppKit n'affiche le badge rouge de texte
     e.dataTransfer.setData('application/x-world-id', worldId);
-  } catch (_) {}
+  } catch (_) { }
 
   if (e.dataTransfer.setDragImage) {
     e.dataTransfer.setDragImage(transparentDragImage, 0, 0);
@@ -518,10 +564,10 @@ function buildWorldCardHtml(w, opts) {
       </div>
 
       <div class="world-actions" onclick="event.stopPropagation()">
-        ${isRunning 
-          ? `<button class="btn-stop-world" onclick="stopActiveWorld()">Arrêter</button>` 
-          : w.isCorrupted
-            ? `<button class="btn-corrupted" onclick="openWorldFolder('${w.id}')" title="Ce monde est corrompu. Cliquez pour ouvrir son dossier dans l'explorateur.">
+        ${isRunning
+      ? `<button class="btn-stop-world" onclick="stopActiveWorld()">Arrêter</button>`
+      : w.isCorrupted
+        ? `<button class="btn-corrupted" onclick="openWorldFolder('${w.id}')" title="Ce monde est corrompu. Cliquez pour ouvrir son dossier dans l'explorateur.">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                   <line x1="12" y1="9" x2="12" y2="13"></line>
@@ -529,20 +575,20 @@ function buildWorldCardHtml(w, opts) {
                 </svg>
                 Corrompu
                </button>`
-            : w.needsRepair
-              ? `<button class="btn-repair" ${isServerRunning ? 'disabled' : ''} onclick="triggerWorldRepair('${w.id}')" title="Incident détecté. Cliquez pour lancer la réparation automatique.">
+        : w.needsRepair
+          ? `<button class="btn-repair" ${isServerRunning ? 'disabled' : ''} onclick="triggerWorldRepair('${w.id}')" title="Incident détecté. Cliquez pour lancer la réparation automatique.">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
                   </svg>
                   Réparer
                  </button>`
-              : `<button class="btn-launch" ${isServerRunning ? 'disabled' : ''} onclick="startWorld('${w.id}')">
+          : `<button class="btn-launch" ${isServerRunning ? 'disabled' : ''} onclick="startWorld('${w.id}')">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                     <polygon points="5 3 19 12 5 21 5 3"></polygon>
                   </svg>
                   Lancer
                  </button>`
-        }
+    }
         <button class="btn-card-action btn-card-players" title="Gestion des Joueurs (Ops, Whitelist, Bans)" onclick="openPlayersManager('${w.id}')">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -805,8 +851,8 @@ function renderWorlds(worlds) {
         if (primaryBtn) {
           const currentType = primaryBtn.classList.contains('btn-stop-world') ? 'stop'
             : primaryBtn.classList.contains('btn-corrupted') ? 'corrupted'
-            : primaryBtn.classList.contains('btn-repair') ? 'repair'
-            : 'launch';
+              : primaryBtn.classList.contains('btn-repair') ? 'repair'
+                : 'launch';
           if (currentType !== expectedType) {
             primaryBtn.outerHTML = expectedBtnHtml;
           } else if (expectedType === 'launch' || expectedType === 'repair') {
@@ -874,14 +920,17 @@ function updateMinecraftState(state) {
   });
 }
 
+let currentTunnelState = null;
+
 function updateTunnelState(state) {
-  if (state && state.publicAddress) {
+  if (!state) return;
+  currentTunnelState = state;
+  if (state.publicAddress) {
     tunnelAddress = state.publicAddress;
-    updateTerminalHeader();
-  } else if (state && state.status === 'STOPPED') {
+  } else if (state.status === 'STOPPED') {
     tunnelAddress = null;
-    updateTerminalHeader();
   }
+  updateTerminalHeader();
 }
 
 async function selectTerminalWorld(worldId) {
@@ -1001,11 +1050,43 @@ function updateTerminalHeader() {
   // Adresse IP de partage (accès réseau public)
   const tunnelSharePill = document.getElementById('tunnelSharePill');
   const tunnelShareIp = document.getElementById('tunnelShareIp');
+  const tunnelPulseDot = document.getElementById('tunnelPulseDot');
+  const btnCopyTunnel = document.getElementById('btnCopyTunnel');
+
   if (tunnelSharePill && tunnelShareIp) {
-    if (isViewedRunning && tunnelAddress) {
+    if (isViewedRunning && currentTunnelState && currentTunnelState.status !== 'STOPPED') {
+      tunnelSharePill.style.display = 'inline-flex';
+      const st = currentTunnelState.status;
+
+      if (st === 'RUNNING' && tunnelAddress) {
+        tunnelShareIp.textContent = tunnelAddress;
+        tunnelShareIp.title = `Adresse de connexion : ${tunnelAddress}`;
+        if (tunnelPulseDot) tunnelPulseDot.className = 'tunnel-pulse-dot';
+        if (btnCopyTunnel) btnCopyTunnel.style.display = 'inline-flex';
+      } else if (st === 'RECONNECTING' || st === 'STARTING') {
+        const label = tunnelAddress ? `${tunnelAddress} (reconnexion...)` : 'Reconnexion tunnel...';
+        tunnelShareIp.textContent = label;
+        tunnelShareIp.title = 'Reconnexion automatique au relais bore.pub en cours...';
+        if (tunnelPulseDot) tunnelPulseDot.className = 'tunnel-pulse-dot reconnecting';
+        if (btnCopyTunnel) btnCopyTunnel.style.display = tunnelAddress ? 'inline-flex' : 'none';
+      } else if (st === 'ERROR') {
+        tunnelShareIp.textContent = 'Tunnel déconnecté (cliquer)';
+        tunnelShareIp.title = 'Le tunnel a perdu la liaison. Cliquez pour forcer la reconnexion.';
+        if (tunnelPulseDot) tunnelPulseDot.className = 'tunnel-pulse-dot error';
+        if (btnCopyTunnel) btnCopyTunnel.style.display = 'none';
+      } else if (tunnelAddress) {
+        tunnelShareIp.textContent = tunnelAddress;
+        if (tunnelPulseDot) tunnelPulseDot.className = 'tunnel-pulse-dot';
+        if (btnCopyTunnel) btnCopyTunnel.style.display = 'inline-flex';
+      } else {
+        tunnelSharePill.style.display = 'none';
+      }
+    } else if (isViewedRunning && tunnelAddress) {
       tunnelSharePill.style.display = 'inline-flex';
       tunnelShareIp.textContent = tunnelAddress;
       tunnelShareIp.title = `Adresse de connexion : ${tunnelAddress}`;
+      if (tunnelPulseDot) tunnelPulseDot.className = 'tunnel-pulse-dot';
+      if (btnCopyTunnel) btnCopyTunnel.style.display = 'inline-flex';
     } else {
       tunnelSharePill.style.display = 'none';
     }
@@ -1013,6 +1094,10 @@ function updateTerminalHeader() {
 }
 
 function copyTunnelShareIp() {
+  if (currentTunnelState && currentTunnelState.status === 'ERROR') {
+    restartTunnelManual();
+    return;
+  }
   if (tunnelAddress) {
     navigator.clipboard.writeText(tunnelAddress).then(() => {
       showToast(`Adresse IP copiée dans le presse-papiers`, 'success');
@@ -1029,9 +1114,42 @@ function copyTunnelShareIp() {
     }).catch(() => {
       showToast(`Adresse IP : ${tunnelAddress}`, 'info');
     });
+  } else {
+    restartTunnelManual();
   }
 }
 window.copyTunnelShareIp = copyTunnelShareIp;
+
+async function restartTunnelManual(event, forceNewPort = false) {
+  if (event) event.stopPropagation();
+  const btn = document.getElementById('btnRestartTunnel');
+  if (btn) btn.classList.add('rotating');
+  showToast(forceNewPort ? 'Génération d\'un nouveau port...' : 'Reconnexion au tunnel bore...', 'info');
+
+  try {
+    const res = await fetch('/api/tunnel/restart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ forceNewPort })
+    });
+    const data = await res.json();
+    if (data) {
+      updateTunnelState(data);
+      if (data.publicAddress) {
+        showToast(`Tunnel actif : ${data.publicAddress}`, 'success');
+      } else if (data.status === 'RECONNECTING') {
+        showToast('Reconnexion en cours...', 'info');
+      }
+    }
+  } catch (err) {
+    showToast('Erreur lors de la reconnexion du tunnel', 'error');
+  } finally {
+    if (btn) {
+      setTimeout(() => btn.classList.remove('rotating'), 600);
+    }
+  }
+}
+window.restartTunnelManual = restartTunnelManual;
 
 function renderTerminalLogs(logsArray) {
   terminalOutput.innerHTML = '';
@@ -1111,10 +1229,17 @@ terminalOutput.addEventListener('scroll', () => {
 // ----------------------------------------------------
 // EventSource (SSE) pour Temps Réel
 // ----------------------------------------------------
+let isSseActive = false;
+
 function initSSE() {
   const evtSource = new EventSource('/api/events');
 
+  evtSource.onopen = () => {
+    isSseActive = true;
+  };
+
   evtSource.onmessage = (event) => {
+    isSseActive = true;
     try {
       const msg = JSON.parse(event.data);
       if (msg.type === 'log') {
@@ -1153,6 +1278,7 @@ function initSSE() {
   };
 
   evtSource.onerror = () => {
+    isSseActive = false;
     console.warn('SSE déconnecté, reconnexion automatique...');
   };
 }
@@ -1363,7 +1489,7 @@ function applySuggestion(itemEl) {
 async function updateCommandSuggestions(query) {
   if (!cmdSuggestionsBox || !suggestionsList) return;
   const clean = query.trim();
-  
+
   // Rendu immédiat avec le cache local
   const localFiltered = filterCommandList(clean, null);
   renderSuggestions(localFiltered, query);
@@ -1437,8 +1563,8 @@ if (cmdInput) {
     } else if (e.key === 'Tab') {
       if (isBoxOpen && items.length > 0) {
         e.preventDefault();
-        const target = (_selectedSuggestionIndex >= 0 && items[_selectedSuggestionIndex]) 
-          ? items[_selectedSuggestionIndex] 
+        const target = (_selectedSuggestionIndex >= 0 && items[_selectedSuggestionIndex])
+          ? items[_selectedSuggestionIndex]
           : items[0];
         applySuggestion(target);
       }
@@ -1465,7 +1591,7 @@ cmdForm.addEventListener('submit', (e) => {
     cmdSuggestionsBox.style.display = 'none';
     _selectedSuggestionIndex = -1;
   }
-  
+
   // Enregistrer dans l'historique
   if (cmdHistory.length === 0 || cmdHistory[cmdHistory.length - 1] !== cmd) {
     cmdHistory.push(cmd);
@@ -1610,8 +1736,8 @@ function openProgressModal(worldName, type) {
   createProgressModal.style.display = 'flex';
   if (progressModalTitle) progressModalTitle.textContent = `Création de '${worldName}'`;
   if (progressModalSubtitle) {
-    progressModalSubtitle.textContent = type === 'modded' 
-      ? 'Configuration et déploiement du serveur moddé...' 
+    progressModalSubtitle.textContent = type === 'modded'
+      ? 'Configuration et déploiement du serveur moddé...'
       : 'Téléchargement du serveur officiel Mojang...';
   }
   if (progressBarFill) progressBarFill.style.width = '0%';
@@ -1883,7 +2009,7 @@ async function uploadAndAnalyzeFiles(files) {
         try {
           const errData = JSON.parse(xhr.responseText);
           if (errData.error) errMessage = errData.error;
-        } catch (_) {}
+        } catch (_) { }
         hideModLoadingProgress();
         showToast(errMessage, 'error');
         dropTitle.textContent = 'Déposez votre dossier "mods", vos fichiers .jar ou un ZIP';
@@ -2010,7 +2136,7 @@ function applyAnalysisResult(analysis, sourcePath, label) {
 
 // Réception des chemins choisis dans le Finder via le bridge natif Cocoa
 let uploadedLocalModsPaths = null;
-window.onModsPathsChosen = function(paths) {
+window.onModsPathsChosen = function (paths) {
   if (!paths || paths.length === 0) return;
   uploadedLocalModsPaths = paths;
 
@@ -2092,9 +2218,9 @@ dropZone.addEventListener('drop', async (e) => {
 // Écouteur sur sélection directe de fichiers HTML (fallback web)
 modpackFileInput.addEventListener('change', (e) => {
   if (e.target.files && e.target.files.length > 0) {
-    const valid = Array.from(e.target.files).filter(f => 
-      f.name.toLowerCase().endsWith('.jar') || 
-      f.name.toLowerCase().endsWith('.zip') || 
+    const valid = Array.from(e.target.files).filter(f =>
+      f.name.toLowerCase().endsWith('.jar') ||
+      f.name.toLowerCase().endsWith('.zip') ||
       f.name.toLowerCase().endsWith('.mrpack')
     );
     uploadAndAnalyzeFiles(valid);
@@ -2160,7 +2286,7 @@ const btnSubmitImport = document.getElementById('btnSubmitImport');
 const formImportWorld = document.getElementById('formImportWorld');
 
 // Réception du chemin choisi dans le Finder via le bridge natif Cocoa
-window.onImportPathChosen = function(localPath) {
+window.onImportPathChosen = function (localPath) {
   if (!localPath) return;
   uploadedImportLocalPath = localPath;
   uploadedImportStagedPath = localPath;
@@ -2729,7 +2855,7 @@ function syncRawToVisual() {
   if (propGamemode) propGamemode.value = (props['gamemode'] || 'survival').toLowerCase();
   if (propDifficulty) propDifficulty.value = (props['difficulty'] || 'easy').toLowerCase();
   if (propMaxPlayers) propMaxPlayers.value = props['max-players'] || '20';
-  
+
   if (propWhitelist) propWhitelist.checked = (props['white-list'] === 'true');
   // Cracked / Offline Mode : activé si online-mode === 'false'
   if (propCracked) propCracked.checked = (props['online-mode'] === 'false');
@@ -2816,29 +2942,16 @@ async function openEditProps(worldId) {
   if (pathEl) pathEl.textContent = fullPath;
 
   const btnOpenFinder = document.getElementById('btnOpenFinderFolder');
+  const btnLabelEl = document.getElementById('btnOpenFinderFolderLabel');
+  const isWin = navigator.platform.includes('Win') || navigator.userAgent.includes('Windows');
+  if (btnLabelEl) {
+    btnLabelEl.textContent = isWin ? "Ouvrir l'Explorateur" : "Ouvrir le Finder";
+  }
   if (btnOpenFinder) {
-    btnOpenFinder.onclick = async () => {
+    btnOpenFinder.title = isWin ? "Ouvrir dans l'Explorateur de fichiers de Windows" : "Ouvrir dans le Finder de macOS";
+    btnOpenFinder.onclick = () => {
       if (!editingWorldId) return;
-      try {
-        if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.openFinder) {
-          window.webkit.messageHandlers.openFinder.postMessage(fullPath);
-          showToast('Dossier ouvert dans le Finder', 'success');
-          return;
-        }
-        const res = await fetch('/api/worlds/open-folder', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ worldId: editingWorldId, customPath: fullPath })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          showToast('Dossier ouvert dans le Finder', 'success');
-        } else {
-          showToast('Erreur ouverture Finder: ' + (data.error || 'Introuvable'), 'error');
-        }
-      } catch (e) {
-        showToast('Erreur ouverture Finder: ' + e.message, 'error');
-      }
+      openWorldFolder(editingWorldId, fullPath);
     };
   }
 
@@ -2953,13 +3066,13 @@ if (player3dCanvas) {
 // Carte matériau -> noms de fichiers de texture armor
 const ARMOR_MATERIAL_MAP = {
   // Layer 1 (helmet, chestplate, boots) + Layer 2 (leggings)
-  'leather':    { l1: '/assets/minecraft/armor/leather_layer_1.png',    l2: '/assets/minecraft/armor/leather_layer_2.png',    overlay1: '/assets/minecraft/armor/leather_layer_1_overlay.png', overlay2: '/assets/minecraft/armor/leather_layer_2_overlay.png', isLeather: true },
-  'iron':       { l1: '/assets/minecraft/armor/iron_layer_1.png',       l2: '/assets/minecraft/armor/iron_layer_2.png' },
-  'gold':       { l1: '/assets/minecraft/armor/gold_layer_1.png',       l2: '/assets/minecraft/armor/gold_layer_2.png' },
-  'diamond':    { l1: '/assets/minecraft/armor/diamond_layer_1.png',    l2: '/assets/minecraft/armor/diamond_layer_2.png' },
-  'netherite':  { l1: '/assets/minecraft/armor/netherite_layer_1.png',  l2: '/assets/minecraft/armor/netherite_layer_2.png' },
-  'chainmail':  { l1: '/assets/minecraft/armor/chainmail_layer_1.png',  l2: '/assets/minecraft/armor/chainmail_layer_2.png' },
-  'turtle':     { l1: '/assets/minecraft/armor/turtle_layer_1.png',     l2: null },
+  'leather': { l1: '/assets/minecraft/armor/leather_layer_1.png', l2: '/assets/minecraft/armor/leather_layer_2.png', overlay1: '/assets/minecraft/armor/leather_layer_1_overlay.png', overlay2: '/assets/minecraft/armor/leather_layer_2_overlay.png', isLeather: true },
+  'iron': { l1: '/assets/minecraft/armor/iron_layer_1.png', l2: '/assets/minecraft/armor/iron_layer_2.png' },
+  'gold': { l1: '/assets/minecraft/armor/gold_layer_1.png', l2: '/assets/minecraft/armor/gold_layer_2.png' },
+  'diamond': { l1: '/assets/minecraft/armor/diamond_layer_1.png', l2: '/assets/minecraft/armor/diamond_layer_2.png' },
+  'netherite': { l1: '/assets/minecraft/armor/netherite_layer_1.png', l2: '/assets/minecraft/armor/netherite_layer_2.png' },
+  'chainmail': { l1: '/assets/minecraft/armor/chainmail_layer_1.png', l2: '/assets/minecraft/armor/chainmail_layer_2.png' },
+  'turtle': { l1: '/assets/minecraft/armor/turtle_layer_1.png', l2: null },
 };
 
 function getArmorMaterial(itemId) {
@@ -3183,10 +3296,10 @@ function renderPlayersList() {
             <div class="player-info">
               <div class="player-name-wrap">
                 <span class="player-name">${escapeHtml(name)}</span>
-                ${isOnline 
-                  ? `<span class="player-tag online">En ligne</span>` 
-                  : `<span class="player-tag" style="background:#1e293b;color:#94a3b8;border:1px solid rgba(255,255,255,0.08);">Hors ligne</span>`
-                }
+                ${isOnline
+          ? `<span class="player-tag online">En ligne</span>`
+          : `<span class="player-tag" style="background:#1e293b;color:#94a3b8;border:1px solid rgba(255,255,255,0.08);">Hors ligne</span>`
+        }
                 ${isOp ? `<span class="player-tag op">OP</span>` : ''}
                 ${isBanned ? `<span class="player-tag banned">Banni</span>` : ''}
                 ${isWhitelisted ? `<span class="player-tag" style="background:#0f766e;color:#5eead4;">Whitelist</span>` : ''}
@@ -3598,7 +3711,7 @@ function closePlayerDetail() {
     _mouseMoveListener = null;
   }
   if (_skinViewer) {
-    try { _skinViewer.dispose(); } catch(e) {}
+    try { _skinViewer.dispose(); } catch (e) { }
     _skinViewer = null;
   }
   if (player3dLoading) player3dLoading.classList.remove('hidden');
@@ -3794,12 +3907,12 @@ function setBoxUV(geometry, u, v, width, height, depth, texWidth = 64, texHeight
     ];
   };
 
-  const top    = coord(u + depth, v, u + width + depth, v + depth);
+  const top = coord(u + depth, v, u + width + depth, v + depth);
   const bottom = coord(u + width + depth, v, u + 2 * width + depth, v + depth);
-  const right  = coord(u, v + depth, u + depth, v + depth + height);
-  const front  = coord(u + depth, v + depth, u + width + depth, v + depth + height);
-  const left   = coord(u + width + depth, v + depth, u + width + 2 * depth, v + height + depth);
-  const back   = coord(u + width + 2 * depth, v + depth, u + 2 * width + 2 * depth, v + height + depth);
+  const right = coord(u, v + depth, u + depth, v + depth + height);
+  const front = coord(u + depth, v + depth, u + width + depth, v + depth + height);
+  const left = coord(u + width + depth, v + depth, u + width + 2 * depth, v + height + depth);
+  const back = coord(u + width + 2 * depth, v + depth, u + 2 * width + 2 * depth, v + height + depth);
 
   const faces = mirrored ? [
     [right[3], right[2], right[0], right[1]],
@@ -3881,7 +3994,7 @@ async function getArmorTexture(itemIdOrMaterial, layerNum, dyedColor) {
         for (let i = 0; i < d.length; i += 4) {
           if (d[i + 3] > 0) {
             const gray = d[i] / 255;
-            d[i]     = Math.round(gray * cr);
+            d[i] = Math.round(gray * cr);
             d[i + 1] = Math.round(gray * cg);
             d[i + 2] = Math.round(gray * cb);
           }
@@ -3979,7 +4092,7 @@ async function initOrUpdate3DPlayer(playerName, inventory, playerUuid = null) {
 
   // Détruit le viewer existant si le joueur change
   if (_skinViewer && _skinViewer._playerName !== playerName) {
-    try { _skinViewer.dispose(); } catch(e) {}
+    try { _skinViewer.dispose(); } catch (e) { }
     _skinViewer = null;
   }
 
@@ -4030,10 +4143,10 @@ async function initOrUpdate3DPlayer(playerName, inventory, playerUuid = null) {
         const dx = e.clientX - centerX;
         const dy = e.clientY - centerY;
 
-        const yaw   = Math.atan2(dx, 130);
+        const yaw = Math.atan2(dx, 130);
         const pitch = Math.atan2(dy, 130);
 
-        const clampedYaw   = Math.max(-0.75, Math.min(0.75, yaw));
+        const clampedYaw = Math.max(-0.75, Math.min(0.75, yaw));
         const clampedPitch = Math.max(-0.45, Math.min(0.45, pitch));
 
         const head = _skinViewer.playerObject.skin.head;
@@ -4053,7 +4166,7 @@ async function initOrUpdate3DPlayer(playerName, inventory, playerUuid = null) {
     // Application dynamique des pièces d'armure 3D
     await _apply3DArmor(_skinViewer, slots);
 
-  } catch(err) {
+  } catch (err) {
     console.warn('3D skin error:', err);
   } finally {
     if (player3dLoading) {
@@ -4073,7 +4186,7 @@ async function _apply3DArmor(viewer, slots) {
       try {
         if (mesh.geometry) mesh.geometry.dispose();
         if (mesh.material) mesh.material.dispose();
-      } catch (e) {}
+      } catch (e) { }
     }
   }
   viewer._armorMeshes = [];
@@ -4330,8 +4443,8 @@ function renderPlayerInventory(items, targetWorldId = null) {
   const renderSlotContent = (slotNum, defaultPlaceholderImg = '') => {
     const it = itemsBySlot[slotNum];
     if (!it) {
-      return defaultPlaceholderImg 
-        ? `<img class="slot-armor-placeholder" src="${defaultPlaceholderImg}" alt="Slot" />` 
+      return defaultPlaceholderImg
+        ? `<img class="slot-armor-placeholder" src="${defaultPlaceholderImg}" alt="Slot" />`
         : '';
     }
 
@@ -4401,7 +4514,7 @@ function renderPlayerInventory(items, targetWorldId = null) {
     } else {
       slotOffhand.classList.remove('has-enchanted');
     }
-    slotOffhand.innerHTML = offhandItem 
+    slotOffhand.innerHTML = offhandItem
       ? renderSlotContent(offhandItem.slot, '/assets/minecraft/gui/empty_shield.png')
       : `<img class="slot-armor-placeholder" src="/assets/minecraft/gui/empty_shield.png" alt="Seconde main" />`;
     slotOffhand.removeAttribute('title');
@@ -4623,7 +4736,7 @@ function fallbackCopy(text) {
   ta.style.opacity = '0';
   document.body.appendChild(ta);
   ta.select();
-  try { document.execCommand('copy'); } catch (e) {}
+  try { document.execCommand('copy'); } catch (e) { }
   document.body.removeChild(ta);
 }
 
@@ -4674,7 +4787,7 @@ let defaultExportDestDir = '';
 fetch('/api/worlds/export-destination')
   .then(r => r.json())
   .then(d => { if (d.defaultDestDir) defaultExportDestDir = d.defaultDestDir; })
-  .catch(() => {});
+  .catch(() => { });
 
 function renderManageDimensions(worldId) {
   const container = document.getElementById('manageDimensionsList');
@@ -4954,7 +5067,7 @@ function openRenameWorld(worldId) {
     if (renamingWorldId === worldId) {
       renderManageDimensions(worldId);
     }
-  }).catch(() => {});
+  }).catch(() => { });
 
   renameModal.style.display = 'flex';
   renameNewName.focus();
@@ -5075,6 +5188,8 @@ const settingsSimulationDistance = document.getElementById('settingsSimulationDi
 const settingsSimulationDistanceVal = document.getElementById('settingsSimulationDistanceVal');
 const settingsDefaultGamemode = document.getElementById('settingsDefaultGamemode');
 const settingsDefaultDifficulty = document.getElementById('settingsDefaultDifficulty');
+const settingsTunnelRelayHost = document.getElementById('settingsTunnelRelayHost');
+const settingsTunnelRelayPort = document.getElementById('settingsTunnelRelayPort');
 
 let initialSettingsState = null;
 
@@ -5091,6 +5206,8 @@ function applySettingsState(state) {
   }
   if (settingsDefaultGamemode) settingsDefaultGamemode.value = state.defaultGamemode || 'survival';
   if (settingsDefaultDifficulty) settingsDefaultDifficulty.value = state.defaultDifficulty || 'normal';
+  if (settingsTunnelRelayHost) settingsTunnelRelayHost.value = state.tunnelRelayHost || 'bore.pub';
+  if (settingsTunnelRelayPort) settingsTunnelRelayPort.value = state.tunnelRelayPort || 7835;
 }
 
 function getSettingsFromInputs() {
@@ -5099,7 +5216,9 @@ function getSettingsFromInputs() {
     defaultViewDistance: settingsViewDistance ? parseInt(settingsViewDistance.value, 10) : 12,
     defaultSimulationDistance: settingsSimulationDistance ? parseInt(settingsSimulationDistance.value, 10) : 4,
     defaultGamemode: settingsDefaultGamemode ? settingsDefaultGamemode.value : 'survival',
-    defaultDifficulty: settingsDefaultDifficulty ? settingsDefaultDifficulty.value : 'normal'
+    defaultDifficulty: settingsDefaultDifficulty ? settingsDefaultDifficulty.value : 'normal',
+    tunnelRelayHost: settingsTunnelRelayHost ? settingsTunnelRelayHost.value.trim() : 'bore.pub',
+    tunnelRelayPort: settingsTunnelRelayPort ? parseInt(settingsTunnelRelayPort.value, 10) : 7835
   };
 }
 
@@ -5184,7 +5303,7 @@ async function openAppSettingsModal() {
             versionTag.textContent = `v${vData.currentVersion}`;
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   } catch (err) {
     console.warn('Erreur chargement paramètres:', err);
@@ -5238,7 +5357,7 @@ async function closeAppSettingsModal() {
 }
 
 // Callback appelé par le bridge natif Cocoa (main.swift)
-window.onFolderChosen = function(folderPath) {
+window.onFolderChosen = function (folderPath) {
   if (folderPath && settingsDownloadPath) {
     settingsDownloadPath.value = folderPath;
     showToast('Dossier sélectionné : ' + folderPath, 'info');
@@ -5294,9 +5413,9 @@ window.addEventListener('keydown', (e) => {
         const sel = window.getSelection().toString();
         if (sel && sel.length > 0) {
           if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(sel).catch(() => {});
+            navigator.clipboard.writeText(sel).catch(() => { });
           } else {
-            try { document.execCommand('copy'); } catch (_) {}
+            try { document.execCommand('copy'); } catch (_) { }
           }
         }
       }
@@ -5357,7 +5476,7 @@ async function openUninstallModal() {
     if (destPathEl && data.destination) {
       destPathEl.textContent = data.destination;
     }
-  } catch (_) {}
+  } catch (_) { }
 
   if (modal) modal.style.display = 'flex';
 }
@@ -5405,7 +5524,7 @@ async function goToUninstallStep2() {
 
   // Remplir la liste des éléments détruits
   if (destroyList) {
-    const items = ['<li>Application Minecraft Server Manager & raccourcis Bureau</li>'];
+    const items = ['<li>Application Cubirium & raccourcis Bureau</li>'];
     if (optWorlds) items.push('<li>Tous les mondes, maps, dimensions et mods (dossier <code>games/</code>)</li>');
     if (optBackups) items.push('<li>Toutes les sauvegardes et archives (.zip) locales</li>');
     if (optSettings) items.push('<li>Fichier de configuration générale et réglages personnalisés</li>');
@@ -5441,7 +5560,7 @@ async function goToUninstallStep2() {
       if (destPathEl && data.destination) {
         destPathEl.textContent = data.destination;
       }
-    } catch (_) {}
+    } catch (_) { }
   }
 
   if (step1) step1.style.display = 'none';
@@ -5594,7 +5713,7 @@ async function executeUninstall() {
     localStorage.removeItem(HAS_LAUNCHED_KEY);
     localStorage.clear();
     sessionStorage.clear();
-  } catch (e) {}
+  } catch (e) { }
 
   try {
     const res = await fetch('/api/app/uninstall', {
@@ -5628,7 +5747,7 @@ async function executeUninstall() {
         } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.terminateApp) {
           window.webkit.messageHandlers.terminateApp.postMessage('quit');
         }
-      } catch (e) {}
+      } catch (e) { }
       window.close();
     }, 600);
   } catch (e) {
@@ -5671,7 +5790,7 @@ function checkWelcomeModal(force = false) {
       goToWelcomePage(1);
       modal.style.display = 'flex';
     }
-  } catch (e) {}
+  } catch (e) { }
 }
 
 async function closeWelcomeModal() {
@@ -5682,10 +5801,10 @@ async function closeWelcomeModal() {
   }
   try {
     localStorage.setItem(WELCOME_MODAL_SEEN_KEY, 'true');
-  } catch (e) {}
+  } catch (e) { }
   try {
     await fetch('/api/app/welcome-dismiss', { method: 'POST' });
-  } catch (e) {}
+  } catch (e) { }
 }
 window.closeWelcomeModal = closeWelcomeModal;
 
@@ -5699,13 +5818,13 @@ function goToWelcomePage(pageNumber) {
     if (p1) p1.style.display = 'none';
     if (p2) p2.style.display = 'block';
     if (stepBadge) stepBadge.textContent = '2 / 2';
-    if (headerTitle) headerTitle.textContent = 'Minecraft Server Manager';
+    if (headerTitle) headerTitle.textContent = 'Cubirium';
     runSystemBenchmark();
   } else {
     if (p2) p2.style.display = 'none';
     if (p1) p1.style.display = 'block';
     if (stepBadge) stepBadge.textContent = '1 / 2';
-    if (headerTitle) headerTitle.textContent = 'Minecraft Server Manager';
+    if (headerTitle) headerTitle.textContent = 'Cubirium';
   }
 }
 window.goToWelcomePage = goToWelcomePage;
@@ -5747,18 +5866,24 @@ function renderBenchmarkCards(prefix, data) {
   if (data.network) {
     if (netVal) {
       if (data.network.pingMs !== null && data.network.pingMs < 35) {
-        netVal.textContent = 'Fibre • Très rapide';
+        netVal.textContent = 'Excellente • Très rapide';
       } else if (data.network.pingMs !== null && data.network.pingMs < 80) {
-        netVal.textContent = 'Excellente connexion';
+        netVal.textContent = 'Très bonne • Fluide';
       } else if (data.network.online) {
-        netVal.textContent = 'Connexion standard';
+        netVal.textContent = 'Standard • Modérée';
       } else {
         netVal.textContent = 'Local uniquement';
       }
     }
     if (netDetail) {
       if (data.network.pingMs !== null) {
-        netDetail.textContent = `${data.network.pingMs} ms (latence optimale)`;
+        if (data.network.pingMs < 35) {
+          netDetail.textContent = `${data.network.pingMs} ms (latence optimale)`;
+        } else if (data.network.pingMs < 80) {
+          netDetail.textContent = `${data.network.pingMs} ms (bonne réactivité)`;
+        } else {
+          netDetail.textContent = `${data.network.pingMs} ms (latence acceptable)`;
+        }
       } else {
         netDetail.textContent = "Pas d'accès internet détecté";
       }
@@ -5892,15 +6017,42 @@ async function runSettingsBenchmark() {
 }
 window.runSettingsBenchmark = runSettingsBenchmark;
 
+function openExternalUrl(url) {
+  if (!url) return;
+  // 1. Ouvrir via l'API Node.js locale dans le navigateur par défaut configuré sur la machine (Windows & Mac)
+  fetch('/api/app/open-external', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url })
+  }).then(async (res) => {
+    if (!res.ok) throw new Error('API open-external failed');
+  }).catch(() => {
+    // 2. Fallback bridge WebKit macOS
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.openExternalUrl) {
+      window.webkit.messageHandlers.openExternalUrl.postMessage(url);
+    } else {
+      // 3. Fallback navigateur standard
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  });
+}
+window.openExternalUrl = openExternalUrl;
+
 function openAuthorPortfolio() {
-  const url = 'https://gjagueneau.eu';
-  if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.openExternalUrl) {
-    window.webkit.messageHandlers.openExternalUrl.postMessage(url);
-  } else {
-    window.open(url, '_blank', 'noopener,noreferrer');
-  }
+  openExternalUrl('https://gjagueneau.fr');
 }
 window.openAuthorPortfolio = openAuthorPortfolio;
+
+// Interception automatique de tous les liens externes vers les sites web
+document.addEventListener('click', (e) => {
+  const link = e.target.closest('a');
+  if (!link) return;
+  const href = link.getAttribute('href');
+  if (href && (href.startsWith('http://') || href.startsWith('https://'))) {
+    e.preventDefault();
+    openExternalUrl(href);
+  }
+});
 
 // ==========================================================================
 // Splash Loader Simple (actif dès le 2e lancement de l'application)
@@ -5928,7 +6080,7 @@ function dismissSplashLoader() {
 
   try {
     localStorage.setItem(HAS_LAUNCHED_KEY, 'true');
-  } catch (e) {}
+  } catch (e) { }
 
   const splash = document.getElementById('appSplashLoader');
   if (!splash || splash.style.display === 'none') return;
@@ -5956,9 +6108,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   const isSecondOrMore = (hasLaunched === 'true');
 
   const loadDataPromises = [
-    fetchWorlds().catch(() => {}),
-    fetchStatus().catch(() => {}),
-    fetchVanillaVersions().catch(() => {}),
+    fetchWorlds().catch(() => { }),
+    fetchStatus().catch(() => { }),
+    fetchVanillaVersions().catch(() => { }),
     initSSE()
   ];
 
@@ -5977,28 +6129,28 @@ window.addEventListener('DOMContentLoaded', async () => {
     // 1er lancement : afficher le modal de bienvenue et enregistrer que l'app a été ouverte
     try {
       localStorage.setItem(HAS_LAUNCHED_KEY, 'true');
-    } catch (e) {}
+    } catch (e) { }
     checkWelcomeModal();
   }
 
-  // Polling dynamique de statut global (toutes les 1.2s en renfort continu de SSE)
+  // Rafraîchissement économique de secours (uniquement si SSE inactif, toutes les 30s)
   setInterval(async () => {
     if (document.hidden) return;
     try {
-      await fetchStatus();
-    } catch (e) {}
-  }, 1200);
-
-  // Polling périodique de fond des mondes (toutes les 3.5s)
-  setInterval(async () => {
-    if (document.hidden) return;
-    try {
-      const createModal = document.getElementById('createModal');
-      if (!createModal || createModal.style.display === 'none') {
+      if (!isSseActive) {
+        await fetchStatus();
         await fetchWorlds();
       }
-    } catch (e) {}
-  }, 3500);
+    } catch (e) { }
+  }, 30000);
+
+  // Rafraîchissement instantané lors du retour sur l'onglet de l'application
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      fetchStatus().catch(() => { });
+      fetchWorlds().catch(() => { });
+    }
+  });
 
   // Vérification si une mise à jour vient d'être appliquée (Résumé post-update)
   sessionStorage.removeItem('updateOfferDeclined'); // Purger l'ancien drapeau global de test
@@ -6023,7 +6175,7 @@ async function checkPostUpdateSummary() {
       showUpdateSummaryModal(data.summary);
       return true;
     }
-  } catch (_) {}
+  } catch (_) { }
   return false;
 }
 
@@ -6155,7 +6307,7 @@ function showUpdateOfferModal(updateData) {
   if (desc) {
     desc.textContent = updateData.releaseName && updateData.releaseName !== `Version ${updateData.latestVersion}`
       ? updateData.releaseName
-      : `Une nouvelle version v${updateData.latestVersion} de Minecraft Server Manager est disponible.`;
+      : `Une nouvelle version v${updateData.latestVersion} de Cubirium est disponible.`;
   }
 
   const notesBox = document.getElementById('updateOfferNotesBox');

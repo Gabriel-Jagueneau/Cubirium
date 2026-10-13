@@ -1,4 +1,4 @@
-; Launcher autonome natif Windows pour Minecraft Server Manager
+; Launcher autonome natif Windows pour Cubirium
 ; Lance le backend Node.js en arriere-plan sans AUCUNE console (CREATE_NO_WINDOW / SW_HIDE)
 ; Attend que le serveur soit pret et ouvre immediatement l interface dans sa fenetre autonome.
 
@@ -6,8 +6,8 @@
 !include "x64.nsh"
 !include "LogicLib.nsh"
 
-Name "Minecraft Server Manager"
-OutFile "..\MinecraftServerManager.exe"
+Name "Cubirium"
+OutFile "..\Cubirium.exe"
 Icon "..\AppIcon.ico"
 SilentInstall silent
 RequestExecutionLevel user

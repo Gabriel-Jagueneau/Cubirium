@@ -31,7 +31,7 @@
                                                 backing:NSBackingStoreBuffered
                                                   defer:NO];
     [self.window center];
-    [self.window setTitle:@"Minecraft Server Manager"];
+    [self.window setTitle:@"Cubirium"];
     [self.window setMinSize:NSMakeSize(960, 620)];
     [self.window setDelegate:self];
     [self.window setReleasedWhenClosed:NO];
@@ -149,8 +149,8 @@
     NSMenuItem *appMenuItem = [[NSMenuItem alloc] init];
     [mainMenu addItem:appMenuItem];
 
-    NSMenu *appMenu = [[NSMenu alloc] initWithTitle:@"Minecraft Server Manager"];
-    NSString *appName = @"Minecraft Server Manager";
+    NSMenu *appMenu = [[NSMenu alloc] initWithTitle:@"Cubirium"];
+    NSString *appName = @"Cubirium";
     [appMenu addItemWithTitle:[NSString stringWithFormat:@"À propos de %@", appName]
                        action:@selector(orderFrontStandardAboutPanel:)
                 keyEquivalent:@""];

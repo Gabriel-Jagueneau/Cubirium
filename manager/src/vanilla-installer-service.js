@@ -318,12 +318,15 @@ white-list=false
     const runScript = `#!/usr/bin/env sh
 # Script de lancement automatique Vanilla ${version}
 
+JAVA_CUBIRIUM="$HOME/Library/Application Support/Cubirium/runtime/java-21/bin/java"
 JAVA_25="/opt/homebrew/opt/openjdk@25/bin/java"
 JAVA_21="/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java"
 
 # Recherche de la version Java adaptée
 JAVA_BIN=""
-if [ -x "$JAVA_25" ]; then
+if [ -x "$JAVA_CUBIRIUM" ]; then
+    JAVA_BIN="$JAVA_CUBIRIUM"
+elif [ -x "$JAVA_25" ]; then
     JAVA_BIN="$JAVA_25"
 elif [ -n "$JAVA_HOME" ] && [ -x "$JAVA_HOME/bin/java" ]; then
     JAVA_BIN="$JAVA_HOME/bin/java"
@@ -371,21 +374,25 @@ exec "$JAVA_BIN" -Xms3G -Xmx6G \\
     const runBatScript = `@echo off
 rem Script de démarrage Vanilla ${version}
 cd /d "%~dp0"
-set "JAVA_EXEC=java"
-${isJava25 ? `
-rem Recherche prioritaire de Java 25 sous Windows
+set "JAVA_EXEC="
+
+rem Recherche prioritaire du runtime Cubirium ou Java système
 for %%d in (
-    "%LOCALAPPDATA%\\MinecraftServerManager\\runtime\\java-25\\bin\\java.exe"
+    "%LOCALAPPDATA%\\Cubirium\\runtime\\java-21\\bin\\java.exe"
+    "%APPDATA%\\Cubirium\\runtime\\java-21\\bin\\java.exe"
+    "%LOCALAPPDATA%\\Cubirium\\runtime\\java-25\\bin\\java.exe"
+    "%LOCALAPPDATA%\\MinecraftServerManager\\runtime\\java-21\\bin\\java.exe"
+    "%ProgramFiles%\\Eclipse Adoptium\\jdk-21*\\bin\\java.exe"
     "%ProgramFiles%\\Eclipse Adoptium\\jdk-25*\\bin\\java.exe"
-    "%ProgramFiles%\\Microsoft\\jdk-25*\\bin\\java.exe"
-    "%ProgramFiles%\\Java\\jdk-25*\\bin\\java.exe"
+    "%ProgramFiles%\\Microsoft\\jdk-21*\\bin\\java.exe"
+    "%ProgramFiles%\\Java\\jdk-21*\\bin\\java.exe"
 ) do (
-    if exist "%%~d" set "JAVA_EXEC=%%~d"
+    if not defined JAVA_EXEC if exist "%%~d" set "JAVA_EXEC=%%~d"
 )
-if "%JAVA_EXEC%"=="java" if defined JAVA_HOME if exist "%JAVA_HOME%\\bin\\java.exe" set "JAVA_EXEC=%JAVA_HOME%\\bin\\java.exe"
-` : `
-if defined JAVA_HOME if exist "%JAVA_HOME%\\bin\\java.exe" set "JAVA_EXEC=%JAVA_HOME%\\bin\\java.exe"
-`}
+
+if not defined JAVA_EXEC if defined JAVA_HOME if exist "%JAVA_HOME%\\bin\\java.exe" set "JAVA_EXEC=%JAVA_HOME%\\bin\\java.exe"
+if not defined JAVA_EXEC set "JAVA_EXEC=java"
+
 "%JAVA_EXEC%" -Xms3G -Xmx6G -XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -jar server.jar nogui %*
 `;
     fs.writeFileSync(path.join(targetDir, 'run.bat'), runBatScript, 'utf8');

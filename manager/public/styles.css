@@ -663,6 +663,35 @@ body {
   color: #ffffff;
 }
 
+.tunnel-pulse-dot.reconnecting {
+  background: var(--accent-orange, #f59e0b);
+  box-shadow: 0 0 6px var(--accent-orange, #f59e0b);
+  animation: tunnel-dot-pulse 1.2s infinite alternate ease-in-out;
+}
+
+.tunnel-pulse-dot.error {
+  background: var(--accent-red, #ef4444);
+  box-shadow: 0 0 6px var(--accent-red, #ef4444);
+}
+
+@keyframes tunnel-dot-pulse {
+  from { opacity: 0.4; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1.15); }
+}
+
+.btn-restart-tunnel svg {
+  transition: transform 0.25s ease;
+}
+
+.btn-restart-tunnel.rotating svg {
+  animation: tunnel-spin 0.8s linear infinite;
+}
+
+@keyframes tunnel-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .btn-copy-tunnel.copied {
   background: rgba(16, 185, 129, 0.2);
   border-color: rgba(16, 185, 129, 0.5);
@@ -6029,4 +6058,19 @@ body:has(.welcome-overlay[style*="display:flex"]) .global-drop-overlay {
 .global-drop-sub {
   font-size: 0.84rem;
   color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Animation et loader inline pour boutons d'action (Réparer, Démarrer, etc.)
+   ========================================================================== */
+.spinner-icon-inline {
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+button.btn-repair:disabled {
+  opacity: 0.65;
+  cursor: wait !important;
 }

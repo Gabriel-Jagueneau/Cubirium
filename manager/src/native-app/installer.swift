@@ -6,13 +6,17 @@ class InstallerAppDelegate: NSObject, NSApplicationDelegate {
         let bundleURL = Bundle.main.bundleURL
         
         // 1. Chercher le payload de l'application
-        var sourceAppURL = bundleURL.appendingPathComponent("Contents/Resources/Minecraft Server Manager.app")
+        var sourceAppURL = bundleURL.appendingPathComponent("Contents/Resources/Cubirium.app")
         if !fm.fileExists(atPath: sourceAppURL.path) {
             // Fallback si dans le même dossier
-            sourceAppURL = bundleURL.deletingLastPathComponent().appendingPathComponent("Minecraft Server Manager.app")
+            sourceAppURL = bundleURL.deletingLastPathComponent().appendingPathComponent("Cubirium.app")
+        }
+        if !fm.fileExists(atPath: sourceAppURL.path) {
+            // Fallback legacy
+            sourceAppURL = bundleURL.appendingPathComponent("Contents/Resources/Minecraft Server Manager.app")
         }
 
-        let destAppURL = URL(fileURLWithPath: "/Applications/Minecraft Server Manager.app")
+        let destAppURL = URL(fileURLWithPath: "/Applications/Cubirium.app")
 
         // 2. Copier dans /Applications
         if fm.fileExists(atPath: destAppURL.path) {
@@ -38,9 +42,13 @@ class InstallerAppDelegate: NSObject, NSApplicationDelegate {
 
         // 4. Créer un unique raccourci sur le Bureau (.app)
         if let desktopURL = fm.urls(for: .desktopDirectory, in: .userDomainMask).first {
-            let legacyURL = desktopURL.appendingPathComponent("Minecraft Server Manager")
-            let appShortcutURL = desktopURL.appendingPathComponent("Minecraft Server Manager.app")
-            try? fm.removeItem(at: legacyURL)
+            let legacyURL1 = desktopURL.appendingPathComponent("Minecraft Server Manager")
+            let legacyURL2 = desktopURL.appendingPathComponent("Minecraft Server Manager.app")
+            let legacyURL3 = desktopURL.appendingPathComponent("Cubirium")
+            let appShortcutURL = desktopURL.appendingPathComponent("Cubirium.app")
+            try? fm.removeItem(at: legacyURL1)
+            try? fm.removeItem(at: legacyURL2)
+            try? fm.removeItem(at: legacyURL3)
             try? fm.removeItem(at: appShortcutURL)
             if let bookmarkData = try? destAppURL.bookmarkData(options: .suitableForBookmarkFile, includingResourceValuesForKeys: nil, relativeTo: nil) {
                 try? URL.writeBookmarkData(bookmarkData, to: appShortcutURL)

@@ -1,12 +1,12 @@
-; Script NSIS officiel pour Minecraft Server Manager
+; Script NSIS officiel pour Cubirium
 ; Génère un installeur Windows natif autonome (.exe)
 
 !include "MUI2.nsh"
 !include "x64.nsh"
 
-Name "Minecraft Server Manager"
-OutFile "..\dist\win-McS-Manager.exe"
-InstallDir "$LOCALAPPDATA\MinecraftServerManager"
+Name "Cubirium"
+OutFile "..\dist\win-Cubirium.exe"
+InstallDir "$LOCALAPPDATA\Cubirium"
 RequestExecutionLevel user
 
 ; Compression maximale LZMA
@@ -21,8 +21,8 @@ SetCompressor /SOLID lzma
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
-!define MUI_FINISHPAGE_RUN "$INSTDIR\MinecraftServerManager.exe"
-!define MUI_FINISHPAGE_RUN_TEXT "Démarrer Minecraft Server Manager maintenant"
+!define MUI_FINISHPAGE_RUN "$INSTDIR\Cubirium.exe"
+!define MUI_FINISHPAGE_RUN_TEXT "Démarrer Cubirium maintenant"
 !insertmacro MUI_PAGE_FINISH
 
 ; Pages du désinstalleur
@@ -37,11 +37,12 @@ Section "Application Principale" SecMain
   SetOutPath "$INSTDIR"
   
   ; Exécutable natif de lancement et icônes
-  File "..\MinecraftServerManager.exe"
+  File "..\Cubirium.exe"
   ; Nettoyage d anciens scripts eventuels
   Delete "$INSTDIR\Lancer-Manager.bat"
   Delete "$INSTDIR\launch-server.bat"
   Delete "$INSTDIR\Lancer-Manager.vbs"
+  Delete "$INSTDIR\MinecraftServerManager.exe"
   File "..\AppIcon.ico"
   File "..\AppIcon.png"
   File "..\package.json"
@@ -76,32 +77,30 @@ Section "Application Principale" SecMain
   SetOutPath "$INSTDIR\manager\public"
   File /r "..\manager\public\*"
 
-  ; Vérification silencieuse et installation de Java 25 en arrière-plan si manquant
-  DetailPrint "Vérification de l'environnement Java 25..."
-  Exec 'powershell.exe -WindowStyle Hidden -Command "if (-not (Get-Command java -ErrorAction SilentlyContinue) -or (java -version 2>&1 | Select-String \"25\") -eq $null) { Start-Process winget -ArgumentList \"install --id EclipseAdoptium.Temurin.25.JDK -e --silent --accept-package-agreements --accept-source-agreements\" -WindowStyle Hidden }"'
-
   ; Répertoire de travail pour les raccourcis
   SetOutPath "$INSTDIR"
   
   ; Raccourci sur le Bureau pointant sur l'exécutable natif
-  CreateShortCut "$DESKTOP\Minecraft Server Manager.lnk" "$INSTDIR\MinecraftServerManager.exe" "" "$INSTDIR\AppIcon.ico" 0
+  CreateShortCut "$DESKTOP\Cubirium.lnk" "$INSTDIR\Cubirium.exe" "" "$INSTDIR\AppIcon.ico" 0
+  Delete "$DESKTOP\Minecraft Server Manager.lnk"
   
   ; Raccourcis Menu Démarrer
-  CreateDirectory "$SMPROGRAMS\Minecraft Server Manager"
-  CreateShortCut "$SMPROGRAMS\Minecraft Server Manager\Minecraft Server Manager.lnk" "$INSTDIR\MinecraftServerManager.exe" "" "$INSTDIR\AppIcon.ico" 0
-  CreateShortCut "$SMPROGRAMS\Minecraft Server Manager\Désinstaller.lnk" "$INSTDIR\Uninstall.exe" "" "$INSTDIR\AppIcon.ico" 0
+  CreateDirectory "$SMPROGRAMS\Cubirium"
+  CreateShortCut "$SMPROGRAMS\Cubirium\Cubirium.lnk" "$INSTDIR\Cubirium.exe" "" "$INSTDIR\AppIcon.ico" 0
+  CreateShortCut "$SMPROGRAMS\Cubirium\Désinstaller.lnk" "$INSTDIR\Uninstall.exe" "" "$INSTDIR\AppIcon.ico" 0
+  RMDir /r "$SMPROGRAMS\Minecraft Server Manager"
   
   ; Création du désinstalleur Windows
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   
   ; Enregistrement dans les paramètres Windows (Ajout/Suppression de programmes)
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\MinecraftServerManager" "DisplayName" "Minecraft Server Manager"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\MinecraftServerManager" "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\MinecraftServerManager" "DisplayIcon" "$\"$INSTDIR\AppIcon.ico$\""
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\MinecraftServerManager" "Publisher" "Gabriel JAGUENEAU"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\MinecraftServerManager" "DisplayVersion" "1.0.0"
-  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\MinecraftServerManager" "NoModify" 1
-  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\MinecraftServerManager" "NoRepair" 1
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "DisplayName" "Cubirium"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "DisplayIcon" "$\"$INSTDIR\AppIcon.ico$\""
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "Publisher" "Gabriel JAGUENEAU"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "DisplayVersion" "1.1.0"
+  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "NoModify" 1
+  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "NoRepair" 1
 SectionEnd
 
 Section "Uninstall"
@@ -111,17 +110,21 @@ Section "Uninstall"
   ExecWait 'taskkill /f /im node-x64.exe'
 
   ; Suppression des raccourcis
+  Delete "$DESKTOP\Cubirium.lnk"
   Delete "$DESKTOP\Minecraft Server Manager.lnk"
+  RMDir /r "$SMPROGRAMS\Cubirium"
   RMDir /r "$SMPROGRAMS\Minecraft Server Manager"
   
   ; Suppression des fichiers de l'application
   RMDir /r "$INSTDIR"
   
   ; Suppression des caches et LocalStorage (pour réinitialiser l'écran d'accueil lors d'une réinstallation)
+  RMDir /r "$LOCALAPPDATA\Cubirium"
   RMDir /r "$LOCALAPPDATA\MinecraftServerManager"
   RMDir /r "$LOCALAPPDATA\Microsoft\Edge\User Data\Default\Local Storage"
   RMDir /r "$LOCALAPPDATA\Microsoft\Edge\User Data\Default\Session Storage"
   
-  ; Suppression de la clé de registre Windows
+  ; Suppression des clés de registre Windows
+  DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium"
   DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\MinecraftServerManager"
 SectionEnd

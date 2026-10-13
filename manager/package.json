@@ -1,7 +1,7 @@
 {
-  "name": "minecraft-server-manager",
-  "version": "1.0.0",
-  "description": "Gestionnaire et automatisation de serveurs Minecraft locaux avec tunnel public",
+  "name": "cubirium",
+  "version": "1.1.0",
+  "description": "Cubirium - Gestionnaire et automatisation de serveurs Minecraft locaux avec tunnel public",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

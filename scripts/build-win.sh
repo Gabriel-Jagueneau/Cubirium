@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 echo "=== Packaging de l'Installeur Windows Universel (.exe) ==="
-echo "Application : Minecraft Server Manager"
+echo "Application : Cubirium"
 
 DIST_DIR="$PROJECT_ROOT/dist"
 CACHE_DIR="$PROJECT_ROOT/.cache-win"
@@ -32,15 +32,15 @@ fi
 
 cd "$SCRIPT_DIR"
 
-# 3. Compiler l'exécutable natif de lancement (MinecraftServerManager.exe)
-echo "-> Compilation de l'exécutable natif Windows (MinecraftServerManager.exe)..."
+# 3. Compiler l'exécutable natif de lancement (Cubirium.exe)
+echo "-> Compilation de l'exécutable natif Windows (Cubirium.exe)..."
 makensis launcher.nsi
 
 # 4. Compiler l'installeur Windows .exe
 echo "-> Compilation de l'installeur Windows avec NSIS..."
 makensis installer.nsi
 
-OUT_EXE="$DIST_DIR/win-McS-Manager.exe"
+OUT_EXE="$DIST_DIR/win-Cubirium.exe"
 if [ -f "$OUT_EXE" ]; then
   echo ""
   echo "=== Installeur Windows universel généré avec succès ! ==="

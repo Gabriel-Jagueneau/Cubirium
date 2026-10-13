@@ -497,14 +497,19 @@ const server = http.createServer(async (req, res) => {
     if (pathname === '/api/status' && method === 'GET') {
       const isWin = process.platform === 'win32';
       const appSupportDir = isWin
+        ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), 'Cubirium')
+        : path.join(os.homedir(), 'Library/Application Support/Cubirium');
+      const legacyAppSupportDir = isWin
         ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), 'MinecraftServerManager')
         : path.join(os.homedir(), 'Library/Application Support/MinecraftServerManager');
+
       const welcomeFlagAppSupport = path.join(appSupportDir, '.welcome-completed');
+      const welcomeFlagLegacy = path.join(legacyAppSupportDir, '.welcome-completed');
       const welcomeFlagLocal = path.join(__dirname, '..', '.welcome-completed');
 
       const existingWorlds = await minecraftService.listWorlds();
       const hasWorlds = Array.isArray(existingWorlds) && existingWorlds.length > 0;
-      const isWelcomeCompleted = fs.existsSync(welcomeFlagAppSupport) || fs.existsSync(welcomeFlagLocal) || hasWorlds;
+      const isWelcomeCompleted = fs.existsSync(welcomeFlagAppSupport) || fs.existsSync(welcomeFlagLegacy) || fs.existsSync(welcomeFlagLocal) || hasWorlds;
 
       return sendJson(res, 200, {
         minecraft: minecraftService.getState(),
@@ -517,8 +522,8 @@ const server = http.createServer(async (req, res) => {
     if (pathname === '/api/app/welcome-dismiss' && method === 'POST') {
       const isWin = process.platform === 'win32';
       const appSupportDir = isWin
-        ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), 'MinecraftServerManager')
-        : path.join(os.homedir(), 'Library/Application Support/MinecraftServerManager');
+        ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), 'Cubirium')
+        : path.join(os.homedir(), 'Library/Application Support/Cubirium');
       try {
         if (!fs.existsSync(appSupportDir)) fs.mkdirSync(appSupportDir, { recursive: true });
         fs.writeFileSync(path.join(appSupportDir, '.welcome-completed'), new Date().toISOString(), 'utf8');
@@ -531,14 +536,14 @@ const server = http.createServer(async (req, res) => {
 
     // 2c. API Check Update
     if (pathname === '/api/app/check-update' && method === 'GET') {
-      const currentVersion = packageJson.version || '1.0.0';
+      const currentVersion = packageJson.version || '1.1.0';
       try {
         const options = {
           hostname: 'api.github.com',
-          path: '/repos/Gabriel-Jagueneau/McS-Manager/releases/latest',
+          path: '/repos/Gabriel-Jagueneau/Cubirium/releases/latest',
           method: 'GET',
           headers: {
-            'User-Agent': 'McS-Manager',
+            'User-Agent': 'Cubirium',
             'Accept': 'application/vnd.github.v3+json'
           },
           timeout: 3500
@@ -627,15 +632,15 @@ const server = http.createServer(async (req, res) => {
 
         const cleanTag = String(targetVersion).replace(/^v/i, '').trim();
         const tagName = `v${cleanTag}`;
-        const tempDir = path.join(os.tmpdir(), `mcs-update-${Date.now()}`);
+        const tempDir = path.join(os.tmpdir(), `cubirium-update-${Date.now()}`);
 
         fs.mkdirSync(tempDir, { recursive: true });
         const archiveFile = path.join(tempDir, 'update.tar.gz');
 
         // 1. Télécharger l'archive des sources de la release
         const downloadUrls = [
-          `https://codeload.github.com/Gabriel-Jagueneau/McS-Manager/tar.gz/refs/tags/${tagName}`,
-          `https://github.com/Gabriel-Jagueneau/McS-Manager/archive/refs/tags/${tagName}.tar.gz`
+          `https://codeload.github.com/Gabriel-Jagueneau/Cubirium/tar.gz/refs/tags/${tagName}`,
+          `https://github.com/Gabriel-Jagueneau/Cubirium/archive/refs/tags/${tagName}.tar.gz`
         ];
 
         let downloaded = false;
@@ -682,9 +687,13 @@ const server = http.createServer(async (req, res) => {
         const currentManagerDir = path.resolve(__dirname, '..');
         const targetDirs = [currentManagerDir];
 
-        const macAppManager = '/Applications/Minecraft Server Manager.app/Contents/Resources/manager';
+        const macAppManager = '/Applications/Cubirium.app/Contents/Resources/manager';
         if (fs.existsSync(macAppManager) && path.resolve(macAppManager) !== path.resolve(currentManagerDir)) {
           targetDirs.push(macAppManager);
+        }
+        const legacyMacAppManager = '/Applications/Minecraft Server Manager.app/Contents/Resources/manager';
+        if (fs.existsSync(legacyMacAppManager) && path.resolve(legacyMacAppManager) !== path.resolve(currentManagerDir)) {
+          targetDirs.push(legacyMacAppManager);
         }
 
         const copyFolderRecursive = (src, dest) => {
@@ -713,6 +722,7 @@ const server = http.createServer(async (req, res) => {
             // Mise à jour de Info.plist si on se trouve dans un bundle macOS (.app)
             const possiblePlists = [
               path.resolve(tDir, '../../Info.plist'),
+              '/Applications/Cubirium.app/Contents/Info.plist',
               '/Applications/Minecraft Server Manager.app/Contents/Info.plist'
             ];
             for (const pPath of possiblePlists) {
@@ -863,25 +873,66 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, data);
     }
 
-    // 6f. API Open World Folder in Finder
+    // 6f. API Open World Folder in Explorer / Finder
     if (pathname === '/api/worlds/open-folder' && method === 'POST') {
       const { worldId, customPath } = await parseBody(req);
       const targetPath = customPath || (worldId ? path.join(minecraftService.gamesDir, worldId) : null);
       if (!targetPath) return sendJson(res, 400, { error: 'Chemin ou worldId manquant.' });
       if (fs.existsSync(targetPath)) {
-        const safePath = targetPath.replace(/"/g, '\\"');
-        exec(`osascript -e 'tell application "Finder" to reveal POSIX file "${safePath}"' -e 'tell application "Finder" to activate'`, (err) => {
-          if (err) {
-            exec(`open "${safePath}"`, (err2) => {
-              if (err2) {
-                exec(`open -R "${safePath}"`);
-              }
-            });
+        const isWin = process.platform === 'win32';
+        const isMac = process.platform === 'darwin';
+
+        if (isWin) {
+          try {
+            const stat = fs.statSync(targetPath);
+            const winPath = targetPath.replace(/\//g, '\\');
+            if (stat.isFile()) {
+              exec(`explorer.exe /select,"${winPath}"`);
+            } else {
+              exec(`explorer.exe "${winPath}"`);
+            }
+          } catch (_) {
+            exec(`explorer.exe "${targetPath.replace(/\//g, '\\')}"`);
           }
-        });
+        } else if (isMac) {
+          const safePath = targetPath.replace(/"/g, '\\"');
+          exec(`osascript -e 'tell application "Finder" to reveal POSIX file "${safePath}"' -e 'tell application "Finder" to activate'`, (err) => {
+            if (err) {
+              exec(`open "${safePath}"`, (err2) => {
+                if (err2) {
+                  exec(`open -R "${safePath}"`);
+                }
+              });
+            }
+          });
+        } else {
+          exec(`xdg-open "${targetPath}"`);
+        }
         return sendJson(res, 200, { success: true, path: targetPath });
       }
       return sendJson(res, 404, { error: 'Dossier introuvable.' });
+    }
+
+    // 6f-bis. API Ouvrir un lien externe dans le navigateur par défaut de l'ordinateur
+    if (pathname === '/api/app/open-external' && method === 'POST') {
+      try {
+        const { url } = await parseBody(req);
+        if (!url || (!url.startsWith('http://') && !url.startsWith('https://'))) {
+          return sendJson(res, 400, { error: 'URL externe invalide.' });
+        }
+        const isWin = process.platform === 'win32';
+        const isMac = process.platform === 'darwin';
+        if (isWin) {
+          exec(`start "" "${url}"`);
+        } else if (isMac) {
+          exec(`open "${url}"`);
+        } else {
+          exec(`xdg-open "${url}"`);
+        }
+        return sendJson(res, 200, { success: true });
+      } catch (err) {
+        return sendJson(res, 500, { error: err.message });
+      }
     }
 
     // 6g. API Reset World Dimension
@@ -914,6 +965,9 @@ const server = http.createServer(async (req, res) => {
       try {
         const body = await parseBody(req);
         const updated = configService.saveSettings(body);
+        if (tunnelService && typeof tunnelService.reloadConfig === 'function') {
+          tunnelService.reloadConfig();
+        }
         return sendJson(res, 200, { success: true, settings: updated });
       } catch (err) {
         return sendJson(res, 400, { error: err.message });
@@ -1256,8 +1310,9 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, tunnelService.getState());
     }
     if (pathname === '/api/tunnel/restart' && method === 'POST') {
-      await tunnelService.stop();
-      const state = await tunnelService.start();
+      const body = await parseBody(req).catch(() => ({}));
+      const forceNewPort = Boolean(body && body.forceNewPort);
+      const state = await tunnelService.restart(forceNewPort);
       return sendJson(res, 200, state);
     }
 
@@ -1276,37 +1331,54 @@ const server = http.createServer(async (req, res) => {
       const isWin = process.platform === 'win32';
       const homeDir = os.homedir();
       const appSupportDir = isWin
+        ? path.join(process.env.APPDATA || path.join(homeDir, 'AppData', 'Roaming'), 'Cubirium')
+        : path.join(homeDir, 'Library/Application Support/Cubirium');
+      const legacyAppSupportDir = isWin
         ? path.join(process.env.APPDATA || path.join(homeDir, 'AppData', 'Roaming'), 'MinecraftServerManager')
         : path.join(homeDir, 'Library/Application Support/MinecraftServerManager');
+
       const desktopShortcut1 = isWin
+        ? path.join(homeDir, 'Desktop', 'Cubirium.lnk')
+        : path.join(homeDir, 'Desktop/Cubirium');
+      const desktopShortcut2 = isWin
+        ? path.join(homeDir, 'Desktop', 'Cubirium.url')
+        : path.join(homeDir, 'Desktop/Cubirium.app');
+      const legacyShortcut1 = isWin
         ? path.join(homeDir, 'Desktop', 'Minecraft Server Manager.lnk')
         : path.join(homeDir, 'Desktop/Minecraft Server Manager');
-      const desktopShortcut2 = isWin
-        ? path.join(homeDir, 'Desktop', 'Minecraft Server Manager.url')
-        : path.join(homeDir, 'Desktop/Minecraft Server Manager.app');
-      const targetApp = process.env.APP_BUNDLE_PATH || (isWin ? path.join(process.env.LOCALAPPDATA || homeDir, 'MinecraftServerManager') : '/Applications/Minecraft Server Manager.app');
+      const legacyShortcut2 = isWin
+        ? path.join(homeDir, 'Desktop', 'Minecraft Server Manager.app')
+        : null;
+
+      const targetApp = process.env.APP_BUNDLE_PATH || (isWin ? path.join(process.env.LOCALAPPDATA || homeDir, 'Cubirium') : '/Applications/Cubirium.app');
+      const legacyApp = isWin ? path.join(process.env.LOCALAPPDATA || homeDir, 'MinecraftServerManager') : '/Applications/Minecraft Server Manager.app';
 
       // 1. Suppression des raccourcis Bureau
       try { if (fs.existsSync(desktopShortcut1)) fs.rmSync(desktopShortcut1, { recursive: true, force: true }); } catch (e) {}
       try { if (fs.existsSync(desktopShortcut2)) fs.rmSync(desktopShortcut2, { recursive: true, force: true }); } catch (e) {}
+      try { if (fs.existsSync(legacyShortcut1)) fs.rmSync(legacyShortcut1, { recursive: true, force: true }); } catch (e) {}
+      try { if (legacyShortcut2 && fs.existsSync(legacyShortcut2)) fs.rmSync(legacyShortcut2, { recursive: true, force: true }); } catch (e) {}
 
       // 2. Suppression des caches et LocalStorage Web si demandée ou par défaut
       if (deleteCaches) {
         if (!isWin) {
           const webkitDirs = [
+            path.join(homeDir, 'Library/WebKit/com.gabriel.cubirium'),
+            path.join(homeDir, 'Library/WebKit/fr.gabriel.cubirium'),
+            path.join(homeDir, 'Library/WebKit/Cubirium'),
+            path.join(homeDir, 'Library/Caches/com.gabriel.cubirium'),
+            path.join(homeDir, 'Library/Caches/fr.gabriel.cubirium'),
+            path.join(homeDir, 'Library/Saved Application State/com.gabriel.cubirium.savedState'),
             path.join(homeDir, 'Library/WebKit/com.gabriel.minecraftservermanager'),
-            path.join(homeDir, 'Library/WebKit/fr.gabriel.minecraftservermanager'),
             path.join(homeDir, 'Library/WebKit/Minecraft Server Manager'),
-            path.join(homeDir, 'Library/Caches/com.gabriel.minecraftservermanager'),
-            path.join(homeDir, 'Library/Caches/fr.gabriel.minecraftservermanager'),
-            path.join(homeDir, 'Library/Saved Application State/com.gabriel.minecraftservermanager.savedState'),
-            path.join(homeDir, 'Library/Saved Application State/fr.gabriel.minecraftservermanager.savedState')
+            path.join(homeDir, 'Library/Caches/com.gabriel.minecraftservermanager')
           ];
           for (const dir of webkitDirs) {
             try { if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true }); } catch (e) {}
           }
         } else {
           const winDirs = [
+            path.join(process.env.LOCALAPPDATA || '', 'Cubirium', 'WebView2'),
             path.join(process.env.LOCALAPPDATA || '', 'MinecraftServerManager', 'WebView2'),
             path.join(process.env.LOCALAPPDATA || '', 'Microsoft', 'Edge', 'User Data', 'Default', 'Local Storage'),
             path.join(process.env.LOCALAPPDATA || '', 'Microsoft', 'Edge', 'User Data', 'Default', 'Session Storage')
@@ -1435,14 +1507,14 @@ const server = http.createServer(async (req, res) => {
 
         if (pingMs !== null) {
           if (pingMs < 35) {
-            netQuality = 'Fibre / Très rapide';
+            netQuality = 'Excellente • Très rapide';
             netDetail = `${pingMs} ms (latence optimale)`;
           } else if (pingMs < 80) {
-            netQuality = 'Très bonne';
-            netDetail = `${pingMs} ms (très fluide)`;
+            netQuality = 'Très bonne • Fluide';
+            netDetail = `${pingMs} ms (bonne réactivité)`;
           } else {
-            netQuality = 'Moyenne';
-            netDetail = `${pingMs} ms (acceptable)`;
+            netQuality = 'Standard • Modérée';
+            netDetail = `${pingMs} ms (latence acceptable)`;
           }
         } else {
           netQuality = 'Local uniquement';
@@ -1672,7 +1744,7 @@ const server = http.createServer(async (req, res) => {
 function startServer(port = DEFAULT_PORT) {
   server.listen(port, () => {
     console.log(`====================================================`);
-    console.log(`🎮 Minecraft Server Manager actif sur :`);
+    console.log(`🎮 Cubirium actif sur :`);
     console.log(`👉 http://localhost:${port}`);
     console.log(`====================================================`);
 

@@ -17,6 +17,8 @@ build/
 *.msi
 *.zip
 *.tar.gz
+Cubirium.app/
+Cubirium.exe
 Minecraft Server Manager.app/
 MinecraftServerManager.exe
 

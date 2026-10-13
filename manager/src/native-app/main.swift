@@ -26,7 +26,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMe
             defer: false
         )
         window.center()
-        window.title = "Minecraft Server Manager"
+        window.title = "Cubirium"
         window.minSize = NSSize(width: 980, height: 640)
         window.delegate = self
         window.isReleasedWhenClosed = false
@@ -61,12 +61,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMe
 
     func ensureDesktopShortcut() {
         guard let desktopURL = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first else { return }
-        let duplicateURL = desktopURL.appendingPathComponent("Minecraft Server Manager")
-        let appNameURL = desktopURL.appendingPathComponent("Minecraft Server Manager.app")
+        let duplicateURL = desktopURL.appendingPathComponent("Cubirium")
+        let appNameURL = desktopURL.appendingPathComponent("Cubirium.app")
         
         // Supprimer inconditionnellement tout ancien doublon sans extension .app
         if FileManager.default.fileExists(atPath: duplicateURL.path) {
             try? FileManager.default.removeItem(at: duplicateURL)
+        }
+        let legacyShortcut = desktopURL.appendingPathComponent("Minecraft Server Manager")
+        let legacyAppShortcut = desktopURL.appendingPathComponent("Minecraft Server Manager.app")
+        if FileManager.default.fileExists(atPath: legacyShortcut.path) {
+            try? FileManager.default.removeItem(at: legacyShortcut)
+        }
+        if FileManager.default.fileExists(atPath: legacyAppShortcut.path) {
+            try? FileManager.default.removeItem(at: legacyAppShortcut)
         }
 
         // Si le raccourci .app existe déjà, ne rien faire
@@ -179,7 +187,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMe
         mainMenu.addItem(appMenuItem)
 
         let appMenu = NSMenu()
-        let appName = "Minecraft Server Manager"
+        let appName = "Cubirium"
         appMenu.addItem(withTitle: "À propos de \(appName)", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
         appMenu.addItem(NSMenuItem.separator())
         
@@ -324,6 +332,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMe
         dataStore.removeData(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(), modifiedSince: Date.distantPast) { }
 
         let webkitDirs = [
+            homeURL.appendingPathComponent("Library/WebKit/com.gabriel.cubirium"),
+            homeURL.appendingPathComponent("Library/WebKit/fr.gabriel.cubirium"),
+            homeURL.appendingPathComponent("Library/WebKit/Cubirium"),
+            homeURL.appendingPathComponent("Library/Caches/com.gabriel.cubirium"),
+            homeURL.appendingPathComponent("Library/Caches/fr.gabriel.cubirium"),
+            homeURL.appendingPathComponent("Library/Saved Application State/com.gabriel.cubirium.savedState"),
+            homeURL.appendingPathComponent("Library/Saved Application State/fr.gabriel.cubirium.savedState"),
             homeURL.appendingPathComponent("Library/WebKit/com.gabriel.minecraftservermanager"),
             homeURL.appendingPathComponent("Library/WebKit/fr.gabriel.minecraftservermanager"),
             homeURL.appendingPathComponent("Library/WebKit/Minecraft Server Manager"),
@@ -338,34 +353,48 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMe
 
         // 1. Supprimer les raccourcis sur le bureau
         let desktopURL = homeURL.appendingPathComponent("Desktop")
-        let link1 = desktopURL.appendingPathComponent("Minecraft Server Manager.app")
-        let link2 = desktopURL.appendingPathComponent("Minecraft Server Manager")
+        let link1 = desktopURL.appendingPathComponent("Cubirium.app")
+        let link2 = desktopURL.appendingPathComponent("Cubirium")
+        let legacyLink1 = desktopURL.appendingPathComponent("Minecraft Server Manager.app")
+        let legacyLink2 = desktopURL.appendingPathComponent("Minecraft Server Manager")
         try? fm.removeItem(at: link1)
         try? fm.removeItem(at: link2)
+        try? fm.removeItem(at: legacyLink1)
+        try? fm.removeItem(at: legacyLink2)
 
         // 2. Supprimer les données du serveur si demandé
-        let appSupportDir = homeURL.appendingPathComponent("Library/Application Support/MinecraftServerManager")
+        let appSupportDir = homeURL.appendingPathComponent("Library/Application Support/Cubirium")
+        let legacyAppSupportDir = homeURL.appendingPathComponent("Library/Application Support/MinecraftServerManager")
         if deleteData || (deleteWorlds && deleteSettings && deleteBackups) {
             try? fm.removeItem(at: appSupportDir)
+            try? fm.removeItem(at: legacyAppSupportDir)
         } else {
             if deleteWorlds {
                 try? fm.removeItem(at: appSupportDir.appendingPathComponent("games"))
+                try? fm.removeItem(at: legacyAppSupportDir.appendingPathComponent("games"))
             }
             if deleteBackups {
                 try? fm.removeItem(at: appSupportDir.appendingPathComponent("backups"))
+                try? fm.removeItem(at: legacyAppSupportDir.appendingPathComponent("backups"))
             }
             if deleteSettings {
                 try? fm.removeItem(at: appSupportDir.appendingPathComponent("app-settings.json"))
+                try? fm.removeItem(at: legacyAppSupportDir.appendingPathComponent("app-settings.json"))
             }
         }
 
         // 4. Supprimer l'application dans /Applications
-        let appInApplications = URL(fileURLWithPath: "/Applications/Minecraft Server Manager.app")
+        let appInApplications = URL(fileURLWithPath: "/Applications/Cubirium.app")
+        let legacyAppInApplications = URL(fileURLWithPath: "/Applications/Minecraft Server Manager.app")
         let currentBundle = Bundle.main.bundleURL
 
         try? fm.removeItem(at: appInApplications)
+        try? fm.removeItem(at: legacyAppInApplications)
         if fm.fileExists(atPath: appInApplications.path) {
             NSWorkspace.shared.recycle([appInApplications], completionHandler: nil)
+        }
+        if fm.fileExists(atPath: legacyAppInApplications.path) {
+            NSWorkspace.shared.recycle([legacyAppInApplications], completionHandler: nil)
         }
 
         if currentBundle.path != appInApplications.path && currentBundle.path.hasSuffix(".app") && currentBundle.path.hasPrefix("/Applications/") {
@@ -409,7 +438,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMe
     // Boîte de dialogue d'alerte native JavaScript alert()
     func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
         let alert = NSAlert()
-        alert.messageText = "Minecraft Server Manager"
+        alert.messageText = "Cubirium"
         alert.informativeText = message
         alert.alertStyle = .informational
         alert.addButton(withTitle: "OK")

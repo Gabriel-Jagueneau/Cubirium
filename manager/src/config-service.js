@@ -4,9 +4,26 @@ const os = require('os');
 
 const isWin = process.platform === 'win32';
 const isBundled = __dirname.includes('.app/Contents') || process.env.APP_BUNDLED === 'true';
-const APP_SUPPORT_DIR = isWin
+
+const legacyDir = isWin
   ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), 'MinecraftServerManager')
   : path.join(os.homedir(), 'Library/Application Support/MinecraftServerManager');
+
+const APP_SUPPORT_DIR = isWin
+  ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), 'Cubirium')
+  : path.join(os.homedir(), 'Library/Application Support/Cubirium');
+
+// Migration automatique des données de configuration si nécessaire
+if (!fs.existsSync(APP_SUPPORT_DIR) && fs.existsSync(legacyDir)) {
+  try {
+    fs.mkdirSync(APP_SUPPORT_DIR, { recursive: true });
+    const legacyCfg = path.join(legacyDir, 'app-settings.json');
+    if (fs.existsSync(legacyCfg)) {
+      fs.copyFileSync(legacyCfg, path.join(APP_SUPPORT_DIR, 'app-settings.json'));
+    }
+  } catch (e) {}
+}
+
 if (isBundled && !fs.existsSync(APP_SUPPORT_DIR)) {
   try {
     fs.mkdirSync(APP_SUPPORT_DIR, { recursive: true });
@@ -22,7 +39,9 @@ const DEFAULT_CONFIG = {
   defaultViewDistance: 12,
   defaultSimulationDistance: 4,
   defaultGamemode: 'survival',
-  defaultDifficulty: 'normal'
+  defaultDifficulty: 'normal',
+  tunnelRelayHost: 'bore.pub',
+  tunnelRelayPort: 7835
 };
 
 function getSettings() {
@@ -36,7 +55,9 @@ function getSettings() {
         defaultViewDistance: parseInt(data.defaultViewDistance, 10) || DEFAULT_CONFIG.defaultViewDistance,
         defaultSimulationDistance: parseInt(data.defaultSimulationDistance, 10) || DEFAULT_CONFIG.defaultSimulationDistance,
         defaultGamemode: data.defaultGamemode || DEFAULT_CONFIG.defaultGamemode,
-        defaultDifficulty: data.defaultDifficulty || DEFAULT_CONFIG.defaultDifficulty
+        defaultDifficulty: data.defaultDifficulty || DEFAULT_CONFIG.defaultDifficulty,
+        tunnelRelayHost: data.tunnelRelayHost ? data.tunnelRelayHost.trim() : DEFAULT_CONFIG.tunnelRelayHost,
+        tunnelRelayPort: parseInt(data.tunnelRelayPort, 10) || DEFAULT_CONFIG.tunnelRelayPort
       };
     } catch (e) {
       console.warn('[ConfigService] Erreur lecture configuration, utilisation des valeurs par défaut:', e.message);
@@ -65,6 +86,12 @@ function saveSettings(newSettings) {
 
   updated.defaultViewDistance = Math.min(32, Math.max(2, parseInt(updated.defaultViewDistance, 10) || 12));
   updated.defaultSimulationDistance = Math.min(32, Math.max(2, parseInt(updated.defaultSimulationDistance, 10) || 4));
+  if (updated.tunnelRelayHost) {
+    updated.tunnelRelayHost = updated.tunnelRelayHost.trim();
+  }
+  if (updated.tunnelRelayPort) {
+    updated.tunnelRelayPort = parseInt(updated.tunnelRelayPort, 10) || DEFAULT_CONFIG.tunnelRelayPort;
+  }
 
   fs.writeFileSync(CONFIG_PATH, JSON.stringify(updated, null, 2), 'utf8');
   return updated;

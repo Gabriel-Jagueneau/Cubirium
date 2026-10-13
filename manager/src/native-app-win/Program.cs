@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace MinecraftServerManager
+namespace Cubirium
 {
     static class Program
     {
@@ -35,7 +35,7 @@ namespace MinecraftServerManager
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Impossible de démarrer le serveur local : " + ex.Message, "Minecraft Server Manager", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Impossible de démarrer le serveur local : " + ex.Message, "Cubirium", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
