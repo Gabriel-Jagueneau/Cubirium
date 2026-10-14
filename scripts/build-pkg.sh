@@ -32,7 +32,7 @@ rm -rf "$LOCAL_RESOURCES/manager/src" "$LOCAL_RESOURCES/manager/public"
 cp -R "$PROJECT_ROOT/manager/src" "$LOCAL_RESOURCES/manager/"
 cp -R "$PROJECT_ROOT/manager/public" "$LOCAL_RESOURCES/manager/"
 cp "$PROJECT_ROOT/manager/package.json" "$LOCAL_RESOURCES/manager/"
-rm -rf "$LOCAL_RESOURCES/manager/logs" "$LOCAL_RESOURCES/manager/app-settings.json"
+rm -rf "$LOCAL_RESOURCES/manager/logs" "$LOCAL_RESOURCES/manager/app-settings.json" "$LOCAL_RESOURCES/manager/cache"
 rm -f "$LOCAL_RESOURCES/manager/.welcome-completed"
 find "$LOCAL_RESOURCES/bin" -type f ! -name "node" -delete 2>/dev/null || true
 
@@ -88,7 +88,7 @@ cp -R "$PROJECT_ROOT/manager/src" "$RESOURCES_DIR/manager/"
 cp -R "$PROJECT_ROOT/manager/public" "$RESOURCES_DIR/manager/"
 cp "$PROJECT_ROOT/manager/package.json" "$RESOURCES_DIR/manager/"
 
-rm -rf "$RESOURCES_DIR/manager/logs"
+rm -rf "$RESOURCES_DIR/manager/logs" "$RESOURCES_DIR/manager/cache"
 rm -f "$RESOURCES_DIR/manager/app-settings.json"
 rm -f "$RESOURCES_DIR/manager/.welcome-completed"
 
