@@ -7,8 +7,67 @@ document.addEventListener("DOMContentLoaded", () => {
   initCleanScrollNavigation();
   initOsDetection();
   initCopyAddress();
+  initHeaderDownloadCombo();
   fetchReleases();
 });
+
+let currentScrollAnimation = null;
+
+/**
+ * Défilement fluide ultra-réactif sans aucun délai d'attente au clic
+ */
+function smoothScrollTo(targetY) {
+  if (currentScrollAnimation) {
+    cancelAnimationFrame(currentScrollAnimation);
+    currentScrollAnimation = null;
+  }
+
+  const startY = window.scrollY || window.pageYOffset || 0;
+  const distance = targetY - startY;
+
+  if (Math.abs(distance) < 2) {
+    window.scrollTo(0, targetY);
+    return;
+  }
+
+  // Durée réactive et équilibrée selon la distance (entre 280ms et 500ms max)
+  const duration = Math.min(500, Math.max(280, Math.abs(distance) * 0.12));
+  const startTime = performance.now();
+
+  // Easing easeOutCubic : départ immédiat à pleine vitesse (réaction instantanée) puis décélération soyeuse
+  const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+  const stopOnInteraction = () => {
+    if (currentScrollAnimation) {
+      cancelAnimationFrame(currentScrollAnimation);
+      currentScrollAnimation = null;
+    }
+    window.removeEventListener("wheel", stopOnInteraction);
+    window.removeEventListener("touchstart", stopOnInteraction);
+  };
+
+  window.addEventListener("wheel", stopOnInteraction, { passive: true, once: true });
+  window.addEventListener("touchstart", stopOnInteraction, { passive: true, once: true });
+
+  function step(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = easeOutCubic(progress);
+
+    window.scrollTo(0, startY + distance * ease);
+
+    if (progress < 1) {
+      currentScrollAnimation = requestAnimationFrame(step);
+    } else {
+      currentScrollAnimation = null;
+      window.scrollTo(0, targetY);
+      window.removeEventListener("wheel", stopOnInteraction);
+      window.removeEventListener("touchstart", stopOnInteraction);
+    }
+  }
+
+  currentScrollAnimation = requestAnimationFrame(step);
+}
 
 /**
  * Navigation fluide sans aucun '#' dans la barre d'adresse
@@ -29,7 +88,7 @@ function initCleanScrollNavigation() {
       e.preventDefault();
       const href = anchor.getAttribute("href");
       if (!href || href === "#") {
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        smoothScrollTo(0);
         return;
       }
 
@@ -38,11 +97,9 @@ function initCleanScrollNavigation() {
       if (targetEl) {
         const nav = document.querySelector(".navbar");
         const navHeight = nav ? nav.offsetHeight : 64;
-        const targetPos = targetEl.getBoundingClientRect().top + window.pageYOffset - navHeight - 16;
-        window.scrollTo({
-          top: targetPos,
-          behavior: "smooth"
-        });
+        const currentY = window.scrollY || window.pageYOffset || 0;
+        const targetPos = Math.max(0, targetEl.getBoundingClientRect().top + currentY - navHeight - 16);
+        smoothScrollTo(targetPos);
       }
     });
   });
@@ -71,6 +128,14 @@ function initOsDetection() {
   } else if (isMac) {
     btnMac.className = "download-btn download-btn--primary";
     btnWin.className = "download-btn download-btn--secondary";
+  }
+
+  // Synchroniser l'URL de téléchargement direct du header selon l'OS
+  const headerBtn = document.getElementById("header-download-btn");
+  if (headerBtn) {
+    headerBtn.href = isWindows
+      ? "https://github.com/Gabriel-Jagueneau/Cubirium/releases/latest/download/win-Cubirium.exe"
+      : "https://github.com/Gabriel-Jagueneau/Cubirium/releases/latest/download/mac-Cubirium.pkg";
   }
 }
 
@@ -115,6 +180,51 @@ function initCopyAddress() {
   if (pill) {
     pill.addEventListener("click", handleCopy);
   }
+}
+
+/**
+ * Initialise le bouton fusionné GitHub + Télécharger avec barre de progression synchronisée sur le téléchargement réel
+ */
+function initHeaderDownloadCombo() {
+  const downloadBtn = document.getElementById("header-download-btn");
+  const combo = document.getElementById("header-combo");
+  const text = document.getElementById("header-combo-text");
+  const percent = document.getElementById("header-combo-percent");
+
+  if (!downloadBtn || !combo || !text) return;
+
+  downloadBtn.addEventListener("click", () => {
+    // Le lien <a> natif gère directement le téléchargement sans blocage popup navigateur.
+    if (combo.classList.contains("is-downloading")) return;
+
+    const ua = navigator.userAgent || "";
+    const platform = navigator.platform || "";
+    const isWindows = /Win/i.test(platform) || /Windows/i.test(ua);
+    const fileName = isWindows ? "win-Cubirium.exe" : "mac-Cubirium.pkg";
+
+    // Morphing visuel du bouton
+    combo.classList.add("is-downloading");
+    combo.classList.remove("is-completed");
+    text.textContent = `Téléchargement lancé (${fileName})`;
+    if (percent) percent.textContent = "";
+
+    // Confirmation visuelle après démarrage
+    setTimeout(() => {
+      combo.classList.add("is-completed");
+      text.innerHTML = `
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor" style="display:inline-block; vertical-align:-2px; margin-right:6px;">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+        </svg>
+        Vérifiez vos téléchargements
+      `;
+
+      setTimeout(() => {
+        combo.classList.remove("is-downloading");
+        combo.classList.remove("is-completed");
+        text.textContent = "Téléchargement...";
+      }, 3500);
+    }, 2000);
+  });
 }
 
 /**
@@ -240,63 +350,149 @@ function updateHeaderVersions(latestRelease) {
   if (heroBadge) heroBadge.textContent = `Dernière version ${version} disponible`;
   if (heroVersion) heroVersion.textContent = version;
 
-  // Mise à jour éventuelle des liens de téléchargement hero
+  // Mise à jour éventuelle des liens de téléchargement hero et header
   const btnMac = document.getElementById("btn-download-mac");
   const btnWin = document.getElementById("btn-download-win");
+  const headerBtn = document.getElementById("header-download-btn");
 
   if (latestRelease.assets && latestRelease.assets.length > 0) {
     const macAsset = latestRelease.assets.find(a => a.name.endsWith(".pkg") || a.name.includes("mac"));
     const winAsset = latestRelease.assets.find(a => a.name.endsWith(".exe") || a.name.includes("win"));
 
+    window.latestReleaseAssets = { mac: macAsset, win: winAsset };
+
     if (macAsset && btnMac) btnMac.href = macAsset.browser_download_url;
     if (winAsset && btnWin) btnWin.href = winAsset.browser_download_url;
+
+    if (headerBtn) {
+      const isWindows = /Win/i.test(navigator.platform || navigator.userAgent || "");
+      if (isWindows && winAsset) headerBtn.href = winAsset.browser_download_url;
+      if (!isWindows && macAsset) headerBtn.href = macAsset.browser_download_url;
+    }
   }
 }
 
 /**
- * Génère le HTML pour chaque version
+ * Crée le bloc DOM d'une carte de version
+ */
+function createReleaseCard(rel, isLatest) {
+  const card = document.createElement("article");
+  card.className = `release-card ${isLatest ? "release-card--latest" : ""}`;
+
+  const dateStr = formatDate(rel.published_at);
+  const tagName = rel.tag_name || "Version";
+
+  // Parsing du corps du changelog
+  const formattedBody = formatMarkdownBody(rel.body || "Aucune note de version spécifiée.");
+
+  // Assets et téléchargements
+  const downloadsHtml = renderReleaseDownloads(rel);
+
+  card.innerHTML = `
+    <div class="release-card__header">
+      <div class="release-card__tag-group">
+        <span class="release-tag">${escapeHtml(tagName)}</span>
+        ${isLatest ? '<span class="release-badge-latest">Dernière version</span>' : ""}
+      </div>
+      <time class="release-date" datetime="${rel.published_at}">${dateStr}</time>
+    </div>
+
+    <div class="release-card__body">
+      ${formattedBody}
+    </div>
+
+    <div class="release-card__downloads">
+      ${downloadsHtml}
+    </div>
+  `;
+
+  return card;
+}
+
+/**
+ * Génère le HTML pour chaque version en masquant les anciennes versions
  */
 function renderReleases(releases, container) {
   if (!container) return;
 
   container.innerHTML = "";
 
-  releases.forEach((rel, index) => {
-    const isLatest = index === 0;
-    const card = document.createElement("article");
-    card.className = `release-card ${isLatest ? "release-card--latest" : ""}`;
+  if (releases.length === 0) return;
 
-    const dateStr = formatDate(rel.published_at);
-    const tagName = rel.tag_name || "Version";
-    const releaseTitle = rel.name || `Cubirium ${tagName}`;
+  // Affichage immédiat de la toute dernière version
+  const latestCard = createReleaseCard(releases[0], true);
+  container.appendChild(latestCard);
 
-    // Parsing du corps du changelog
-    const formattedBody = formatMarkdownBody(rel.body || "Aucune note de version spécifiée.");
+  // S'il n'y a pas d'anciennes versions, pas besoin de bouton
+  if (releases.length <= 1) return;
 
-    // Assets et téléchargements
-    const downloadsHtml = renderReleaseDownloads(rel);
+  // Conteneur des anciennes versions (cachées par défaut)
+  const olderContainer = document.createElement("div");
+  olderContainer.className = "changelog-older-versions";
+  olderContainer.id = "changelog-older-versions";
+  olderContainer.hidden = true;
 
-    card.innerHTML = `
-      <div class="release-card__header">
-        <div class="release-card__tag-group">
-          <span class="release-tag">${escapeHtml(tagName)}</span>
-          ${isLatest ? '<span class="release-badge-latest">Dernière version</span>' : ""}
-        </div>
-        <time class="release-date" datetime="${rel.published_at}">${dateStr}</time>
-      </div>
+  for (let i = 1; i < releases.length; i++) {
+    const card = createReleaseCard(releases[i], false);
+    olderContainer.appendChild(card);
+  }
 
-      <h3 class="release-card__title">${escapeHtml(releaseTitle)}</h3>
+  container.appendChild(olderContainer);
 
-      <div class="release-card__body">
-        ${formattedBody}
-      </div>
+  // Bouton pour afficher / masquer toutes les versions
+  const toggleWrap = document.createElement("div");
+  toggleWrap.className = "changelog-toggle-wrap";
 
-      <div class="release-card__downloads">
-        ${downloadsHtml}
-      </div>
-    `;
+  const toggleBtn = document.createElement("button");
+  toggleBtn.type = "button";
+  toggleBtn.className = "btn btn--secondary btn--toggle-versions";
+  toggleBtn.id = "btn-toggle-versions";
+  toggleBtn.innerHTML = `
+    <span class="btn-toggle-text">Montrer toutes les versions</span>
+    <svg class="icon-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  `;
 
-    container.appendChild(card);
+  let isExpanded = false;
+
+  const toggleOlderVersions = (forceExpand = null) => {
+    isExpanded = forceExpand !== null ? forceExpand : !isExpanded;
+    olderContainer.hidden = !isExpanded;
+    toggleBtn.classList.toggle("is-expanded", isExpanded);
+    const textSpan = toggleBtn.querySelector(".btn-toggle-text");
+    if (textSpan) {
+      textSpan.textContent = isExpanded ? "Masquer les anciennes versions" : "Montrer toutes les versions";
+    }
+  };
+
+  toggleBtn.addEventListener("click", () => {
+    if (isExpanded) {
+      // Si on replie et que l'utilisateur est descendu dans les versions, remonter doucement
+      const changelogSection = document.getElementById("changelog");
+      if (changelogSection) {
+        const nav = document.querySelector(".navbar");
+        const navHeight = nav ? nav.offsetHeight : 64;
+        const currentY = window.scrollY || window.pageYOffset || 0;
+        const targetPos = Math.max(0, changelogSection.getBoundingClientRect().top + currentY - navHeight - 16);
+        if (currentY > targetPos + 200) {
+          smoothScrollTo(targetPos);
+        }
+      }
+    }
+    toggleOlderVersions();
+  });
+
+  toggleWrap.appendChild(toggleBtn);
+  container.appendChild(toggleWrap);
+
+  // Clic sur le raccourci du footer "Toutes les versions" : déroule automatiquement
+  document.querySelectorAll('a[href="#changelog"]').forEach((link) => {
+    link.addEventListener("click", () => {
+      if (!isExpanded) {
+        toggleOlderVersions(true);
+      }
+    });
   });
 }
 
