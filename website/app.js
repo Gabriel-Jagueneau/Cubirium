@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initCleanScrollNavigation();
   initOsDetection();
   initCopyAddress();
-  initHeaderDownloadCombo();
   fetchReleases();
 });
 
@@ -182,50 +181,7 @@ function initCopyAddress() {
   }
 }
 
-/**
- * Initialise le bouton fusionné GitHub + Télécharger avec barre de progression synchronisée sur le téléchargement réel
- */
-function initHeaderDownloadCombo() {
-  const downloadBtn = document.getElementById("header-download-btn");
-  const combo = document.getElementById("header-combo");
-  const text = document.getElementById("header-combo-text");
-  const percent = document.getElementById("header-combo-percent");
 
-  if (!downloadBtn || !combo || !text) return;
-
-  downloadBtn.addEventListener("click", () => {
-    // Le lien <a> natif gère directement le téléchargement sans blocage popup navigateur.
-    if (combo.classList.contains("is-downloading")) return;
-
-    const ua = navigator.userAgent || "";
-    const platform = navigator.platform || "";
-    const isWindows = /Win/i.test(platform) || /Windows/i.test(ua);
-    const fileName = isWindows ? "win-Cubirium.exe" : "mac-Cubirium.pkg";
-
-    // Morphing visuel du bouton
-    combo.classList.add("is-downloading");
-    combo.classList.remove("is-completed");
-    text.textContent = `Téléchargement lancé (${fileName})`;
-    if (percent) percent.textContent = "";
-
-    // Confirmation visuelle après démarrage
-    setTimeout(() => {
-      combo.classList.add("is-completed");
-      text.innerHTML = `
-        <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor" style="display:inline-block; vertical-align:-2px; margin-right:6px;">
-          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-        </svg>
-        Vérifiez vos téléchargements
-      `;
-
-      setTimeout(() => {
-        combo.classList.remove("is-downloading");
-        combo.classList.remove("is-completed");
-        text.textContent = "Téléchargement...";
-      }, 3500);
-    }, 2000);
-  });
-}
 
 /**
  * Récupération dynamique des releases depuis l'API GitHub
