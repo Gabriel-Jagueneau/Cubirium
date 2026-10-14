@@ -3,7 +3,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { exec, spawn } = require('child_process');
+const { exec, spawn, execSync } = require('child_process');
 const minecraftService = require('./minecraft-service');
 const tunnelService = require('./tunnel-service');
 const modFilterService = require('./mod-filter-service');
@@ -49,6 +49,49 @@ process.on("unhandledRejection", (reason) => {
 
 const DEFAULT_PORT = 4567;
 const PUBLIC_DIR = path.resolve(__dirname, '../public');
+
+function downloadFileWithRedirects(url, destPath, maxRedirects = 5) {
+  return new Promise((resolve, reject) => {
+    if (maxRedirects <= 0) return reject(new Error("Trop de redirections lors du téléchargement"));
+    const client = url.startsWith('https:') ? https : http;
+    const req = client.get(url, {
+      headers: {
+        'User-Agent': `Cubirium/${packageJson.version || '1.1.1'}`
+      }
+    }, (res) => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        let redirectUrl = res.headers.location;
+        if (!redirectUrl.startsWith('http')) {
+          try {
+            const u = new URL(url);
+            redirectUrl = new URL(redirectUrl, u.origin).href;
+          } catch (_) {}
+        }
+        return resolve(downloadFileWithRedirects(redirectUrl, destPath, maxRedirects - 1));
+      }
+
+      if (res.statusCode !== 200) {
+        return reject(new Error(`Réponse HTTP ${res.statusCode} de GitHub`));
+      }
+
+      const fileStream = fs.createWriteStream(destPath);
+      res.pipe(fileStream);
+      fileStream.on('finish', () => {
+        fileStream.close(() => resolve());
+      });
+      fileStream.on('error', (err) => {
+        try { fs.unlinkSync(destPath); } catch (_) {}
+        reject(err);
+      });
+    });
+
+    req.on('error', reject);
+    req.setTimeout(35000, () => {
+      req.destroy();
+      reject(new Error("Délai d'attente réseau dépassé (timeout 35s)"));
+    });
+  });
+}
 
 function getCommandSuggestions(query, worldId, mcService) {
   const cleanQ = (query || '').trim().replace(/^\//, '').toLowerCase();
@@ -644,27 +687,57 @@ const server = http.createServer(async (req, res) => {
         ];
 
         let downloaded = false;
+        let lastError = null;
+
         for (const dlUrl of downloadUrls) {
           try {
-            execSync(`curl -sL --max-time 30 "${dlUrl}" -o "${archiveFile}"`);
+            console.log(`[Updater] Tentative de téléchargement depuis : ${dlUrl}`);
+            await downloadFileWithRedirects(dlUrl, archiveFile);
             if (fs.existsSync(archiveFile) && fs.statSync(archiveFile).size > 10000) {
               downloaded = true;
+              console.log(`[Updater] Archive téléchargée avec succès (${fs.statSync(archiveFile).size} octets)`);
               break;
+            } else {
+              lastError = new Error(`L'archive téléchargée (${fs.existsSync(archiveFile) ? fs.statSync(archiveFile).size : 0} octets) est vide ou invalide.`);
             }
-          } catch (_) {}
+          } catch (httpsErr) {
+            console.warn(`[Updater] Échec HTTPS direct (${dlUrl}):`, httpsErr.message);
+            lastError = httpsErr;
+            // Fallback curl système si disponible
+            try {
+              execSync(`curl -sL --max-time 30 "${dlUrl}" -o "${archiveFile}"`, { stdio: 'pipe' });
+              if (fs.existsSync(archiveFile) && fs.statSync(archiveFile).size > 10000) {
+                downloaded = true;
+                console.log(`[Updater] Archive téléchargée avec succès via curl (${fs.statSync(archiveFile).size} octets)`);
+                break;
+              }
+            } catch (curlErr) {
+              console.warn(`[Updater] Échec curl (${dlUrl}):`, curlErr.message);
+              lastError = curlErr;
+            }
+          }
         }
 
         if (!downloaded) {
           try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (_) {}
-          return sendJson(res, 500, { error: "Échec du téléchargement des sources de la mise à jour depuis GitHub." });
+          const detailMsg = lastError ? (lastError.message || String(lastError)) : "Aucune source accessible";
+          console.error(`[Updater] Échec du téléchargement des sources : ${detailMsg}`);
+          return sendJson(res, 500, {
+            error: "Échec du téléchargement des sources de la mise à jour depuis GitHub.",
+            details: detailMsg
+          });
         }
 
         // 2. Extraire l'archive
         try {
-          execSync(`tar -xzf "${archiveFile}" -C "${tempDir}"`);
+          execSync(`tar -xzf "${archiveFile}" -C "${tempDir}"`, { stdio: 'pipe' });
         } catch (tarErr) {
           try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (_) {}
-          return sendJson(res, 500, { error: "Échec de décompression de l'archive téléchargée." });
+          console.error(`[Updater] Échec de décompression tar:`, tarErr);
+          return sendJson(res, 500, {
+            error: "Échec de décompression de l'archive téléchargée.",
+            details: tarErr.message || String(tarErr)
+          });
         }
 
         // 3. Localiser le sous-dossier manager extrait
@@ -680,7 +753,10 @@ const server = http.createServer(async (req, res) => {
 
         if (!extractedManagerDir) {
           try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (_) {}
-          return sendJson(res, 500, { error: "L'archive téléchargée ne contient pas le dossier manager." });
+          return sendJson(res, 500, {
+            error: "L'archive téléchargée ne contient pas le dossier manager.",
+            details: `Entrées trouvées dans l'archive: ${entries.join(', ')}`
+          });
         }
 
         // 4. Dossiers à mettre à jour
@@ -786,7 +862,7 @@ const server = http.createServer(async (req, res) => {
         return;
       } catch (err) {
         console.error("Erreur critique apply-update:", err);
-        return sendJson(res, 500, { error: err.message || "Erreur interne lors de la mise à jour." });
+        return sendJson(res, 500, { error: err.message || "Erreur interne lors de la mise à jour.", details: err.stack || err.message });
       }
     }
 

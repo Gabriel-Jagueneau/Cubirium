@@ -6793,7 +6793,84 @@ async function checkForAppUpdates(silent = true) {
     }
   }
 }
-window.checkForAppUpdates = checkForAppUpdates;
+function renderMarkdownToHtml(text) {
+  if (!text || typeof text !== 'string') return '';
+  const lines = text.split(/\r?\n/);
+  let html = '';
+  let inList = false;
+
+  const flushList = () => {
+    if (inList === 'ul') {
+      html += '</ul>';
+      inList = false;
+    } else if (inList === 'ol') {
+      html += '</ol>';
+      inList = false;
+    }
+  };
+
+  const formatInlineText = (str) => {
+    let out = escapeHtml(str);
+    // Liens [texte](url)
+    out = out.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    // `code`
+    out = out.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // **gras**
+    out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    // *italique*
+    out = out.replace(/(^|[^*])\*([^*]+)\*([^*]|$)/g, '$1<em>$2</em>$3');
+    return out;
+  };
+
+  for (let line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      flushList();
+      continue;
+    }
+
+    // Titres Markdown (###, ##, #)
+    const headerMatch = trimmed.match(/^(#{1,6})\s+(.*)$/);
+    if (headerMatch) {
+      flushList();
+      const level = Math.min(6, Math.max(3, headerMatch[1].length + 1));
+      html += `<h${level}>${formatInlineText(headerMatch[2])}</h${level}>`;
+      continue;
+    }
+
+    // Listes ordonnées (1. , 2. )
+    const numMatch = trimmed.match(/^(\d+)\.\s+(.*)$/);
+    if (numMatch) {
+      if (inList !== 'ol') {
+        flushList();
+        html += '<ol>';
+        inList = 'ol';
+      }
+      html += `<li>${formatInlineText(numMatch[2])}</li>`;
+      continue;
+    }
+
+    // Listes à puces (-, *, •)
+    const listMatch = trimmed.match(/^[-*•]\s*(.*)$/);
+    if (listMatch) {
+      if (inList !== 'ul') {
+        flushList();
+        html += '<ul>';
+        inList = 'ul';
+      }
+      html += `<li>${formatInlineText(listMatch[1])}</li>`;
+      continue;
+    }
+
+    // Paragraphe standard
+    flushList();
+    html += `<p>${formatInlineText(trimmed)}</p>`;
+  }
+
+  flushList();
+  return html;
+}
+window.renderMarkdownToHtml = renderMarkdownToHtml;
 
 function showUpdateOfferModal(updateData) {
   const modal = document.getElementById('updateOfferModal');
@@ -6862,7 +6939,10 @@ async function startInAppUpdate() {
   if (normalView) normalView.style.display = 'none';
   if (progressView) progressView.style.display = 'block';
   if (footer) footer.style.display = 'none';
-  if (closeBtn) closeBtn.style.display = 'none';
+  const spinner = progressView ? progressView.querySelector('.update-spinner') : null;
+  if (spinner) spinner.style.display = 'block';
+  const existingErrorIcon = progressView ? progressView.querySelector('.update-error-icon') : null;
+  if (existingErrorIcon) existingErrorIcon.style.display = 'none';
 
   if (title) title.textContent = "Téléchargement de la mise à jour...";
   if (sub) sub.textContent = `Téléchargement et application des composants v${pendingUpdateData.latestVersion}...`;
@@ -6880,7 +6960,9 @@ async function startInAppUpdate() {
 
     const data = await res.json();
     if (!res.ok || !data.success) {
-      throw new Error(data.error || "Erreur lors de l'application de la mise à jour.");
+      const err = new Error(data.error || "Erreur lors de l'application de la mise à jour.");
+      if (data.details) err.details = data.details;
+      throw err;
     }
 
     if (title) title.textContent = "Mise à jour installée avec succès !";
@@ -6890,14 +6972,35 @@ async function startInAppUpdate() {
       window.location.reload();
     }, 2200);
   } catch (err) {
+    if (spinner) spinner.style.display = 'none';
+
+    let errorIcon = progressView ? progressView.querySelector('.update-error-icon') : null;
+    if (!errorIcon && progressView) {
+      errorIcon = document.createElement('div');
+      errorIcon.className = 'update-error-icon';
+      errorIcon.innerHTML = `<svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+      progressView.insertBefore(errorIcon, title);
+    }
+    if (errorIcon) errorIcon.style.display = 'flex';
+
     if (title) title.textContent = "Échec de la mise à jour";
-    if (sub) sub.textContent = err.message || "Une erreur est survenue.";
+    if (sub) {
+      const errorMsg = err.message || "Une erreur est survenue lors de la mise à jour.";
+      const errorDetails = err.details || "";
+      sub.innerHTML = `
+        <div style="color: var(--text-muted); margin-bottom: 8px;">${escapeHtml(errorMsg)}</div>
+        ${errorDetails ? `<div class="update-error-box"><code>${escapeHtml(errorDetails)}</code></div>` : ''}
+      `;
+    }
+
     if (footer) footer.style.display = 'flex';
     if (closeBtn) closeBtn.style.display = 'block';
     const acceptBtn = document.getElementById('btnAcceptUpdate');
     if (acceptBtn) {
       acceptBtn.textContent = "Réessayer";
       acceptBtn.onclick = () => {
+        if (errorIcon) errorIcon.style.display = 'none';
+        if (spinner) spinner.style.display = 'block';
         if (normalView) normalView.style.display = 'block';
         if (progressView) progressView.style.display = 'none';
         acceptBtn.textContent = "Mettre à jour";

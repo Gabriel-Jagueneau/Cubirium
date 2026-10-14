@@ -359,51 +359,79 @@ function renderReleaseDownloads(rel) {
  * Formatage Markdown simple en HTML pour le corps de la release
  */
 function formatMarkdownBody(text) {
-  const lines = text.split("\n");
-  let inList = false;
+  if (!text || typeof text !== "string") return "";
+  const lines = text.split(/\r?\n/);
   let html = "";
+  let inList = false;
 
-  lines.forEach(line => {
+  const flushList = () => {
+    if (inList === "ul") {
+      html += "</ul>";
+      inList = false;
+    } else if (inList === "ol") {
+      html += "</ol>";
+      inList = false;
+    }
+  };
+
+  for (let line of lines) {
     const trimmed = line.trim();
-
     if (!trimmed) {
-      if (inList) {
-        html += "</ul>";
-        inList = false;
-      }
-      return;
+      flushList();
+      continue;
     }
 
-    // Puces (- ou • ou *)
-    if (/^[-•*]\s+/.test(trimmed)) {
-      if (!inList) {
+    // Titres Markdown (###, ##, #)
+    const headerMatch = trimmed.match(/^(#{1,6})\s+(.*)$/);
+    if (headerMatch) {
+      flushList();
+      const level = Math.min(6, Math.max(3, headerMatch[1].length + 1));
+      html += `<h${level}>${formatInline(headerMatch[2])}</h${level}>`;
+      continue;
+    }
+
+    // Puces ordonnées (1. , 2. )
+    const numMatch = trimmed.match(/^(\d+)\.\s+(.*)$/);
+    if (numMatch) {
+      if (inList !== "ol") {
+        flushList();
+        html += "<ol>";
+        inList = "ol";
+      }
+      html += `<li>${formatInline(numMatch[2])}</li>`;
+      continue;
+    }
+
+    // Puces non-ordonnées (-, *, •)
+    const listMatch = trimmed.match(/^[-*•]\s*(.*)$/);
+    if (listMatch) {
+      if (inList !== "ul") {
+        flushList();
         html += "<ul>";
-        inList = true;
+        inList = "ul";
       }
-      const itemContent = trimmed.replace(/^[-•*]\s+/, "");
-      html += `<li>${formatInline(itemContent)}</li>`;
-    } else {
-      if (inList) {
-        html += "</ul>";
-        inList = false;
-      }
-      html += `<p style="margin-bottom: 8px;">${formatInline(trimmed)}</p>`;
+      html += `<li>${formatInline(listMatch[1])}</li>`;
+      continue;
     }
-  });
 
-  if (inList) {
-    html += "</ul>";
+    flushList();
+    html += `<p style="margin-bottom: 8px;">${formatInline(trimmed)}</p>`;
   }
 
+  flushList();
   return html;
 }
 
 function formatInline(str) {
-  // `code`
   let out = escapeHtml(str);
+  // Liens [texte](url)
+  out = out.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  // `code`
   out = out.replace(/`([^`]+)`/g, "<code>$1</code>");
   // **gras**
   out = out.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  // *italique*
+  out = out.replace(/(^|[^*])\*([^*]+)\*([^*]|$)/g, "$1<em>$2</em>$3");
   return out;
 }
 
