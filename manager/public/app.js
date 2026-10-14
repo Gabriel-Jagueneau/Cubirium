@@ -132,23 +132,29 @@ async function fetchVanillaVersions() {
   } catch (e) { }
 }
 
-async function startWorld(worldId) {
+async function startWorld(worldId, force = false) {
   try {
     selectTerminalWorld(worldId);
-    showToast(`Démarrage de ${worldId}...`, 'info');
+    showToast(force ? `Démarrage forcé de ${worldId}...` : `Démarrage de ${worldId}...`, 'info');
     const res = await fetch('/api/worlds/start', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ worldId })
+      body: JSON.stringify({ worldId, force: !!force })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Erreur lors du démarrage');
-    showToast(`Monde ${worldId} lancé avec succès !`, 'success');
+    showToast(force ? `Monde ${worldId} démarré de force !` : `Monde ${worldId} lancé avec succès !`, 'success');
     fetchWorlds();
   } catch (err) {
     showToast(err.message, 'error');
   }
 }
+
+async function forceStartWorld(worldId) {
+  return startWorld(worldId, true);
+}
+window.forceStartWorld = forceStartWorld;
+
 
 async function stopActiveWorld() {
   if (isDownloadingJava) {
@@ -203,6 +209,50 @@ async function openWorldFolder(worldId, customPath = null) {
 }
 window.openWorldFolder = openWorldFolder;
 
+let pendingRepairLaunchWorldId = null;
+
+function showRepairReportModal({ worldId, diagnosis, fixes, message }) {
+  const modal = document.getElementById('repairReportModal');
+  if (!modal) return;
+
+  pendingRepairLaunchWorldId = worldId;
+  const title = document.getElementById('repairReportTitle');
+  if (title) title.textContent = `Réparation de ${worldId}`;
+
+  const diagBox = document.getElementById('repairDiagnosisBox');
+  const diagText = document.getElementById('repairDiagnosisText');
+  if (diagBox && diagText) {
+    if (diagnosis) {
+      diagText.textContent = diagnosis;
+      diagBox.style.display = 'block';
+    } else {
+      diagBox.style.display = 'none';
+    }
+  }
+
+  const fixesList = document.getElementById('repairFixesList');
+  if (fixesList) {
+    fixesList.innerHTML = '';
+    const items = (Array.isArray(fixes) && fixes.length > 0)
+      ? fixes
+      : ["Vérification des verrous session.lock et fichiers de cache", "Validation du contrat de licence EULA", "Permissions et environnement d'exécution vérifiés"];
+    items.forEach(fix => {
+      const li = document.createElement('li');
+      li.textContent = fix;
+      fixesList.appendChild(li);
+    });
+  }
+
+  modal.style.display = 'flex';
+}
+
+function closeRepairReportModal() {
+  const modal = document.getElementById('repairReportModal');
+  if (modal) modal.style.display = 'none';
+  pendingRepairLaunchWorldId = null;
+}
+window.closeRepairReportModal = closeRepairReportModal;
+
 async function triggerWorldRepair(worldId) {
   // Trouver tous les boutons de réparation associés pour afficher immédiatement un loader animé
   const repairButtons = document.querySelectorAll(`button.btn-repair[onclick*="'${worldId}'"]`);
@@ -225,6 +275,12 @@ async function triggerWorldRepair(worldId) {
     if (data.success) {
       showToast(data.message || `Monde ${worldId} réparé avec succès !`, 'success');
       await fetchWorlds();
+      showRepairReportModal({
+        worldId,
+        diagnosis: data.diagnosis,
+        fixes: data.fixes,
+        message: data.message
+      });
     } else if (data.corrupted) {
       showToast(data.message || `Le monde est corrompu. Ouverture du dossier...`, 'error');
       openWorldFolder(worldId);
@@ -241,6 +297,7 @@ async function triggerWorldRepair(worldId) {
     });
   }
 }
+
 
 async function sendCommand(cmd) {
   if (!cmd.trim()) return;
@@ -753,6 +810,7 @@ function buildWorldCardHtml(w, opts) {
       </div>
 
       <div class="world-actions" onclick="event.stopPropagation()">
+        <div class="primary-action-container" data-type="${isRunning ? (isDownloadingJava ? 'downloading' : 'stop') : w.isCorrupted ? 'corrupted' : w.needsRepair ? 'repair' : 'launch'}">
         ${isRunning
       ? (isDownloadingJava
         ? `<button class="btn-downloading-java" disabled title="${escapeHtml(javaDownloadStep || 'Téléchargement de Java 21 LTS en cours...')}">
@@ -763,28 +821,43 @@ function buildWorldCardHtml(w, opts) {
           </button>`
         : `<button class="btn-stop-world" onclick="stopActiveWorld()">Arrêter</button>`)
       : w.isCorrupted
-        ? `<button class="btn-corrupted" onclick="openWorldFolder('${w.id}')" title="Ce monde est corrompu. Cliquez pour ouvrir son dossier dans l'explorateur.">
+        ? `<div class="btn-group-repair">
+             <button class="btn-corrupted" onclick="openWorldFolder('${w.id}')" title="Ce monde semble incomplet. Cliquez pour ouvrir son dossier.">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                   <line x1="12" y1="9" x2="12" y2="13"></line>
                   <line x1="12" y1="17" x2="12.01" y2="17"></line>
                 </svg>
                 Corrompu
-               </button>`
+             </button>
+             <button class="btn-card-action btn-card-force" ${isServerRunning ? 'disabled' : ''} onclick="forceStartWorld('${w.id}')" title="Forcer le démarrage du serveur malgré l'état détecté">
+               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+               </svg>
+             </button>
+           </div>`
         : w.needsRepair
-          ? `<button class="btn-repair" ${isServerRunning ? 'disabled' : ''} onclick="triggerWorldRepair('${w.id}')" title="Incident détecté. Cliquez pour lancer la réparation automatique.">
+          ? `<div class="btn-group-repair">
+               <button class="btn-repair" ${isServerRunning ? 'disabled' : ''} onclick="triggerWorldRepair('${w.id}')" title="Incident détecté. Cliquez pour lancer la réparation automatique.">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
                   </svg>
                   Réparer
-                 </button>`
-          : `<button class="btn-launch" ${isServerRunning ? 'disabled' : ''} onclick="startWorld('${w.id}')">
+               </button>
+               <button class="btn-card-action btn-card-force" ${isServerRunning ? 'disabled' : ''} onclick="forceStartWorld('${w.id}')" title="Forcer le démarrage immédiat (ignorer l'incident)">
+                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                 </svg>
+               </button>
+             </div>`
+          : `<button class="btn-launch" ${isServerRunning ? 'disabled' : ''} onclick="if(event.shiftKey||event.altKey){forceStartWorld('${w.id}');}else{startWorld('${w.id}');}" title="Lancer le serveur (Shift+Clic pour forcer le démarrage)">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                     <polygon points="5 3 19 12 5 21 5 3"></polygon>
                   </svg>
                   Lancer
                  </button>`
     }
+        </div>
         <button class="btn-card-action btn-card-players" title="Gestion des Joueurs (Ops, Whitelist, Bans)" onclick="openPlayersManager('${w.id}')">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -1071,7 +1144,7 @@ function renderWorlds(worlds) {
 
       const actionsDiv = card.querySelector('.world-actions');
       if (actionsDiv) {
-        const primaryBtn = actionsDiv.querySelector('.btn-stop-world, .btn-launch, .btn-repair, .btn-corrupted, .btn-downloading-java');
+        let primaryWrap = actionsDiv.querySelector('.primary-action-container');
         let expectedBtnHtml = '';
         let expectedType = '';
         if (isRunning) {
@@ -1084,25 +1157,34 @@ function renderWorlds(worlds) {
           }
         } else if (w.isCorrupted) {
           expectedType = 'corrupted';
-          expectedBtnHtml = `<button class="btn-corrupted" onclick="openWorldFolder('${w.id}')" title="Ce monde est corrompu. Cliquez pour ouvrir son dossier dans l'explorateur."><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>Corrompu</button>`;
+          expectedBtnHtml = `<div class="btn-group-repair"><button class="btn-corrupted" onclick="openWorldFolder('${w.id}')" title="Ce monde semble incomplet. Cliquez pour ouvrir son dossier."><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>Corrompu</button><button class="btn-card-action btn-card-force" ${isServerRunning ? 'disabled' : ''} onclick="forceStartWorld('${w.id}')" title="Forcer le démarrage du serveur malgré l'état détecté"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></button></div>`;
         } else if (w.needsRepair) {
           expectedType = 'repair';
-          expectedBtnHtml = `<button class="btn-repair" ${isServerRunning ? 'disabled' : ''} onclick="triggerWorldRepair('${w.id}')" title="Incident détecté. Cliquez pour lancer la réparation automatique."><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>Réparer</button>`;
+          expectedBtnHtml = `<div class="btn-group-repair"><button class="btn-repair" ${isServerRunning ? 'disabled' : ''} onclick="triggerWorldRepair('${w.id}')" title="Incident détecté. Cliquez pour lancer la réparation automatique."><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>Réparer</button><button class="btn-card-action btn-card-force" ${isServerRunning ? 'disabled' : ''} onclick="forceStartWorld('${w.id}')" title="Forcer le démarrage immédiat (ignorer l'incident)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></button></div>`;
         } else {
           expectedType = 'launch';
-          expectedBtnHtml = `<button class="btn-launch" ${isServerRunning ? 'disabled' : ''} onclick="startWorld('${w.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>Lancer</button>`;
+          expectedBtnHtml = `<button class="btn-launch" ${isServerRunning ? 'disabled' : ''} onclick="if(event.shiftKey||event.altKey){forceStartWorld('${w.id}');}else{startWorld('${w.id}');}" title="Lancer le serveur (Shift+Clic pour forcer le démarrage)"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>Lancer</button>`;
         }
 
-        if (primaryBtn) {
-          const currentType = primaryBtn.classList.contains('btn-downloading-java') ? 'downloading'
-            : primaryBtn.classList.contains('btn-stop-world') ? 'stop'
-            : primaryBtn.classList.contains('btn-corrupted') ? 'corrupted'
-            : primaryBtn.classList.contains('btn-repair') ? 'repair'
-            : 'launch';
+        if (primaryWrap) {
+          const currentType = primaryWrap.dataset.type || '';
           if (currentType !== expectedType) {
-            primaryBtn.outerHTML = expectedBtnHtml;
-          } else if (expectedType === 'launch' || expectedType === 'repair') {
-            if (primaryBtn.disabled !== isServerRunning) primaryBtn.disabled = isServerRunning;
+            primaryWrap.dataset.type = expectedType;
+            primaryWrap.innerHTML = expectedBtnHtml;
+          } else {
+            const launchBtn = primaryWrap.querySelector('.btn-launch, .btn-repair');
+            if (launchBtn && launchBtn.disabled !== isServerRunning) launchBtn.disabled = isServerRunning;
+            const forceBtn = primaryWrap.querySelector('.btn-card-force');
+            if (forceBtn && forceBtn.disabled !== isServerRunning) forceBtn.disabled = isServerRunning;
+          }
+        } else {
+          const legacyPrimary = actionsDiv.querySelector('.btn-stop-world, .btn-launch, .btn-repair, .btn-corrupted, .btn-downloading-java, .btn-group-repair');
+          if (legacyPrimary) {
+            const newWrap = document.createElement('div');
+            newWrap.className = 'primary-action-container';
+            newWrap.dataset.type = expectedType;
+            newWrap.innerHTML = expectedBtnHtml;
+            legacyPrimary.replaceWith(newWrap);
           }
         }
 
@@ -1138,8 +1220,94 @@ function renderWorlds(worlds) {
   }
 }
 
+function updateWorldCardsLive() {
+  const cards = document.querySelectorAll('.world-card');
+  const isServerRunning = (serverStatus === 'RUNNING' || serverStatus === 'STARTING' || serverStatus === 'STOPPING');
+
+  cards.forEach(card => {
+    const worldId = card.getAttribute('data-id');
+    if (!worldId) return;
+
+    const isThisActive = (worldId === activeWorld);
+    const isCardRunning = isThisActive && (serverStatus === 'RUNNING');
+    const isCardStarting = isThisActive && (serverStatus === 'STARTING');
+    const isCardStopping = isThisActive && (serverStatus === 'STOPPING');
+    const isCardDownloading = isThisActive && isDownloadingJava;
+
+    card.classList.toggle('running', isCardRunning);
+    card.classList.toggle('starting', isCardStarting && !isCardDownloading);
+    card.classList.toggle('stopping', isCardStopping);
+    card.classList.toggle('downloading', isCardDownloading);
+
+    // Mettre à jour la pastille lumineuse (pulse-dot)
+    const dot = card.querySelector('.world-title-row .pulse-dot, .world-title-row [class*="pulse-dot"]');
+    if (dot) {
+      const dotInfo = getWorldPulseDotInfo(worldId);
+      dot.className = dotInfo.className;
+      dot.title = dotInfo.title;
+    }
+
+    // Mettre à jour le bouton principal d'action
+    const actionsDiv = card.querySelector('.world-actions');
+    if (actionsDiv) {
+      const primaryWrap = actionsDiv.querySelector('.primary-action-container');
+      let expectedType = '';
+      let expectedBtnHtml = '';
+
+      if (isCardRunning || (isThisActive && (isCardStarting || isCardStopping))) {
+        if (isDownloadingJava) {
+          expectedType = 'downloading';
+          expectedBtnHtml = `<button class="btn-downloading-java" disabled title="${escapeHtml(javaDownloadStep || 'Téléchargement de Java 21 LTS en cours...')}"><svg class="spinner-icon-inline" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg><span>Téléchargement</span></button>`;
+        } else {
+          expectedType = 'stop';
+          expectedBtnHtml = `<button class="btn-stop-world" onclick="stopActiveWorld()">Arrêter</button>`;
+        }
+      }
+
+      if (primaryWrap) {
+        if (expectedType) {
+          if (primaryWrap.dataset.type !== expectedType) {
+            primaryWrap.dataset.type = expectedType;
+            primaryWrap.innerHTML = expectedBtnHtml;
+          }
+        } else {
+          const launchBtn = primaryWrap.querySelector('.btn-launch');
+          if (launchBtn && launchBtn.disabled !== isServerRunning) launchBtn.disabled = isServerRunning;
+          const repairBtn = primaryWrap.querySelector('.btn-repair');
+          if (repairBtn && repairBtn.disabled !== isServerRunning) repairBtn.disabled = isServerRunning;
+          const forceBtn = primaryWrap.querySelector('.btn-card-force');
+          if (forceBtn && forceBtn.disabled !== isServerRunning) forceBtn.disabled = isServerRunning;
+        }
+      } else {
+        const legacyPrimary = actionsDiv.querySelector('.btn-stop-world, .btn-launch, .btn-repair, .btn-corrupted, .btn-downloading-java, .btn-group-repair');
+        if (isCardRunning && legacyPrimary && !legacyPrimary.classList.contains('btn-stop-world')) {
+          const newWrap = document.createElement('div');
+          newWrap.className = 'primary-action-container';
+          newWrap.dataset.type = 'stop';
+          newWrap.innerHTML = `<button class="btn-stop-world" onclick="stopActiveWorld()">Arrêter</button>`;
+          legacyPrimary.replaceWith(newWrap);
+        }
+      }
+
+      const actionBtns = actionsDiv.querySelectorAll('.btn-card-action:not(.btn-card-players):not(.btn-card-delete)');
+      const isActionDisabled = isServerRunning && !isThisActive;
+      actionBtns.forEach(b => {
+        if (b.disabled !== isActionDisabled) b.disabled = isActionDisabled;
+        b.classList.toggle('disabled', isActionDisabled);
+      });
+
+      const deleteBtn = actionsDiv.querySelector('.btn-card-delete');
+      if (deleteBtn) {
+        if (deleteBtn.disabled !== isActionDisabled) deleteBtn.disabled = isActionDisabled;
+        deleteBtn.classList.toggle('disabled', isActionDisabled);
+      }
+    }
+  });
+}
+
 function updateMinecraftState(state) {
   const previousStatus = serverStatus;
+  const previousActiveWorld = activeWorld;
   serverStatus = state.status;
   activeWorld = state.activeWorld;
   currentPlayersList = state.players || [];
@@ -1149,14 +1317,13 @@ function updateMinecraftState(state) {
     currentServerStartTime = state.startTime;
   } else if (serverStatus === 'STOPPED') {
     currentServerStartTime = null;
-    if (previousStatus && previousStatus !== 'STOPPED') {
-      fetchWorlds();
-    }
   }
 
   updateTerminalHeader();
-  if (typeof updateWorldCardsLive === 'function') {
-    updateWorldCardsLive();
+  updateWorldCardsLive();
+
+  if (previousStatus !== serverStatus || previousActiveWorld !== activeWorld) {
+    fetchWorlds();
   }
 
   // Si la fenêtre de gestion des joueurs est ouverte, rafraîchir ses données
@@ -5340,6 +5507,15 @@ function openRenameWorld(worldId) {
     }
   }).catch(() => { });
 
+  // Bouton de Démarrage Forcé depuis la gestion du monde
+  const btnForceStart = document.getElementById('btnForceStartFromManage');
+  if (btnForceStart) {
+    btnForceStart.onclick = async () => {
+      closeRenameWorld();
+      await forceStartWorld(worldId);
+    };
+  }
+
   renameModal.style.display = 'flex';
   renameNewName.focus();
 }
@@ -5436,6 +5612,23 @@ if (btnConfirmDelete) {
   });
 }
 
+// Repair Report Modal listeners
+const btnCloseRepairReportModal = document.getElementById('btnCloseRepairReportModal');
+const btnDismissRepairReport = document.getElementById('btnDismissRepairReport');
+const btnLaunchAfterRepair = document.getElementById('btnLaunchAfterRepair');
+
+if (btnCloseRepairReportModal) btnCloseRepairReportModal.addEventListener('click', closeRepairReportModal);
+if (btnDismissRepairReport) btnDismissRepairReport.addEventListener('click', closeRepairReportModal);
+if (btnLaunchAfterRepair) {
+  btnLaunchAfterRepair.addEventListener('click', () => {
+    const target = pendingRepairLaunchWorldId;
+    closeRepairReportModal();
+    if (target) {
+      forceStartWorld(target);
+    }
+  });
+}
+
 btnRefreshWorlds.addEventListener('click', fetchWorlds);
 
 // Exposer globalement pour les événements onclick HTML
@@ -5443,6 +5636,7 @@ window.openEditProps = openEditProps;
 window.openRenameWorld = openRenameWorld;
 window.openDeleteWorld = openDeleteWorld;
 window.startWorld = startWorld;
+window.forceStartWorld = forceStartWorld;
 window.stopActiveWorld = stopActiveWorld;
 window.selectTerminalWorld = selectTerminalWorld;
 window.togglePinWorld = togglePinWorld;

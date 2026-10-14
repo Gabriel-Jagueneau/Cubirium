@@ -232,11 +232,31 @@ class MinecraftService {
     const version = (this.getWorldVersion(worldId) || '').trim();
     const content = String(checkContent || '');
 
-    // Déterminer si Java 25 est requis (Minecraft 26.x, 25.x ou indication explicite)
+    // Déterminer la version de Java requise selon la version Minecraft du monde
     const isJava25 = version.startsWith('26.') || version.startsWith('25.') ||
-                     content.includes('openjdk@25') || content.includes('Java 25');
+                     version.startsWith('24w') || version.startsWith('25w') || version.startsWith('26w') ||
+                     /(?:MC|Minecraft|Vanilla)\s*2[56]\./i.test(content);
+    const isJava8 = version.startsWith('1.7') || version.startsWith('1.8') || version.startsWith('1.9') ||
+                    version.startsWith('1.10') || version.startsWith('1.11') || version.startsWith('1.12') ||
+                    version.startsWith('1.13') || version.startsWith('1.14') || version.startsWith('1.15') ||
+                    version.startsWith('1.16');
 
     const candidates = [];
+
+    // Priorité Java 8 pour les versions 1.7.10 à 1.16.5 si présent
+    if (isJava8) {
+      if (isWin) {
+        const pf = process.env['ProgramFiles'] || 'C:\\Program Files';
+        candidates.push(path.join(pf, 'Java', 'jre1.8.0', 'bin', 'java.exe'));
+        candidates.push(path.join(pf, 'Java', 'jre8', 'bin', 'java.exe'));
+        candidates.push(path.join(pf, 'Eclipse Adoptium', 'jdk-8', 'bin', 'java.exe'));
+      } else {
+        candidates.push('/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java');
+        candidates.push('/Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home/bin/java');
+        candidates.push('/Library/Java/JavaVirtualMachines/zulu-8.jdk/Contents/Home/bin/java');
+        candidates.push('/Library/Java/JavaVirtualMachines/temurin-8.jdk/Contents/Home/bin/java');
+      }
+    }
 
     // 0. Dossiers de runtime locaux de Cubirium
     const appSupportDir = isWin
@@ -293,6 +313,10 @@ class MinecraftService {
         const j25List = vendorJdks.filter(p => /25|java-25|jdk-25|temurin-25/i.test(p));
         const otherList = vendorJdks.filter(p => !/25|java-25|jdk-25|temurin-25/i.test(p));
         candidates.push(...j25List, ...otherList);
+      } else if (isJava8) {
+        const j8List = vendorJdks.filter(p => /1\.8|java-8|jdk-8|jre-8|jre1\.8/i.test(p));
+        const otherList = vendorJdks.filter(p => !/1\.8|java-8|jdk-8|jre-8|jre1\.8/i.test(p));
+        candidates.push(...j8List, ...otherList);
       } else {
         const j21List = vendorJdks.filter(p => /21|java-21|jdk-21|temurin-21/i.test(p));
         const otherList = vendorJdks.filter(p => !/21|java-21|jdk-21|temurin-21/i.test(p));
@@ -312,6 +336,10 @@ class MinecraftService {
       if (isJava25) {
         candidates.push('/opt/homebrew/opt/openjdk@25/bin/java');
         candidates.push('/usr/local/opt/openjdk@25/bin/java');
+      }
+
+      if (isJava8) {
+        candidates.push('/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java');
       }
 
       candidates.push('/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java');
@@ -544,7 +572,7 @@ class MinecraftService {
         if (depth > 10) return reject(new Error('Trop de redirections'));
         const client = currentUrl.startsWith('https://') ? https : http;
         const req = client.get(currentUrl, {
-          headers: { 'User-Agent': 'Cubirium/1.1.0' }
+          headers: { 'User-Agent': 'Cubirium/1.1.1' }
         }, (res) => {
           if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
             return getUrl(res.headers.location, depth + 1);
@@ -699,13 +727,22 @@ class MinecraftService {
       this.detectedVersion = verMatch[1];
     }
 
-    // 2. Détection de statut "Done"
-    if (this.status === 'STARTING' && (
-      trimmed.includes('Done (') ||
-      trimmed.includes('Started') ||
-      trimmed.includes('RCON running') ||
-      trimmed.includes('Dedicated server permissions')
-    )) {
+    // 2. Détection de statut "Done" / Prêt à recevoir les joueurs
+    const lower = cleanLine.toLowerCase();
+    const isDoneLog = lower.includes('done (') ||
+                      lower.includes('done!') ||
+                      lower.includes('done [') ||
+                      lower.includes('for help, type') ||
+                      lower.includes('rcon running') ||
+                      lower.includes('dedicated server permissions') ||
+                      lower.includes('started') ||
+                      lower.includes('listening on');
+
+    if (this.status === 'STARTING' && isDoneLog) {
+      if (this.portCheckInterval) {
+        clearInterval(this.portCheckInterval);
+        this.portCheckInterval = null;
+      }
       this.status = 'RUNNING';
       if (!this.startTime) this.startTime = Date.now();
       this.broadcast('status', this.getState());
@@ -1017,24 +1054,63 @@ class MinecraftService {
       const neoforgeDir = path.join(worldPath, 'libraries/net/neoforged/neoforge');
       const forgeDir = path.join(worldPath, 'libraries/net/minecraftforge/forge');
       const fabricDir = path.join(worldPath, 'libraries/net/fabricmc');
+      
+      let detectedLdr = null;
+      let detectedVer = this.getWorldVersion(entry.name);
+
       if (fs.existsSync(neoforgeDir)) {
         try {
           const versions = fs.readdirSync(neoforgeDir).filter(f => !f.startsWith('.'));
-          launcherVersion = versions.length > 0 ? `NeoForge ${versions[0]}` : 'NeoForge';
-        } catch (e) { launcherVersion = 'NeoForge'; }
+          detectedLdr = versions.length > 0 ? `NeoForge ${versions[0]}` : 'NeoForge';
+        } catch (e) { detectedLdr = 'NeoForge'; }
       } else if (fs.existsSync(forgeDir)) {
         try {
           const versions = fs.readdirSync(forgeDir).filter(f => !f.startsWith('.'));
-          launcherVersion = versions.length > 0 ? `Forge ${versions[0]}` : 'Forge';
-        } catch (e) { launcherVersion = 'Forge'; }
-      } else if (fs.existsSync(fabricDir)) {
-        launcherVersion = 'Fabric';
-      } else if (hasRunSh) {
+          detectedLdr = versions.length > 0 ? `Forge ${versions[0]}` : 'Forge';
+        } catch (e) { detectedLdr = 'Forge'; }
+      } else if (fs.existsSync(fabricDir) || fs.existsSync(path.join(worldPath, '.fabric'))) {
+        detectedLdr = 'Fabric';
+      }
+
+      // Si pas encore déterminé par libraries, analyser run.sh ou run.bat
+      if (!detectedLdr && (hasRunSh || fs.existsSync(path.join(worldPath, 'run.bat')))) {
         try {
-          const runContent = fs.readFileSync(path.join(worldPath, 'run.sh'), 'utf8');
-          const m = runContent.match(/Vanilla\s+([0-9.]+)|MC\s+([0-9.]+)/i);
-          if (m) launcherVersion = `Vanilla ${m[1] || m[2]}`;
+          const runFile = hasRunSh ? path.join(worldPath, 'run.sh') : path.join(worldPath, 'run.bat');
+          const runContent = fs.readFileSync(runFile, 'utf8');
+          if (/neoforge/i.test(runContent)) {
+            detectedLdr = 'NeoForge';
+          } else if (/forge/i.test(runContent)) {
+            detectedLdr = 'Forge';
+          } else if (/fabric/i.test(runContent)) {
+            detectedLdr = 'Fabric';
+          } else if (/quilt/i.test(runContent)) {
+            detectedLdr = 'Quilt';
+          } else if (/vanilla/i.test(runContent)) {
+            detectedLdr = 'Vanilla';
+          }
         } catch (e) {}
+      }
+
+      // Si toujours indéterminé mais qu'il y a des mods, inspecter les fichiers .jar dans mods/
+      if (!detectedLdr && modsCount > 0) {
+        try {
+          const modFiles = fs.readdirSync(path.join(worldPath, 'mods')).filter(f => f.endsWith('.jar'));
+          if (modFiles.some(f => /neoforge/i.test(f))) detectedLdr = 'NeoForge';
+          else if (modFiles.some(f => /forge/i.test(f))) detectedLdr = 'Forge';
+          else if (modFiles.some(f => /fabric/i.test(f))) detectedLdr = 'Fabric';
+          else detectedLdr = 'Moddé';
+        } catch (_) {}
+      }
+
+      if (type === 'Vanilla') {
+        launcherVersion = detectedVer ? `Vanilla ${detectedVer}` : 'Vanilla';
+      } else {
+        const ldrName = detectedLdr || 'Moddé';
+        if (detectedVer && !ldrName.includes(detectedVer)) {
+          launcherVersion = `${ldrName} ${detectedVer}`;
+        } else {
+          launcherVersion = ldrName;
+        }
       }
 
       // Détection des dimensions chargées et créées (Uniquement Overworld, Nether, End)
@@ -1132,15 +1208,29 @@ class MinecraftService {
   /**
    * Lancement d'un monde
    */
-  async startWorld(worldId) {
+  async startWorld(worldId, force = false) {
     const worldPath = path.join(this.gamesDir, worldId);
     if (!fs.existsSync(worldPath)) {
       throw new Error(`Monde introuvable: ${worldId}`);
     }
 
+    // Si un autre monde est déjà en cours d'exécution
+    if (this.activeWorld && this.activeWorld !== worldId && this.status !== 'STOPPED') {
+      if (force) {
+        try { await this.stopWorld(true); } catch (_) {}
+      } else {
+        throw new Error(`Le monde '${this.activeWorld}' est déjà en cours d'exécution. Veuillez l'arrêter d'abord.`);
+      }
+    }
+
     this.worldLaunchTimes[worldId] = Date.now();
-    if (this.worldHealth[worldId]?.status === 'needs_repair') {
+    if (this.worldHealth[worldId]) {
       delete this.worldHealth[worldId];
+      this.broadcast('world_health_changed', { worldId, health: { status: 'healthy' } });
+    }
+
+    if (force) {
+      this.appendLog(`[Serveur] Démarrage forcé demandé pour le monde ${worldId}.`, worldId);
     }
 
     // 0. Nettoyage préventif des processus fantômes ou orphelins
@@ -1149,12 +1239,50 @@ class MinecraftService {
       await new Promise(r => setTimeout(r, 600));
     } catch (e) {}
 
-    // Nettoyage du session.lock s'il est resté bloqué après un crash/arrêt forcé
-    const sessionLock = path.join(worldPath, 'world', 'session.lock');
-    if (fs.existsSync(sessionLock)) {
+    // Nettoyage complet de tous les session.lock (racine, world/, dimensions)
+    const findLocks = (dir) => {
+      let locks = [];
       try {
-        fs.unlinkSync(sessionLock);
-      } catch (e) {}
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          const fp = path.join(dir, entry.name);
+          if (entry.isDirectory()) locks = locks.concat(findLocks(fp));
+          else if (entry.name === 'session.lock') locks.push(fp);
+        }
+      } catch (_) {}
+      return locks;
+    };
+    for (const lock of findLocks(worldPath)) {
+      try { fs.unlinkSync(lock); } catch (e) {}
+    }
+
+    // En cas de démarrage forcé : neutraliser le Watchdog et supprimer les chunks corrompus de 0 octet
+    if (force) {
+      try {
+        const propsPath = path.join(worldPath, 'server.properties');
+        if (fs.existsSync(propsPath)) {
+          let props = fs.readFileSync(propsPath, 'utf8');
+          if (!props.includes('max-tick-time=-1')) {
+            props = props.replace(/^max-tick-time=.*$/m, 'max-tick-time=-1');
+            if (!props.includes('max-tick-time=')) props += '\nmax-tick-time=-1\n';
+            fs.writeFileSync(propsPath, props, 'utf8');
+          }
+        }
+        // Supprimer les fichiers de région/entités de 0 octet
+        const cleanZeros = (dir) => {
+          try {
+            const entries = fs.readdirSync(dir, { withFileTypes: true });
+            for (const entry of entries) {
+              const fp = path.join(dir, entry.name);
+              if (entry.isDirectory()) cleanZeros(fp);
+              else if (entry.isFile() && entry.name.endsWith('.mca')) {
+                if (fs.statSync(fp).size === 0) try { fs.unlinkSync(fp); } catch (_) {}
+              }
+            }
+          } catch (_) {}
+        };
+        cleanZeros(worldPath);
+      } catch (_) {}
     }
 
     // Assurer eula=true
@@ -1216,6 +1344,36 @@ class MinecraftService {
     }).catch(err => {
       this.appendLog(`[Tunnel] Erreur: ${err.message}`, worldId);
     });
+
+    // Sondage actif TCP du port local Minecraft pour confirmer RUNNING immédiatement dès que le port écoute
+    if (this.portCheckInterval) {
+      clearInterval(this.portCheckInterval);
+      this.portCheckInterval = null;
+    }
+    const net = require('net');
+    this.portCheckInterval = setInterval(() => {
+      if (this.status !== 'STARTING') {
+        clearInterval(this.portCheckInterval);
+        this.portCheckInterval = null;
+        return;
+      }
+      const sock = new net.Socket();
+      sock.setTimeout(400);
+      sock.on('connect', () => {
+        sock.destroy();
+        if (this.status === 'STARTING') {
+          this.status = 'RUNNING';
+          if (!this.startTime) this.startTime = Date.now();
+          this.broadcast('status', this.getState());
+          this.broadcast('tunnel', tunnelService.getState());
+        }
+        clearInterval(this.portCheckInterval);
+        this.portCheckInterval = null;
+      });
+      sock.on('error', () => { sock.destroy(); });
+      sock.on('timeout', () => { sock.destroy(); });
+      sock.connect(serverPort, '127.0.0.1');
+    }, 1000);
 
     // 2. Déterminer la commande de lancement du serveur Minecraft
     let execFile = null;
@@ -1322,6 +1480,10 @@ class MinecraftService {
         });
       }
 
+      if (this.portCheckInterval) {
+        clearInterval(this.portCheckInterval);
+        this.portCheckInterval = null;
+      }
       if (this.runtimeSaveInterval) {
         clearInterval(this.runtimeSaveInterval);
         this.runtimeSaveInterval = null;
@@ -1348,6 +1510,10 @@ class MinecraftService {
 
     child.on('error', (err) => {
       this.appendLog(`[Serveur] Erreur de processus: ${err.message}`);
+      if (this.portCheckInterval) {
+        clearInterval(this.portCheckInterval);
+        this.portCheckInterval = null;
+      }
       const stoppedWorld = this.activeWorld;
       if (stoppedWorld) {
         this.markWorldCrashed(stoppedWorld, {
@@ -1492,6 +1658,115 @@ class MinecraftService {
   /**
    * Enregistre un crash ou incident sur un monde pour proposer la réparation
    */
+  /**
+   * Analyse et diagnostique le dernier crash d'un monde
+   */
+  analyzeWorldCrash(worldId) {
+    const worldPath = path.join(this.gamesDir, worldId);
+    const crashDir = path.join(worldPath, 'crash-reports');
+    const logsDir = path.join(worldPath, 'logs');
+    let lastCrashFile = null;
+    let crashContent = '';
+
+    if (fs.existsSync(crashDir)) {
+      try {
+        const files = fs.readdirSync(crashDir)
+          .filter(f => f.startsWith('crash-') && f.endsWith('.txt'))
+          .map(f => ({ name: f, time: fs.statSync(path.join(crashDir, f)).mtimeMs }))
+          .sort((a, b) => b.time - a.time);
+        if (files.length > 0) {
+          lastCrashFile = path.join(crashDir, files[0].name);
+          crashContent = fs.readFileSync(lastCrashFile, 'utf8');
+        }
+      } catch (_) {}
+    }
+
+    let logContent = '';
+    const latestLog = path.join(logsDir, 'latest.log');
+    if (fs.existsSync(latestLog)) {
+      try {
+        const logData = fs.readFileSync(latestLog, 'utf8');
+        logContent = logData.slice(-15000);
+      } catch (_) {}
+    }
+
+    const fullText = (crashContent + '\n' + logContent);
+    const diagnosis = {
+      hasCrash: !!crashContent || !!lastCrashFile,
+      crashFile: lastCrashFile ? path.basename(lastCrashFile) : null,
+      isWatchdog: false,
+      isOutOfMemory: false,
+      isJavaMismatch: false,
+      isCorruptChunk: false,
+      isPortConflict: false,
+      suspectedMod: null,
+      entityCount: null,
+      summary: ''
+    };
+
+    if (!fullText.trim()) {
+      diagnosis.summary = "Aucun rapport d'erreur ou crash récent n'a été enregistré.";
+      return diagnosis;
+    }
+
+    if (fullText.includes('ServerHangWatchdog') || fullText.includes('ServerWatchdog') || fullText.includes('single server tick took') || fullText.includes('Watching Server')) {
+      diagnosis.isWatchdog = true;
+    }
+
+    if (fullText.includes('OutOfMemoryError') || fullText.includes('Java heap space') || fullText.includes('Compressed class space')) {
+      diagnosis.isOutOfMemory = true;
+    }
+
+    if (fullText.includes('UnsupportedClassVersionError') || fullText.includes('has been compiled by a more recent version')) {
+      diagnosis.isJavaMismatch = true;
+    }
+
+    if (fullText.includes('Address already in use') || fullText.includes('FAILED TO BIND TO PORT')) {
+      diagnosis.isPortConflict = true;
+    }
+
+    if (fullText.includes('CorruptWorldException') || fullText.includes('Failed to load chunk') || fullText.includes('Empty Anvil header')) {
+      diagnosis.isCorruptChunk = true;
+    }
+
+    const suspectedModMatch = fullText.match(/Suspected Mod:\s*\n?\s*([^\n\r]+)/i);
+    if (suspectedModMatch) {
+      diagnosis.suspectedMod = suspectedModMatch[1].trim();
+    } else {
+      const modMatch = fullText.match(/at TRANSFORMER\/([a-zA-Z0-9_-]+)@/i) || fullText.match(/net\.mcreator\.([a-zA-Z0-9_]+)/i);
+      if (modMatch) {
+        diagnosis.suspectedMod = modMatch[1].trim();
+      }
+    }
+
+    const entityMatch = fullText.match(/entities:\s*([0-9]+)/i);
+    if (entityMatch) {
+      diagnosis.entityCount = parseInt(entityMatch[1], 10);
+    }
+
+    if (diagnosis.isWatchdog) {
+      let desc = "Arrêt forcé par le Server Watchdog : un tick a dépassé la limite de 60s (blocage ou lag intensif).";
+      if (diagnosis.suspectedMod) desc += ` Mod en cause : ${diagnosis.suspectedMod}.`;
+      if (diagnosis.entityCount && diagnosis.entityCount > 500) desc += ` ${diagnosis.entityCount} entités étaient actives lors du crash (ex: explosion TNT géante).`;
+      diagnosis.summary = desc;
+    } else if (diagnosis.isOutOfMemory) {
+      diagnosis.summary = "Mémoire vive saturée (OutOfMemoryError). La RAM allouée au serveur était insuffisante.";
+    } else if (diagnosis.isJavaMismatch) {
+      diagnosis.summary = "Incompatibilité de version Java avec le serveur Minecraft.";
+    } else if (diagnosis.isPortConflict) {
+      diagnosis.summary = "Conflit réseau : le port 25565 est déjà occupé par un autre processus.";
+    } else if (diagnosis.isCorruptChunk) {
+      diagnosis.summary = "Corruption de blocs ou de chunks dans la carte Minecraft.";
+    } else {
+      diagnosis.summary = "Incident ou arrêt anormal du serveur détecté.";
+    }
+
+    return diagnosis;
+  }
+
+  /**
+   * Enregistre un crash ou incident sur un monde pour proposer la réparation
+   */
   markWorldCrashed(worldId, { code, reason }) {
     if (!worldId) return;
     const worldPath = path.join(this.gamesDir, worldId);
@@ -1509,12 +1784,14 @@ class MinecraftService {
     );
 
     const isCorrupted = !hasFiles || (!hasValidWorld && !hasExecutable);
+    const crashAnalysis = this.analyzeWorldCrash(worldId);
 
     this.worldHealth[worldId] = {
       status: isCorrupted ? 'corrupted' : 'needs_repair',
-      reason: reason || "Arrêt inattendu du serveur.",
+      reason: crashAnalysis.summary || reason || "Arrêt inattendu du serveur.",
       lastCrashAt: Date.now(),
-      code: code ?? null
+      code: code ?? null,
+      diagnosis: crashAnalysis
     };
 
     this.broadcast('world_health_changed', { worldId, health: this.worldHealth[worldId] });
@@ -1531,7 +1808,7 @@ class MinecraftService {
   }
 
   /**
-   * Réparation automatique d'un monde corrompu ou crashé
+   * Réparation automatique et chirurgicale d'un monde corrompu ou crashé
    */
   async repairWorld(worldId) {
     const worldPath = path.join(this.gamesDir, worldId);
@@ -1540,46 +1817,199 @@ class MinecraftService {
     }
 
     const report = [];
+    const fixes = [];
 
-    // 1. Détecter et supprimer les verrous session.lock résiduels
-    const lockCandidates = [
-      path.join(worldPath, 'session.lock'),
-      path.join(worldPath, 'world', 'session.lock')
-    ];
-    for (const lock of lockCandidates) {
-      if (fs.existsSync(lock)) {
-        try {
-          fs.unlinkSync(lock);
-          report.push("Verrou session.lock obsolète supprimé.");
-        } catch (_) {}
-      }
+    // 0. Si le monde est actuellement actif, forcer son arrêt sécurisé
+    if (this.activeWorld === worldId && this.activeProcess) {
+      try {
+        await this.stopWorld(true);
+        report.push("Serveur actif arrêté pour libérer les fichiers.");
+      } catch (_) {}
     }
 
-    // 2. Vérifier et forcer l'acceptation de l'EULA
-    const eulaPath = path.join(worldPath, 'eula.txt');
-    try {
-      fs.writeFileSync(eulaPath, 'eula=true\n', 'utf8');
-      report.push("Contrat de licence EULA réinitialisé (eula=true).");
-    } catch (_) {}
+    // 1. Analyse approfondie des causes du crash
+    const diagnosis = this.analyzeWorldCrash(worldId);
+    if (diagnosis.summary) {
+      report.push(`Diagnostic : ${diagnosis.summary}`);
+    }
 
-    // 3. Vérifier et réparer server.properties
-    const propsPath = path.join(worldPath, 'server.properties');
-    if (!fs.existsSync(propsPath)) {
-      const defaultProps = `# Minecraft Server Properties (Auto-repaired)\nserver-port=25565\nmotd=Serveur ${worldId}\nonline-mode=true\nmax-players=20\npvp=true\n`;
-      fs.writeFileSync(propsPath, defaultProps, 'utf8');
-      report.push("Fichier server.properties manquant régénéré.");
-    } else {
+    // 2. Détection et suppression de TOUS les verrous session.lock résiduels
+    const findLocks = (dir) => {
+      let locks = [];
       try {
-        let content = fs.readFileSync(propsPath, 'utf8');
-        if (!content.includes('server-port=')) {
-          content += '\nserver-port=25565\n';
-          fs.writeFileSync(propsPath, content, 'utf8');
-          report.push("Propriété server-port ajoutée dans server.properties.");
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          const fp = path.join(dir, entry.name);
+          if (entry.isDirectory()) {
+            locks = locks.concat(findLocks(fp));
+          } else if (entry.name === 'session.lock') {
+            locks.push(fp);
+          }
+        }
+      } catch (_) {}
+      return locks;
+    };
+
+    const locks = findLocks(worldPath);
+    let removedLocksCount = 0;
+    for (const lockPath of locks) {
+      try {
+        fs.unlinkSync(lockPath);
+        removedLocksCount++;
+      } catch (_) {}
+    }
+    if (removedLocksCount > 0) {
+      fixes.push(`Suppression de ${removedLocksCount} verrou(s) session.lock obsolètes`);
+      report.push(`${removedLocksCount} verrou(s) session.lock résiduels supprimés.`);
+    }
+
+    // 3. Nettoyage des fichiers de chunks, régions, poi et entités corrompus de 0 octet
+    const findCorruptedZeroByteFiles = (dir) => {
+      let zeroFiles = [];
+      try {
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          const fp = path.join(dir, entry.name);
+          if (entry.isDirectory()) {
+            if (entry.name !== 'logs' && entry.name !== 'crash-reports') {
+              zeroFiles = zeroFiles.concat(findCorruptedZeroByteFiles(fp));
+            }
+          } else if (entry.isFile()) {
+            const ext = path.extname(entry.name).toLowerCase();
+            if (['.mca', '.dat', '.tmp', '.lock'].includes(ext) || entry.name.endsWith('.mca')) {
+              try {
+                const stat = fs.statSync(fp);
+                if (stat.size === 0) zeroFiles.push(fp);
+              } catch (_) {}
+            }
+          }
+        }
+      } catch (_) {}
+      return zeroFiles;
+    };
+
+    const zeroByteFiles = findCorruptedZeroByteFiles(worldPath);
+    let cleanedZeroFilesCount = 0;
+    for (const zf of zeroByteFiles) {
+      try {
+        fs.unlinkSync(zf);
+        cleanedZeroFilesCount++;
+      } catch (_) {}
+    }
+    if (cleanedZeroFilesCount > 0) {
+      fixes.push(`Suppression de ${cleanedZeroFilesCount} fichier(s) de chunk/entités corrompus (0 octet)`);
+      report.push(`${cleanedZeroFilesCount} fichier(s) de données corrompus de 0 octet supprimés.`);
+    }
+
+    // 4. Réparation et optimisation de server.properties (désactivation Watchdog & synchro disque)
+    const propsPath = path.join(worldPath, 'server.properties');
+    const isModded = fs.existsSync(path.join(worldPath, 'mods')) ||
+                     fs.existsSync(path.join(worldPath, 'type.txt')) ||
+                     fs.existsSync(path.join(worldPath, 'libraries')) ||
+                     diagnosis.isWatchdog;
+
+    let propsMap = new Map();
+    if (fs.existsSync(propsPath)) {
+      try {
+        const lines = fs.readFileSync(propsPath, 'utf8').split('\n');
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (trimmed && !trimmed.startsWith('#')) {
+            const eqIdx = trimmed.indexOf('=');
+            if (eqIdx !== -1) {
+              const k = trimmed.substring(0, eqIdx).trim();
+              const v = trimmed.substring(eqIdx + 1).trim();
+              propsMap.set(k, v);
+            }
+          }
         }
       } catch (_) {}
     }
 
-    // 4. Vérifier les exécutables et scripts de lancement
+    let propsModified = false;
+    // Désactivation du Watchdog pour empêcher Minecraft d'arrêter le serveur en cas de lag spike ou explosion
+    if (isModded || diagnosis.isWatchdog) {
+      if (propsMap.get('max-tick-time') !== '-1') {
+        propsMap.set('max-tick-time', '-1');
+        propsModified = true;
+        fixes.push("Watchdog désactivé (max-tick-time=-1) pour autoriser les calculs lourds et éviter les crashs de lag");
+        report.push("Paramètre max-tick-time=-1 appliqué dans server.properties (Server Watchdog désactivé).");
+      }
+    }
+
+    // Optimisation écriture disque asynchrone
+    if (propsMap.get('sync-chunk-writes') !== 'false') {
+      propsMap.set('sync-chunk-writes', 'false');
+      propsModified = true;
+      fixes.push("Écriture des chunks asynchrone activée (sync-chunk-writes=false)");
+    }
+
+    // S'assurer de la présence du port et d'une config minimale
+    if (!propsMap.has('server-port')) {
+      propsMap.set('server-port', '25565');
+      propsModified = true;
+    }
+    if (!propsMap.has('allow-flight')) {
+      propsMap.set('allow-flight', 'true');
+      propsModified = true;
+    }
+
+    if (propsModified || !fs.existsSync(propsPath)) {
+      try {
+        let newPropsContent = `# Minecraft Server Properties (Auto-repaired par Cubirium)\n`;
+        for (const [k, v] of propsMap.entries()) {
+          newPropsContent += `${k}=${v}\n`;
+        }
+        fs.writeFileSync(propsPath, newPropsContent, 'utf8');
+        report.push("Fichier server.properties mis à jour et optimisé.");
+      } catch (_) {}
+    }
+
+    // 5. Acceptation stricte du CLUF EULA
+    const eulaPath = path.join(worldPath, 'eula.txt');
+    try {
+      fs.writeFileSync(eulaPath, 'eula=true\n', 'utf8');
+      fixes.push("Contrat de licence EULA validé (eula=true)");
+      report.push("Contrat de licence EULA confirmé.");
+    } catch (_) {}
+
+    // 6. Nettoyage des fichiers JSON de cache corrompus
+    const jsonFilesToCheck = [
+      { name: 'usercache.json', defaultContent: '[]' },
+      { name: 'usernamecache.json', defaultContent: '{}' },
+      { name: 'ops.json', defaultContent: '[]' },
+      { name: 'whitelist.json', defaultContent: '[]' },
+      { name: 'banned-players.json', defaultContent: '[]' },
+      { name: 'banned-ips.json', defaultContent: '[]' }
+    ];
+
+    let jsonCleanedCount = 0;
+    for (const jf of jsonFilesToCheck) {
+      const jp = path.join(worldPath, jf.name);
+      if (fs.existsSync(jp)) {
+        try {
+          const raw = fs.readFileSync(jp, 'utf8').trim();
+          if (!raw) {
+            fs.writeFileSync(jp, jf.defaultContent, 'utf8');
+            jsonCleanedCount++;
+          } else {
+            JSON.parse(raw); // Tester la validité
+          }
+        } catch (_) {
+          // Fichier JSON invalide suite au crash
+          try {
+            fs.writeFileSync(jp, jf.defaultContent, 'utf8');
+            jsonCleanedCount++;
+          } catch (__) {}
+        }
+      }
+    }
+    if (jsonCleanedCount > 0) {
+      fixes.push(`${jsonCleanedCount} fichier(s) de cache JSON corrompus réinitialisés`);
+      report.push(`${jsonCleanedCount} fichier(s) JSON invalides réinitialisés proprement.`);
+    }
+
+    // 7. Vérification des permissions d'exécution sur les scripts de démarrage
     const runShPath = path.join(worldPath, 'run.sh');
     const runBatPath = path.join(worldPath, 'run.bat');
     const serverJarPath = path.join(worldPath, 'server.jar');
@@ -1587,16 +2017,31 @@ class MinecraftService {
     if (fs.existsSync(runShPath)) {
       try {
         fs.chmodSync(runShPath, 0o755);
-        report.push("Permissions d'exécution restaurées sur run.sh (chmod +x).");
+        fixes.push("Permissions d'exécution rétablies sur run.sh (chmod +x)");
+        report.push("Permissions d'exécution accordées à run.sh.");
       } catch (_) {}
     }
 
-    // Si aucun exécutable n'est présent mais qu'un dossier de map ou des configs existent
+    // 8. Ajustement de la mémoire Java si crash OutOfMemory
+    if (diagnosis.isOutOfMemory && fs.existsSync(runShPath)) {
+      try {
+        let shContent = fs.readFileSync(runShPath, 'utf8');
+        if (shContent.includes('-Xmx')) {
+          shContent = shContent.replace(/-Xmx[0-9]+[GMK]/g, '-Xmx6G');
+          fs.writeFileSync(runShPath, shContent, 'utf8');
+          fixes.push("Allocation mémoire augmentée à 6 Go (-Xmx6G) suite à OutOfMemory");
+          report.push("Allocation de mémoire vive rehaussée à 6G dans run.sh.");
+        }
+      } catch (_) {}
+    }
+
+    // 9. Vérification des exécutables manquants
     if (!fs.existsSync(runShPath) && !fs.existsSync(serverJarPath) && !fs.existsSync(runBatPath)) {
       try {
         const vanillaInstaller = require('./vanilla-installer-service');
         const ver = this.getWorldVersion(worldId) || '26.3';
         await vanillaInstaller.installVanillaServer(worldId, ver, worldPath);
+        fixes.push(`Exécutable serveur officiel (${ver}) réinstallé`);
         report.push(`Binaire officiel server.jar (${ver}) réinstallé avec succès.`);
       } catch (err) {
         this.worldHealth[worldId] = {
@@ -1608,19 +2053,41 @@ class MinecraftService {
           success: false,
           corrupted: true,
           message: `Le monde est corrompu et ne peut pas être réparé automatiquement. (${err.message})`,
-          report
+          report,
+          fixes
         };
       }
     }
 
-    // Réinitialiser la santé du monde
+    // 10. Archiver le crash report résolu pour éviter les faux positifs ultérieurs
+    const crashDir = path.join(worldPath, 'crash-reports');
+    if (fs.existsSync(crashDir)) {
+      try {
+        const cFiles = fs.readdirSync(crashDir).filter(f => f.startsWith('crash-') && f.endsWith('.txt'));
+        for (const cf of cFiles) {
+          const srcCrash = path.join(crashDir, cf);
+          const solvedCrash = path.join(crashDir, `${cf}.repaired`);
+          try { fs.renameSync(srcCrash, solvedCrash); } catch (_) {}
+        }
+        report.push("Rapports de crash résolus archivés.");
+      } catch (_) {}
+    }
+
+    // 11. Réinitialiser la santé du monde et avertir les clients connectés
     delete this.worldHealth[worldId];
     this.broadcast('world_health_changed', { worldId, health: { status: 'healthy' } });
+
+    const summaryMessage = fixes.length > 0 
+      ? `Monde réparé avec succès : ${fixes.slice(0, 2).join(', ')}.`
+      : "Le monde et ses configurations ont été vérifiés et réparés avec succès.";
 
     return {
       success: true,
       corrupted: false,
-      message: report.length > 0 ? report.join(' ') : "Le serveur a été vérifié et réparé avec succès.",
+      diagnosis: diagnosis.summary,
+      suspectedMod: diagnosis.suspectedMod,
+      fixes,
+      message: summaryMessage,
       report
     };
   }
@@ -1726,6 +2193,7 @@ class MinecraftService {
 server-port=25565
 motd=Serveur Minecraft Moddé ${effectiveVersion}
 max-players=20
+max-tick-time=-1
 online-mode=${isOffline ? 'false' : 'true'}
 level-seed=${customSeed}
 enforce-secure-profile=false
@@ -1741,25 +2209,43 @@ white-list=false
 `;
       fs.writeFileSync(path.join(targetDir, 'server.properties'), serverProps, 'utf8');
 
-      // Script de lancement multi-Java (Java 25 pour versions 26.x/25.x, Java 21 sinon)
+      // Script de lancement multi-Java (Java 25 pour versions 26.x/25.x, Java 8 si <= 1.16.5, Java 21 sinon)
       const isJava25 = effectiveVersion.startsWith('26.') || effectiveVersion.startsWith('25.');
+      const isLegacyJava8 = effectiveVersion.startsWith('1.7') || effectiveVersion.startsWith('1.8') ||
+                            effectiveVersion.startsWith('1.9') || effectiveVersion.startsWith('1.10') ||
+                            effectiveVersion.startsWith('1.11') || effectiveVersion.startsWith('1.12') ||
+                            effectiveVersion.startsWith('1.13') || effectiveVersion.startsWith('1.14') ||
+                            effectiveVersion.startsWith('1.15') || effectiveVersion.startsWith('1.16');
       const runScript = `#!/usr/bin/env sh
 # Script de lancement Moddé (${effectiveLoader} - Minecraft ${effectiveVersion}) pour ${cleanId}
 
 JAVA_CUBIRIUM="$HOME/Library/Application Support/Cubirium/runtime/java-21/bin/java"
-JAVA_25="/opt/homebrew/opt/openjdk@25/bin/java"
 JAVA_21="/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java"
+JAVA_25="/opt/homebrew/opt/openjdk@25/bin/java"
+JAVA_8="/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java"
 
 JAVA_BIN=""
-if [ -x "$JAVA_CUBIRIUM" ]; then
-    JAVA_BIN="$JAVA_CUBIRIUM"
-elif [ -x "$JAVA_25" ]; then
+${isJava25 ? `if [ -x "$JAVA_25" ]; then
     JAVA_BIN="$JAVA_25"
 elif [ -n "$JAVA_HOME" ] && [ -x "$JAVA_HOME/bin/java" ]; then
     JAVA_BIN="$JAVA_HOME/bin/java"
+fi` : (isLegacyJava8 ? `if [ -x "$JAVA_8" ]; then
+    JAVA_BIN="$JAVA_8"
+elif [ -x "$JAVA_CUBIRIUM" ]; then
+    JAVA_BIN="$JAVA_CUBIRIUM"
 elif [ -x "$JAVA_21" ]; then
     JAVA_BIN="$JAVA_21"
-elif command -v java >/dev/null 2>&1; then
+elif [ -n "$JAVA_HOME" ] && [ -x "$JAVA_HOME/bin/java" ]; then
+    JAVA_BIN="$JAVA_HOME/bin/java"
+fi` : `if [ -x "$JAVA_CUBIRIUM" ]; then
+    JAVA_BIN="$JAVA_CUBIRIUM"
+elif [ -x "$JAVA_21" ]; then
+    JAVA_BIN="$JAVA_21"
+elif [ -n "$JAVA_HOME" ] && [ -x "$JAVA_HOME/bin/java" ]; then
+    JAVA_BIN="$JAVA_HOME/bin/java"
+fi`)}
+
+if [ -z "$JAVA_BIN" ] && command -v java >/dev/null 2>&1; then
     JAVA_BIN="java"
 fi
 

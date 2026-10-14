@@ -1,6 +1,6 @@
 {
   "name": "cubirium",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Cubirium - Gestionnaire et automatisation de serveurs Minecraft locaux avec tunnel public",
   "scripts": {
     "diagnose": "node diagnose.js",

@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cubirium</title>
   <link rel="icon" type="image/png" href="/assets/favicon.png?v=5">
-  <link rel="stylesheet" href="styles.css?v=1.1.0">
+  <link rel="stylesheet" href="styles.css?v=1.1.1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -1194,6 +1194,28 @@
             <!-- Indicateur en direct pour la réinitialisation de dimension -->
             <div class="action-status-box" id="dimResetStatusBox"></div>
           </div>
+
+          <!-- 4. Démarrage Forcé -->
+          <div class="manage-section">
+            <h4 class="manage-section-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+              Démarrage Forcé
+            </h4>
+            <div class="export-box">
+              <div class="export-desc">
+                <strong>Forcer le lancement du serveur</strong>
+                <p>Court-circuite les vérifications d'incident, nettoie les verrous résiduels et neutralise le Watchdog.</p>
+              </div>
+              <button type="button" class="btn-primary-small" id="btnForceStartFromManage" style="display: flex; align-items: center; gap: 6px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                Forcer le Démarrage
+              </button>
+            </div>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn-secondary" id="btnCancelRename">Fermer</button>
@@ -1226,6 +1248,43 @@
           <button type="button" class="btn-secondary" id="btnCancelDelete">Annuler</button>
           <button type="button" class="btn-danger" id="btnConfirmDelete" style="padding: 9px 18px;">Supprimer
             Définitivement</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Repair Report Modal -->
+    <div class="modal-backdrop" id="repairReportModal" style="display: none;">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <h3 id="repairReportTitle">Rapport de Réparation</h3>
+            <span class="sub-brand" id="repairReportSub">Diagnostic et opérations effectuées</span>
+          </div>
+          <button class="btn-close" id="btnCloseRepairReportModal" title="Fermer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-content" style="display: flex; flex-direction: column; gap: 14px;">
+          <div id="repairDiagnosisBox" class="repair-diagnosis-box" style="display: none;">
+            <div class="repair-diag-label">Analyse de l'incident</div>
+            <div id="repairDiagnosisText" class="repair-diag-text"></div>
+          </div>
+          <div class="repair-fixes-box">
+            <div class="repair-fixes-label">Actions correctives appliquées</div>
+            <ul id="repairFixesList" class="repair-fixes-list"></ul>
+          </div>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" class="btn-secondary" id="btnDismissRepairReport">Fermer</button>
+          <button type="button" class="btn-primary" id="btnLaunchAfterRepair" style="display: flex; align-items: center; gap: 8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            Démarrer le serveur
+          </button>
         </div>
       </div>
     </div>
@@ -1554,7 +1613,7 @@
               <div class="settings-update-info">
                 <div class="settings-update-title-wrap">
                   <span class="settings-update-title">Version installée</span>
-                  <span class="settings-update-tag" id="settingsCurrentVersionTag">v1.1.0</span>
+                  <span class="settings-update-tag" id="settingsCurrentVersionTag">v1.1.1</span>
                 </div>
                 <span class="settings-update-desc" id="settingsUpdateFeedback">Vérifiez si une nouvelle version ou des
                   correctifs sont disponibles.</span>
@@ -2029,10 +2088,17 @@
             <h3 id="updateOfferTitle">Mise à jour disponible</h3>
             <span class="sub-brand" id="updateOfferSubtitle">Nouvelle version prête à être installée</span>
           </div>
+          <button class="btn-close" id="btnCloseUpdateOfferModal" onclick="closeUpdateOfferModal()" title="Fermer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
         <div class="modal-content update-modal-content">
           <div id="updateOfferNormalView">
-            <div class="update-version-highlight" id="updateOfferVersionBadge">Version v1.1.0</div>
+            <div class="update-version-highlight" id="updateOfferVersionBadge">Version v1.1.1</div>
             <p class="update-offer-description" id="updateOfferDescription">
               Une nouvelle version de Cubirium est disponible avec des améliorations et des correctifs.
             </p>
@@ -2076,7 +2142,7 @@
           </button>
         </div>
         <div class="modal-content update-modal-content">
-          <div class="update-version-highlight" id="updateSummaryVersionBadge">Version v1.1.0</div>
+          <div class="update-version-highlight" id="updateSummaryVersionBadge">Version v1.1.1</div>
           <p class="update-offer-description">
             Voici le résumé des nouveautés et correctifs apportés par cette mise à jour :
           </p>
@@ -2111,7 +2177,7 @@
   <div class="toast" id="toast"></div>
 
   <script src="libs/skinview3d.bundle.js"></script>
-  <script src="app.js?v=1.1.0"></script>
+  <script src="app.js?v=1.1.1"></script>
 </body>
 
 </html>

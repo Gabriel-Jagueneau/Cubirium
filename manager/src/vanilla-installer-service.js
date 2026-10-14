@@ -13,7 +13,11 @@ const OFFICIAL_FALLBACK_URLS = {
   '1.20.2': 'https://piston-data.mojang.com/v1/objects/5b868151bd42b4045553d70ded784e92a14b0f8d/server.jar',
   '1.20.1': 'https://piston-data.mojang.com/v1/objects/84194a5cce759e5d665deeab2421e10e85f1663b/server.jar',
   '1.19.4': 'https://piston-data.mojang.com/v1/objects/8f3112a10497510d647223b7b9148d423b497a5b/server.jar',
-  '1.18.2': 'https://piston-data.mojang.com/v1/objects/c8f83c5655308435b3d30b96e1f92c0b83cc59cf/server.jar'
+  '1.18.2': 'https://piston-data.mojang.com/v1/objects/c8f83c5655308435b3d30b96e1f92c0b83cc59cf/server.jar',
+  '1.16.5': 'https://piston-data.mojang.com/v1/objects/1b557e7b033b583cd9f66746b7a9ab1ec1673ced/server.jar',
+  '1.12.2': 'https://piston-data.mojang.com/v1/objects/886945bfb2b978778c3a0288fd7fab09d315b25f/server.jar',
+  '1.8.9': 'https://launcher.mojang.com/v1/objects/b58b2ceb36e01bcd8dbf49c8fb66c55a9f0676cd/server.jar',
+  '1.7.10': 'https://launcher.mojang.com/v1/objects/952438ac4e01b4d115c5fc38f891710c4941df29/server.jar'
 };
 
 class VanillaInstallerService {
@@ -93,12 +97,13 @@ class VanillaInstallerService {
         const latestRelease = manifest.latest?.release;
         const latestSnapshot = manifest.latest?.snapshot;
 
-        // Récupérer les versions officielles (releases) + le snapshot le plus récent si pertinent
+        // Récupérer toutes les versions officielles (releases) jusqu'à Minecraft 1.7.10 inclus
         const releases = manifest.versions.filter(v => v.type === 'release');
-        const candidateSnapshots = manifest.versions.filter(v => v.type === 'snapshot' && (v.id === latestSnapshot || v.id.startsWith('26.') || v.id.startsWith('25.')));
+        const idx1710 = releases.findIndex(v => v.id === '1.7.10');
+        const targetReleases = idx1710 !== -1 ? releases.slice(0, idx1710 + 1) : releases.slice(0, 80);
 
         const combinedMap = new Map();
-        // Inclure le snapshot le plus récent en tête si présent
+        // Inclure le snapshot le plus récent en tête si pertinent
         if (latestSnapshot && !combinedMap.has(latestSnapshot)) {
           const snapObj = manifest.versions.find(v => v.id === latestSnapshot) || { id: latestSnapshot, releaseTime: new Date().toISOString() };
           combinedMap.set(latestSnapshot, snapObj);
@@ -109,14 +114,14 @@ class VanillaInstallerService {
           combinedMap.set('26.3', snap26);
         }
 
-        // Ajouter les 35 releases officielles
-        for (const r of releases.slice(0, 35)) {
+        // Ajouter toutes les releases officielles couvertes (26.3 -> 1.7.10)
+        for (const r of targetReleases) {
           if (!combinedMap.has(r.id)) combinedMap.set(r.id, r);
         }
 
         const rawList = Array.from(combinedMap.values());
 
-        // Tri chronologique rigoureux : la plus récente toujours en tout premier
+        // Tri chronologique : version la plus récente en premier
         rawList.sort((a, b) => {
           const tA = a.releaseTime ? new Date(a.releaseTime).getTime() : 0;
           const tB = b.releaseTime ? new Date(b.releaseTime).getTime() : 0;
@@ -129,7 +134,12 @@ class VanillaInstallerService {
             reqJava = 25;
           } else if (v.id.startsWith('1.17')) {
             reqJava = 16;
-          } else if (v.id.startsWith('1.16') || v.id.startsWith('1.12')) {
+          } else if (
+            v.id.startsWith('1.16') || v.id.startsWith('1.15') || v.id.startsWith('1.14') ||
+            v.id.startsWith('1.13') || v.id.startsWith('1.12') || v.id.startsWith('1.11') ||
+            v.id.startsWith('1.10') || v.id.startsWith('1.9') || v.id.startsWith('1.8') ||
+            v.id.startsWith('1.7')
+          ) {
             reqJava = 8;
           }
 
@@ -139,6 +149,8 @@ class VanillaInstallerService {
           }
           if (reqJava === 25) {
             tag += ' - Java 25';
+          } else if (reqJava === 8) {
+            tag += ' - Java 8/17';
           } else if (reqJava === 21 && !tag) {
             tag = ' (Java 21)';
           }
@@ -161,14 +173,21 @@ class VanillaInstallerService {
     }
 
     const fallbackList = Object.keys(OFFICIAL_FALLBACK_URLS).map((v, index) => {
-      const isJava25 = v.startsWith('26.') || v.startsWith('25.');
+      let reqJava = 21;
+      if (v.startsWith('26.') || v.startsWith('25.')) reqJava = 25;
+      else if (v.startsWith('1.16') || v.startsWith('1.12') || v.startsWith('1.8') || v.startsWith('1.7')) reqJava = 8;
+      
+      let tag = index === 0 ? ' (Dernière version)' : '';
+      if (reqJava === 25) tag += ' - Java 25';
+      else if (reqJava === 8) tag += ' - Java 8/17';
+
       return {
         id: v,
         releaseTime: 'Officiel',
         url: null,
-        requiredJava: isJava25 ? 25 : 21,
+        requiredJava: reqJava,
         isLatest: index === 0,
-        label: index === 0 ? `${v} (Dernière version${isJava25 ? ' - Java 25' : ''})` : `${v} (${isJava25 ? 'Java 25' : 'Java 21'})`
+        label: `${v}${tag}`
       };
     });
 

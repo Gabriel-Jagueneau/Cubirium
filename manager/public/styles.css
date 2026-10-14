@@ -84,7 +84,6 @@ body {
 .update-notes-box,
 .props-form-sections,
 .options-modal-content,
-.players-list-scroll,
 .player-detail-body,
 .welcome-modal-content,
 .uninstall-body,
@@ -2496,6 +2495,7 @@ select option {
   gap: 16px;
   flex: 1;
   overflow: hidden;
+  scrollbar-gutter: auto;
 }
 
 .players-add-bar {
@@ -2560,8 +2560,10 @@ select option {
 .players-list-scroll {
   flex: 1;
   overflow-y: auto;
+  overflow-y: overlay;
+  scrollbar-gutter: auto;
   max-height: 420px;
-  padding-right: 4px;
+  padding-right: 0;
 }
 
 .players-list {
@@ -6263,4 +6265,85 @@ body:has(.welcome-overlay[style*="display:flex"]) .global-drop-overlay {
 button.btn-repair:disabled {
   opacity: 0.65;
   cursor: wait !important;
+}
+
+/* ==========================================================================
+   Modal Rapport de Réparation
+   ========================================================================== */
+.repair-diagnosis-box {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.repair-diag-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #fbbf24;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.repair-diag-text {
+  font-size: 0.88rem;
+  color: var(--text-main);
+  line-height: 1.45;
+}
+.repair-fixes-box {
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.repair-fixes-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #34d399;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.repair-fixes-list {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.repair-fixes-list li {
+  font-size: 0.86rem;
+  color: var(--text-main);
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   Boutons et groupe de Démarrage Forcé
+   ========================================================================== */
+.btn-group-repair {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.primary-action-container {
+  display: flex;
+  align-items: center;
+}
+
+
+.btn-card-force {
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.btn-card-force:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.22) !important;
+  border-color: rgba(245, 158, 11, 0.7) !important;
+  color: #fef08a !important;
+}
+
+.btn-card-force:disabled {
+  opacity: 0.45;
+  cursor: not-allowed !important;
 }

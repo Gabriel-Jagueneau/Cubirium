@@ -230,7 +230,7 @@ function renderError(container, message, isRateLimit = false) {
  */
 function updateHeaderVersions(latestRelease) {
   if (!latestRelease) return;
-  const version = latestRelease.tag_name || "v1.1.0";
+  const version = latestRelease.tag_name || "v1.1.1";
 
   const navBadge = document.getElementById("nav-version-badge");
   const heroBadge = document.getElementById("hero-badge-text");

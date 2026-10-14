@@ -121,7 +121,48 @@ class ModloaderInstallerService {
   }
 
   /**
-   * Installe le serveur modloader (Fabric, NeoForge ou fallback vanilla)
+   * Tente de résoudre la version exacte de Forge pour une version de Minecraft donnée
+   */
+  async resolveForgeVersion(mcVersion) {
+    const fallbacks = {
+      '1.20.4': '49.1.0',
+      '1.20.2': '48.1.0',
+      '1.20.1': '47.4.10',
+      '1.19.4': '45.3.0',
+      '1.19.3': '44.1.23',
+      '1.19.2': '43.4.13',
+      '1.18.2': '40.3.0',
+      '1.18.1': '39.1.2',
+      '1.18': '38.0.17',
+      '1.17.1': '37.1.1',
+      '1.16.5': '36.2.39',
+      '1.15.2': '31.2.57',
+      '1.14.4': '28.2.26',
+      '1.12.2': '14.23.5.2860',
+      '1.8.9': '11.15.1.2318',
+      '1.7.10': '10.13.4.1614-1.7.10'
+    };
+
+    try {
+      const data = await this.fetchJson('https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json');
+      if (data && data.promos) {
+        const recommendedKey = `${mcVersion}-recommended`;
+        const latestKey = `${mcVersion}-latest`;
+        const forgeBuild = data.promos[recommendedKey] || data.promos[latestKey];
+        if (forgeBuild) {
+          console.log(`[Modloader] Version Forge détectée pour MC ${mcVersion}: ${forgeBuild}`);
+          return forgeBuild;
+        }
+      }
+    } catch (e) {
+      console.warn(`[Modloader] Échec récupération métadonnées Forge: ${e.message}, utilisation version de secours`);
+    }
+
+    return fallbacks[mcVersion] || '40.3.0';
+  }
+
+  /**
+   * Installe le serveur modloader (Fabric, NeoForge, Forge ou fallback vanilla)
    */
   async installModloaderServer({ worldId, mcVersion = '1.21.1', loader = 'fabric', targetDir, onProgress }) {
     if (!fs.existsSync(targetDir)) {
@@ -212,7 +253,77 @@ class ModloaderInstallerService {
       }
     }
 
-    // 2. Tenter l'installation Fabric si loader === 'fabric' ou suite à échec NeoForge
+    // 2. Tenter l'installation Forge si loader === 'forge'
+    if (loader === 'forge') {
+      try {
+        if (onProgress) onProgress(35, `Recherche de la version Forge pour Minecraft ${mcVersion}...`);
+        
+        const forgeVersion = await this.resolveForgeVersion(mcVersion);
+        const fullVersion = forgeVersion.startsWith(`${mcVersion}-`) ? forgeVersion : `${mcVersion}-${forgeVersion}`;
+        const installerUrl = `https://maven.minecraftforge.net/net/minecraftforge/forge/${fullVersion}/forge-${fullVersion}-installer.jar`;
+        const tempInstallerPath = path.join(targetDir, 'forge-installer.jar');
+
+        if (onProgress) onProgress(40, `Téléchargement de l'installeur Forge (${fullVersion})...`);
+        await this.downloadFile(installerUrl, tempInstallerPath, (pct) => {
+          if (onProgress) onProgress(40 + Math.round(pct * 0.25), `Téléchargement Forge ${fullVersion}: ${pct}%`);
+        });
+
+        if (onProgress) onProgress(68, `Installation des bibliothèques serveur Forge (${fullVersion})...`);
+        
+        let curStep = 68;
+        const installerTimer = setInterval(() => {
+          if (curStep < 88) {
+            curStep += 4;
+            const messages = [
+              "Téléchargement et vérification des dépendances Minecraft...",
+              "Extraction et patching des bibliothèques Forge...",
+              "Génération des configurations de démarrage...",
+              "Finalisation de l'environnement serveur..."
+            ];
+            const msgIdx = Math.min(messages.length - 1, Math.floor((curStep - 70) / 5));
+            if (onProgress) onProgress(curStep, messages[msgIdx]);
+          }
+        }, 3000);
+
+        try {
+          const { execSync } = require('child_process');
+          execSync(`java -jar forge-installer.jar --installServer .`, {
+            cwd: targetDir,
+            stdio: 'ignore',
+            timeout: 300000
+          });
+        } finally {
+          clearInterval(installerTimer);
+        }
+
+        if (onProgress) onProgress(90, "Nettoyage des fichiers temporaires d'installation Forge...");
+
+        // Nettoyer l'installeur
+        try { fs.unlinkSync(tempInstallerPath); } catch (e) {}
+        try { fs.unlinkSync(path.join(targetDir, 'forge-installer.jar.log')); } catch (e) {}
+
+        // Détection d'un jar exécutable direct pour les versions Forge < 1.17 (ex: forge-1.16.5-36.2.39.jar)
+        const entries = fs.readdirSync(targetDir);
+        const legacyForgeJar = entries.find(f => f.startsWith('forge-') && f.endsWith('.jar') && !f.includes('installer'));
+        if (legacyForgeJar && !fs.existsSync(serverJarPath)) {
+          try {
+            fs.copyFileSync(path.join(targetDir, legacyForgeJar), serverJarPath);
+          } catch (e) {}
+        }
+
+        return {
+          loader: 'forge',
+          mcVersion,
+          forgeVersion,
+          serverJarPath,
+          hasRunSh: fs.existsSync(path.join(targetDir, 'run.sh'))
+        };
+      } catch (forgeErr) {
+        console.warn(`[Modloader] Échec installation Forge: ${forgeErr.message}. Repli vers Fabric/Vanilla...`);
+      }
+    }
+
+    // 3. Tenter l'installation Fabric si loader === 'fabric' ou loader === 'quilt' ou suite à échec NeoForge/Forge
     if (loader === 'fabric' || loader === 'quilt' || (!fs.existsSync(serverJarPath) && !fs.existsSync(path.join(targetDir, 'run.sh')))) {
       try {
         if (onProgress) onProgress(20, `Recherche du loader Fabric pour Minecraft ${mcVersion}...`);

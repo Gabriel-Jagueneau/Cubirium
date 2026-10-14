@@ -107,26 +107,69 @@ code {
   position: absolute;
   pointer-events: none;
   filter: blur(140px);
-  opacity: 0.22;
   z-index: -1;
   border-radius: 50%;
 }
 
+/* Premier glow en haut de page : rendu un poil plus visible et généreux */
 .ambient-glow--primary {
-  width: 600px;
-  height: 600px;
-  top: -150px;
+  width: 780px;
+  height: 780px;
+  top: -160px;
   left: 50%;
   transform: translateX(-50%);
+  opacity: 0.38;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.95) 0%, rgba(129, 140, 248, 0.45) 40%, rgba(99, 102, 241, 0) 70%);
+}
+
+/* Lueur sous le preview de l'interface */
+.ambient-glow--secondary {
+  width: 650px;
+  height: 650px;
+  top: 800px;
+  right: -100px;
+  opacity: 0.30;
+  background: radial-gradient(circle, #8b5cf6 0%, rgba(139, 92, 246, 0) 70%);
+}
+
+/* Lueur au niveau des fonctionnalités & bento */
+.ambient-glow--features {
+  width: 650px;
+  height: 650px;
+  top: 1650px;
+  left: -120px;
+  opacity: 0.28;
+  background: radial-gradient(circle, #3b82f6 0%, rgba(59, 130, 246, 0) 70%);
+}
+
+/* Lueur au niveau de la section compatibilité */
+.ambient-glow--compat {
+  width: 600px;
+  height: 600px;
+  top: 2500px;
+  right: -80px;
+  opacity: 0.28;
   background: radial-gradient(circle, #6366f1 0%, rgba(99, 102, 241, 0) 70%);
 }
 
-.ambient-glow--secondary {
-  width: 500px;
-  height: 500px;
-  top: 900px;
-  right: -100px;
-  background: radial-gradient(circle, #8b5cf6 0%, rgba(139, 92, 246, 0) 70%);
+/* Lueur au niveau du changelog dynamique */
+.ambient-glow--changelog {
+  width: 620px;
+  height: 620px;
+  top: 3350px;
+  left: -100px;
+  opacity: 0.26;
+  background: radial-gradient(circle, #a855f7 0%, rgba(168, 85, 247, 0) 70%);
+}
+
+/* Lueur au niveau du pied de page et de la FAQ */
+.ambient-glow--footer {
+  width: 700px;
+  height: 700px;
+  top: 4150px;
+  right: 12%;
+  opacity: 0.25;
+  background: radial-gradient(circle, #4f46e5 0%, rgba(79, 70, 229, 0) 70%);
 }
 
 /* --------------------------------------------------------------------------

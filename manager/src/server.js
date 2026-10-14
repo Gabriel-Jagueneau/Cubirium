@@ -536,7 +536,7 @@ const server = http.createServer(async (req, res) => {
 
     // 2c. API Check Update
     if (pathname === '/api/app/check-update' && method === 'GET') {
-      const currentVersion = packageJson.version || '1.1.0';
+      const currentVersion = packageJson.version || '1.1.1';
       try {
         const options = {
           hostname: 'api.github.com',
@@ -798,9 +798,9 @@ const server = http.createServer(async (req, res) => {
 
     // 4. API Start World
     if (pathname === '/api/worlds/start' && method === 'POST') {
-      const { worldId } = await parseBody(req);
+      const { worldId, force } = await parseBody(req);
       if (!worldId) return sendJson(res, 400, { error: 'Paramètre worldId manquant.' });
-      const state = await minecraftService.startWorld(worldId);
+      const state = await minecraftService.startWorld(worldId, !!force);
       return sendJson(res, 200, { success: true, state });
     }
 
