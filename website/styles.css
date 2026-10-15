@@ -950,11 +950,6 @@ code {
   flex-shrink: 0 !important;
 }
 
-.real-tunnel-pill:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: #1b243b;
-}
-
 .real-tunnel-dot {
   width: 7px;
   height: 7px;
@@ -986,11 +981,6 @@ code {
   transition: all 0.15s ease;
   white-space: nowrap !important;
   flex-shrink: 0 !important;
-}
-
-.real-btn-copy:hover {
-  background: rgba(255, 255, 255, 0.16);
-  color: #ffffff;
 }
 
 .real-btn-copy.copied {
@@ -1504,27 +1494,6 @@ code {
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
 }
 
-.spec-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(99, 102, 241, 0.35);
-  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.5), 0 0 25px -8px rgba(99, 102, 241, 0.18);
-}
-
-.spec-card--macos:hover {
-  border-color: rgba(168, 85, 247, 0.4);
-  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.5), 0 0 25px -8px rgba(168, 85, 247, 0.2);
-}
-
-.spec-card--windows:hover {
-  border-color: rgba(59, 130, 246, 0.4);
-  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.5), 0 0 25px -8px rgba(59, 130, 246, 0.2);
-}
-
-.spec-card--minecraft:hover {
-  border-color: rgba(16, 185, 129, 0.4);
-  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.5), 0 0 25px -8px rgba(16, 185, 129, 0.2);
-}
-
 .spec-card__header {
   display: flex;
   align-items: center;
@@ -1565,10 +1534,6 @@ code {
   color: #34d399;
 }
 
-.spec-card:hover .spec-card__icon-wrap {
-  transform: scale(1.06);
-}
-
 .spec-card__title-group {
   display: flex;
   flex-direction: column;
@@ -1604,11 +1569,6 @@ code {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.035);
   transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.spec-card__row:hover {
-  background: rgba(255, 255, 255, 0.045);
-  border-color: rgba(255, 255, 255, 0.06);
 }
 
 .spec-card__label {

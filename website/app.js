@@ -139,51 +139,6 @@ function initOsDetection() {
 }
 
 /**
- * Bouton interactif pour copier l'adresse de connexion du serveur dans la démo
- */
-function initCopyAddress() {
-  const copyBtn = document.getElementById("btnCopyTunnel") || document.getElementById("btn-copy-address");
-  const addressEl = document.getElementById("tunnelShareIp") || document.getElementById("sample-address");
-
-  if (!copyBtn || !addressEl) return;
-
-  const handleCopy = async (e) => {
-    if (e) e.stopPropagation();
-    const textToCopy = addressEl.textContent.trim();
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(textToCopy);
-      } else {
-        const textarea = document.createElement("textarea");
-        textarea.value = textToCopy;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textarea);
-      }
-
-      copyBtn.classList.add("copied");
-      const prevText = copyBtn.textContent;
-      copyBtn.textContent = "Copié !";
-      setTimeout(() => {
-        copyBtn.classList.remove("copied");
-        copyBtn.textContent = prevText;
-      }, 2000);
-    } catch (err) {
-      console.warn("Échec de la copie :", err);
-    }
-  };
-
-  copyBtn.addEventListener("click", handleCopy);
-  const pill = document.getElementById("tunnelSharePill");
-  if (pill) {
-    pill.addEventListener("click", handleCopy);
-  }
-}
-
-
-
-/**
  * Récupération dynamique des releases depuis l'API GitHub
  */
 async function fetchReleases() {
