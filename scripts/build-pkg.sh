@@ -45,7 +45,7 @@ fi
 echo -n "APPL????" > "$PROJECT_ROOT/Cubirium.app/Contents/PkgInfo"
 
 # Mise à jour automatique de Info.plist avec la version de package.json
-APP_VERSION=$(node -e "try{console.log(require('$PROJECT_ROOT/manager/package.json').version)}catch(_){console.log('1.1.1')}")
+APP_VERSION=$(node -e "try{console.log(require('$PROJECT_ROOT/manager/package.json').version)}catch(_){console.log('1.2.0')}")
 PLIST_FILE="$PROJECT_ROOT/Cubirium.app/Contents/Info.plist"
 if [ -f "$PROJECT_ROOT/manager/src/native-app/Info.plist" ]; then
   cp "$PROJECT_ROOT/manager/src/native-app/Info.plist" "$PLIST_FILE"
@@ -156,6 +156,44 @@ if [ -n "$LOGGED_USER" ] && [ "$LOGGED_USER" != "root" ]; then
     touch -h "$DESKTOP_SHORTCUT" 2>/dev/null || true
   fi
   killall Finder 2>/dev/null || true
+
+  # Vérification et installation automatique du tout dernier runtime Java (Java 25) à l'installation de l'application
+  TARGET_RUNTIME="$USER_HOME/Library/Application Support/Cubirium/runtime/java-25"
+  JAVA_EXISTS=0
+  if [ -x "$TARGET_RUNTIME/bin/java" ] || [ -x "$TARGET_RUNTIME/Contents/Home/bin/java" ]; then
+    JAVA_EXISTS=1
+  fi
+  if [ -x "$USER_HOME/Library/Application Support/Cubirium/runtime/java-21/bin/java" ]; then
+    JAVA_EXISTS=1
+  fi
+  if [ -x "/opt/homebrew/opt/openjdk@25/bin/java" ] || [ -x "/usr/local/opt/openjdk@25/bin/java" ]; then
+    JAVA_EXISTS=1
+  fi
+
+  if [ "$JAVA_EXISTS" -eq 0 ]; then
+    mkdir -p "$USER_HOME/Library/Application Support/Cubirium/runtime"
+    ARCH_NAME=$(uname -m)
+    ADOPT_ARCH="x64"
+    if [ "$ARCH_NAME" = "arm64" ]; then
+      ADOPT_ARCH="aarch64"
+    fi
+    TMP_PKG_JAVA="/tmp/cubirium_temurin25.tar.gz"
+    TMP_EXTRACT="/tmp/cubirium_temurin25_extract"
+    rm -rf "$TMP_EXTRACT" && mkdir -p "$TMP_EXTRACT"
+    curl -L -s --max-time 120 -o "$TMP_PKG_JAVA" "https://api.adoptium.net/v3/binary/latest/25/ga/mac/${ADOPT_ARCH}/jre/hotspot/normal/eclipse" 2>/dev/null || true
+    if [ -s "$TMP_PKG_JAVA" ]; then
+      tar -xzf "$TMP_PKG_JAVA" -C "$TMP_EXTRACT" 2>/dev/null || true
+      FOUND_HOME=$(find "$TMP_EXTRACT" -name "Home" -type d | head -n 1)
+      if [ -n "$FOUND_HOME" ] && [ -x "$FOUND_HOME/bin/java" ]; then
+        rm -rf "$TARGET_RUNTIME"
+        PARENT_DIR=$(dirname "$(dirname "$FOUND_HOME")")
+        cp -R "$PARENT_DIR" "$TARGET_RUNTIME" 2>/dev/null || cp -R "$FOUND_HOME" "$TARGET_RUNTIME" 2>/dev/null || true
+      fi
+    fi
+    rm -f "$TMP_PKG_JAVA"
+    rm -rf "$TMP_EXTRACT"
+    chown -R "$LOGGED_USER:staff" "$USER_HOME/Library/Application Support/Cubirium" 2>/dev/null || true
+  fi
 
   # Lancer l'application dans la session graphique de l'utilisateur
   launchctl asuser "$USER_UID" open "$APP_TARGET" 2>/dev/null || \

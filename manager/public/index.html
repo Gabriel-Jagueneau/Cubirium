@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cubirium</title>
   <link rel="icon" type="image/png" href="/assets/favicon.png?v=5">
-  <link rel="stylesheet" href="styles.css?v=1.1.1">
+  <link rel="stylesheet" href="styles.css?v=1.3.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -177,6 +177,7 @@
 
         <div class="modal-tabs">
           <button class="tab-btn active" data-tab="tab-vanilla">Vanilla</button>
+          <button class="tab-btn" data-tab="tab-crossplay">Crossplay</button>
           <button class="tab-btn" data-tab="tab-modded">Moddé</button>
           <button class="tab-btn" data-tab="tab-import">Charger</button>
         </div>
@@ -189,15 +190,17 @@
                 <label for="vanillaName">Nom du monde <span class="help-badge-optional">Optionnel</span></label>
                 <input type="text" id="vanillaName" placeholder="ex: Mon-Monde-1" />
               </div>
+
               <div class="form-group">
-                <label for="vanillaSeed">Graine de Génération <span class="help-badge-optional">Optionnel</span></label>
-                <input type="text" id="vanillaSeed" placeholder="ex: 123456789 ou laisser vide" />
+                <label for="vanillaSeed">Graine du monde <span class="help-badge-optional">Optionnel</span></label>
+                <input type="text" id="vanillaSeed" placeholder="ex: 888880777356331877 ou vide pour aléatoire" autocomplete="off" />
               </div>
+
               <div class="form-group">
                 <label for="vanillaVersion">Version Minecraft</label>
                 <select id="vanillaVersion">
                   <option value="26.3">Minecraft 26.3</option>
-                  <option value="1.21.1">Minecraft 1.21.1</option>
+                  <option value="1.21.1" selected>Minecraft 1.21.1</option>
                   <option value="1.21">Minecraft 1.21</option>
                   <option value="1.20.6">Minecraft 1.20.6</option>
                   <option value="1.20.4">Minecraft 1.20.4</option>
@@ -220,6 +223,122 @@
             </form>
           </div>
 
+          <!-- Tab Crossplay (Java & Bedrock) -->
+          <div class="tab-pane" id="tab-crossplay">
+            <form id="formCreateCrossplay">
+              <div class="form-group">
+                <label for="crossplayName">Nom du monde <span class="help-badge-optional">Optionnel</span></label>
+                <input type="text" id="crossplayName" placeholder="ex: monde-1" />
+              </div>
+
+              <div class="form-group">
+                <label for="crossplaySeed">Graine du monde <span class="help-badge-optional">Optionnel</span></label>
+                <input type="text" id="crossplaySeed" placeholder="ex: 888880777356331877 ou vide pour aléatoire" autocomplete="off" />
+              </div>
+
+              <div class="form-group">
+                <label for="crossplayVersion">Version Minecraft</label>
+                <select id="crossplayVersion">
+                  <option value="1.21.1" selected>Minecraft 1.21.1 (Recommandée - Ultra stable)</option>
+                  <option value="1.21">Minecraft 1.21</option>
+                  <option value="1.20.6">Minecraft 1.20.6</option>
+                  <option value="1.20.4">Minecraft 1.20.4</option>
+                  <option value="1.20.1">Minecraft 1.20.1</option>
+                </select>
+                <span class="help-text">Propulsé par PaperMC avec GeyserMC et Floodgate pré-installés.</span>
+              </div>
+
+              <!-- Bannière Explicative Crossplay -->
+              <div class="crossplay-info-banner">
+                <div class="crossplay-platforms-row">
+                  <span class="platform-chip chip-java">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                      <line x1="8" y1="21" x2="16" y2="21"></line>
+                      <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                    PC • Mac • Linux
+                  </span>
+                  <span class="crossplay-arrow" aria-hidden="true">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M8 7l-5 5 5 5"></path>
+                      <path d="M3 12h18"></path>
+                      <path d="M16 17l5-5-5-5"></path>
+                    </svg>
+                  </span>
+                  <span class="platform-chip chip-bedrock">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="6" y="11" width="12" height="10" rx="2"></rect>
+                      <circle cx="12" cy="5" r="2"></circle>
+                      <path d="M12 7v4"></path>
+                      <line x1="8" y1="16" x2="8" y2="16"></line>
+                      <line x1="16" y1="16" x2="16" y2="16"></line>
+                    </svg>
+                    Xbox • PS5 • Switch • Mobile
+                  </span>
+                </div>
+                <p class="crossplay-banner-desc">
+                  Vos amis sur consoles et smartphones peuvent vous rejoindre sans compte Java. Le serveur écoute
+                  simultanément les connexions Java (TCP 25565) et Bedrock (UDP 19132).
+                </p>
+
+                <button type="button" class="crossplay-guide-toggle" id="btnToggleCrossplayGuide">
+                  <span class="guide-toggle-text">Guide de connexion détaillé</span>
+                  <svg class="guide-toggle-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </button>
+
+                <div class="crossplay-guide-drawer" id="crossplayGuideDrawer">
+                  <div class="crossplay-guide-steps">
+                    <div class="guide-step-item">
+                      <div class="guide-step-badge">1</div>
+                      <div class="guide-step-body">
+                        <strong class="guide-step-title">Joueurs PC, Mac &amp; Linux (Java Edition)</strong>
+                        <p class="guide-step-text">Dans <em>Multijoueur &gt; Nouveau serveur</em>, saisissez l'adresse de connexion générée par Cubirium. Port par défaut : <code>25565</code>.</p>
+                      </div>
+                    </div>
+                    <div class="guide-step-item">
+                      <div class="guide-step-badge">2</div>
+                      <div class="guide-step-body">
+                        <strong class="guide-step-title">Joueurs Mobiles &amp; Windows (Bedrock Edition)</strong>
+                        <p class="guide-step-text">Dans <em>Jouer &gt; Onglet Serveurs &gt; Ajouter un serveur</em>, entrez l'adresse avec le port Bedrock : <code>19132</code> (ou le port public attribué). Aucun compte Java n'est nécessaire.</p>
+                      </div>
+                    </div>
+                    <div class="guide-step-item">
+                      <div class="guide-step-badge">3</div>
+                      <div class="guide-step-body">
+                        <strong class="guide-step-title">Joueurs Consoles (Xbox, PlayStation, Nintendo Switch)</strong>
+                        <p class="guide-step-text">Rejoignez via la liste d'amis de l'hôte ou via un relais communautaire (ex: <em>BedrockConnect</em>) dans les paramètres réseau de la console.</p>
+                      </div>
+                    </div>
+                    <div class="guide-step-item">
+                      <div class="guide-step-badge">4</div>
+                      <div class="guide-step-body">
+                        <strong class="guide-step-title">Multijoueur en ligne automatique</strong>
+                        <p class="guide-step-text">Dès le lancement du serveur, Cubirium établit un lien public direct et sécurisé. Vos amis peuvent vous rejoindre immédiatement, sans aucune ouverture de port ni manipulation sur votre box Internet.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group-checkbox">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="crossplayOffline" />
+                  <span>Cracké</span>
+                </label>
+                <span class="help-text">Désactivé par défaut. Cochez pour autoriser les joueurs sans compte Microsoft
+                  officiel.</span>
+              </div>
+
+              <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="btnCancelCrossplay">Annuler</button>
+                <button type="submit" class="btn-primary" id="btnSubmitCrossplay">Créer le serveur Crossplay</button>
+              </div>
+            </form>
+          </div>
+
           <!-- Tab Modded -->
           <div class="tab-pane" id="tab-modded">
             <form id="formCreateModded">
@@ -227,9 +346,10 @@
                 <label for="moddedName">Nom du monde <span class="help-badge-optional">Optionnel</span></label>
                 <input type="text" id="moddedName" placeholder="ex: Pack-Aventure" />
               </div>
+
               <div class="form-group">
-                <label for="moddedSeed">Graine de Génération <span class="help-badge-optional">Optionnel</span></label>
-                <input type="text" id="moddedSeed" placeholder="ex: 123456789 ou laisser vide" />
+                <label for="moddedSeed">Graine du monde <span class="help-badge-optional">Optionnel</span></label>
+                <input type="text" id="moddedSeed" placeholder="ex: 888880777356331877 ou vide pour aléatoire" autocomplete="off" />
               </div>
 
               <div class="form-group">
@@ -673,7 +793,8 @@
                 <span class="option-card-desc">Texte affiché dans la liste des serveurs du jeu</span>
               </div>
               <div class="option-card-control">
-                <input type="text" id="propMotd" class="option-input-text" placeholder="Serveur Minecraft" />
+                <input type="text" id="propMotd" class="option-input-text"
+                  placeholder="Cubirium (type de monde) version" />
               </div>
             </div>
 
@@ -1206,9 +1327,11 @@
             <div class="export-box">
               <div class="export-desc">
                 <strong>Forcer le lancement du serveur</strong>
-                <p>Court-circuite les vérifications d'incident, nettoie les verrous résiduels et neutralise le Watchdog.</p>
+                <p>Court-circuite les vérifications d'incident, nettoie les verrous résiduels et neutralise le Watchdog.
+                </p>
               </div>
-              <button type="button" class="btn-primary-small" id="btnForceStartFromManage" style="display: flex; align-items: center; gap: 6px;">
+              <button type="button" class="btn-primary-small" id="btnForceStartFromManage"
+                style="display: flex; align-items: center; gap: 6px;">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
                   <polygon points="5 3 19 12 5 21 5 3"></polygon>
                 </svg>
@@ -1241,7 +1364,7 @@
               style="color: #fca5a5;"></strong> ?
           </p>
           <p style="font-size: 0.8rem; color: var(--text-dim); line-height: 1.5;">
-            ⚠️ Cette action supprimera tous les fichiers du monde. Cette opération est irréversible.
+            Cette action supprimera tous les fichiers du monde. Cette opération est irréversible.
           </p>
         </div>
         <div class="modal-footer">
@@ -1261,7 +1384,8 @@
             <span class="sub-brand" id="repairReportSub">Diagnostic et opérations effectuées</span>
           </div>
           <button class="btn-close" id="btnCloseRepairReportModal" title="Fermer">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
@@ -1279,7 +1403,8 @@
         </div>
         <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
           <button type="button" class="btn-secondary" id="btnDismissRepairReport">Fermer</button>
-          <button type="button" class="btn-primary" id="btnLaunchAfterRepair" style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" class="btn-primary" id="btnLaunchAfterRepair"
+            style="display: flex; align-items: center; gap: 8px;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
             </svg>
@@ -1378,7 +1503,8 @@
                   </button>
                 </div>
                 <div class="settings-prop-desc" style="margin-top: 8px;">Relais public par défaut :
-                  <code>bore.pub:7835</code>. Reconnexion automatique avec persistance de votre port public.</div>
+                  <code>bore.pub:7835</code>. Reconnexion automatique avec persistance de votre port public.
+                </div>
               </div>
             </div>
           </div>
@@ -1613,7 +1739,7 @@
               <div class="settings-update-info">
                 <div class="settings-update-title-wrap">
                   <span class="settings-update-title">Version installée</span>
-                  <span class="settings-update-tag" id="settingsCurrentVersionTag">v1.1.1</span>
+                  <span class="settings-update-tag" id="settingsCurrentVersionTag">v1.2.0</span>
                 </div>
                 <span class="settings-update-desc" id="settingsUpdateFeedback">Vérifiez si une nouvelle version ou des
                   correctifs sont disponibles.</span>
@@ -2098,7 +2224,7 @@
         </div>
         <div class="modal-content update-modal-content">
           <div id="updateOfferNormalView">
-            <div class="update-version-highlight" id="updateOfferVersionBadge">Version v1.1.1</div>
+            <div class="update-version-highlight" id="updateOfferVersionBadge">Version v1.2.0</div>
             <p class="update-offer-description" id="updateOfferDescription">
               Une nouvelle version de Cubirium est disponible avec des améliorations et des correctifs.
             </p>
@@ -2142,7 +2268,7 @@
           </button>
         </div>
         <div class="modal-content update-modal-content">
-          <div class="update-version-highlight" id="updateSummaryVersionBadge">Version v1.1.1</div>
+          <div class="update-version-highlight" id="updateSummaryVersionBadge">Version v1.2.0</div>
           <p class="update-offer-description">
             Voici le résumé des nouveautés et correctifs apportés par cette mise à jour :
           </p>
@@ -2177,7 +2303,7 @@
   <div class="toast" id="toast"></div>
 
   <script src="libs/skinview3d.bundle.js"></script>
-  <script src="app.js?v=1.1.1"></script>
+  <script src="app.js?v=1.3.0"></script>
 </body>
 
 </html>

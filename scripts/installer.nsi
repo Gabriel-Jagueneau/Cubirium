@@ -77,6 +77,14 @@ Section "Application Principale" SecMain
   SetOutPath "$INSTDIR\manager\public"
   File /r "..\manager\public\*"
 
+  ; Vérification et installation automatique de la toute dernière version de Java (Java 25)
+  IfFileExists "$LOCALAPPDATA\Cubirium\runtime\java-25\bin\java.exe" JavaAlreadyInstalled 0
+  IfFileExists "$LOCALAPPDATA\Cubirium\runtime\java-21\bin\java.exe" JavaAlreadyInstalled 0
+  DetailPrint "Verification et configuration du runtime Java (derniere version)..."
+  CreateDirectory "$LOCALAPPDATA\Cubirium\runtime"
+  nsExec::ExecToLog 'powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "try { $$j=(Get-Command java -ErrorAction SilentlyContinue); if(!$$j){ $$url=\"https://api.adoptium.net/v3/binary/latest/25/ga/windows/x64/jre/hotspot/normal/eclipse\"; $$zip=\"$$env:TEMP\temurin25.zip\"; Invoke-WebRequest -Uri $$url -OutFile $$zip; $$dest=\"$LOCALAPPDATA\Cubirium\runtime\"; Expand-Archive -Path $$zip -DestinationPath \"$$dest\temp_j\"; $$sub=(Get-ChildItem \"$$dest\temp_j\" | Select-Object -First 1).FullName; Move-Item -Path $$sub -Destination \"$$dest\java-25\" -Force; Remove-Item \"$$dest\temp_j\" -Recurse -Force; Remove-Item $$zip -Force; } } catch {}"'
+JavaAlreadyInstalled:
+
   ; Répertoire de travail pour les raccourcis
   SetOutPath "$INSTDIR"
   
@@ -98,7 +106,7 @@ Section "Application Principale" SecMain
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "DisplayIcon" "$\"$INSTDIR\AppIcon.ico$\""
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "Publisher" "Gabriel JAGUENEAU"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "DisplayVersion" "1.1.1"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "DisplayVersion" "1.2.0"
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "NoModify" 1
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "NoRepair" 1
 SectionEnd

@@ -17,7 +17,8 @@ Application desktop pour la gestion, l'hébergement et l'administration de serve
 - **Diagnostic matériel & Benchmark** : évaluation automatique de la configuration (CPU, RAM, OS) et recommandations concrètes d'hébergement (*Hôte & Jeu*, *Hôte dédié*, *Limité*).
 - **Filtrage intelligent de modpacks** : détection automatique des modloaders (Fabric, NeoForge, Forge, Quilt) et exclusion des mods purement client (shaders, interfaces, cosmétiques).
 - **Auto-réparation et détection d'incidents** : détection proactive des arrêts anormaux avec bouton de réparation automatique (nettoyage des verrous `session.lock`, validation de l'EULA, restauration des scripts de démarrage et binaires).
-- **Gestion automatique de Java (JRE 21 LTS)** : détection intelligente et téléchargement automatique du runtime Java portable pour exécuter n'importe quel monde sans configuration manuelle requise.
+- **Support Crossplay natif (Java & Bedrock)** : compatibilité multijoueur simultanée pour les joueurs PC, Mac, Linux, consoles (PlayStation, Xbox, Switch) et smartphones via PaperMC, GeyserMC et Floodgate.
+- **Gestion automatique de Java (JRE 25 LTS)** : détection intelligente et installation automatique du runtime Java le plus récent (Java 25) dès l'installation de l'application et au lancement de chaque monde.
 - **Console en direct et gestion des joueurs** : flux de logs en temps réel, commandes administratives et gestion centralisée des opérateurs, de la whitelist et des bannissements.
 
 ---

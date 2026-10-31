@@ -315,7 +315,7 @@ class VanillaInstallerService {
     const appDefaults = configService.getSettings();
     const serverProps = `# Minecraft server properties
 server-port=25565
-motd=Serveur Minecraft Vanilla ${version}
+motd=Cubirium Vanilla ${version}
 max-players=20
 online-mode=${isOffline ? 'false' : 'true'}
 level-seed=${customSeed}
@@ -337,14 +337,17 @@ white-list=false
     const runScript = `#!/usr/bin/env sh
 # Script de lancement automatique Vanilla ${version}
 
-JAVA_CUBIRIUM="$HOME/Library/Application Support/Cubirium/runtime/java-21/bin/java"
+JAVA_CUBIRIUM_25="$HOME/Library/Application Support/Cubirium/runtime/java-25/bin/java"
+JAVA_CUBIRIUM_21="$HOME/Library/Application Support/Cubirium/runtime/java-21/bin/java"
 JAVA_25="/opt/homebrew/opt/openjdk@25/bin/java"
 JAVA_21="/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java"
 
 # Recherche de la version Java adaptée
 JAVA_BIN=""
-if [ -x "$JAVA_CUBIRIUM" ]; then
-    JAVA_BIN="$JAVA_CUBIRIUM"
+if [ -x "$JAVA_CUBIRIUM_25" ]; then
+    JAVA_BIN="$JAVA_CUBIRIUM_25"
+elif [ -x "$JAVA_CUBIRIUM_21" ]; then
+    JAVA_BIN="$JAVA_CUBIRIUM_21"
 elif [ -x "$JAVA_25" ]; then
     JAVA_BIN="$JAVA_25"
 elif [ -n "$JAVA_HOME" ] && [ -x "$JAVA_HOME/bin/java" ]; then
@@ -360,17 +363,6 @@ fi
 
 JAVA_VER_STR=$("$JAVA_BIN" -version 2>&1 | head -n 1)
 echo "Lancement Vanilla ${version} avec $JAVA_VER_STR"
-
-# Avertissement si version 25+ demandée mais Java 21 exécuté
-case "${version}" in
-  26.*|25.*)
-    if echo "$JAVA_VER_STR" | grep -q "21\."; then
-      echo "⚠️ ATTENTION: Minecraft ${version} nécessite Java 25 (trouvé: Java 21)."
-      echo "👉 Installez Java 25 via Homebrew: brew install openjdk@25"
-      echo "Ou utilisez Minecraft 1.21.1 pleinement compatible avec votre Java 21 !"
-    fi
-    ;;
-esac
 
 exec "$JAVA_BIN" -Xms3G -Xmx6G \\
   -Djava.net.preferIPv4Stack=true \\
@@ -397,12 +389,14 @@ set "JAVA_EXEC="
 
 rem Recherche prioritaire du runtime Cubirium ou Java système
 for %%d in (
+    "%LOCALAPPDATA%\\Cubirium\\runtime\\java-25\\bin\\java.exe"
+    "%APPDATA%\\Cubirium\\runtime\\java-25\\bin\\java.exe"
     "%LOCALAPPDATA%\\Cubirium\\runtime\\java-21\\bin\\java.exe"
     "%APPDATA%\\Cubirium\\runtime\\java-21\\bin\\java.exe"
-    "%LOCALAPPDATA%\\Cubirium\\runtime\\java-25\\bin\\java.exe"
+    "%LOCALAPPDATA%\\MinecraftServerManager\\runtime\\java-25\\bin\\java.exe"
     "%LOCALAPPDATA%\\MinecraftServerManager\\runtime\\java-21\\bin\\java.exe"
-    "%ProgramFiles%\\Eclipse Adoptium\\jdk-21*\\bin\\java.exe"
     "%ProgramFiles%\\Eclipse Adoptium\\jdk-25*\\bin\\java.exe"
+    "%ProgramFiles%\\Eclipse Adoptium\\jdk-21*\\bin\\java.exe"
     "%ProgramFiles%\\Microsoft\\jdk-21*\\bin\\java.exe"
     "%ProgramFiles%\\Java\\jdk-21*\\bin\\java.exe"
 ) do (

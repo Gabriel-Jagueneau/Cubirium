@@ -716,7 +716,7 @@ function getWorldPulseDotInfo(worldId) {
   if (isDownloadingJava) {
     return {
       className: 'pulse-dot downloading',
-      title: javaDownloadStep || 'Téléchargement de Java 21...'
+      title: javaDownloadStep || 'Téléchargement du runtime Java (dernière version)...'
     };
   }
 
@@ -813,7 +813,7 @@ function buildWorldCardHtml(w, opts) {
         <div class="primary-action-container" data-type="${isRunning ? (isDownloadingJava ? 'downloading' : 'stop') : w.isCorrupted ? 'corrupted' : w.needsRepair ? 'repair' : 'launch'}">
         ${isRunning
       ? (isDownloadingJava
-        ? `<button class="btn-downloading-java" disabled title="${escapeHtml(javaDownloadStep || 'Téléchargement de Java 21 LTS en cours...')}">
+        ? `<button class="btn-downloading-java" disabled title="${escapeHtml(javaDownloadStep || 'Téléchargement de Java 25 en cours...')}">
             <svg class="spinner-icon-inline" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/>
             </svg>
@@ -1019,7 +1019,7 @@ function renderWorlds(worlds) {
   sortedWorlds.forEach(w => {
     let card = existingCardsMap.get(w.id);
     const isRunning = w.isRunning || (w.id === activeWorld && serverStatus === 'RUNNING');
-    const typeClass = w.type === 'Moddé' ? 'modded' : 'vanilla';
+    const typeClass = w.type === 'Moddé' ? 'modded' : (w.type === 'Crossplay' ? 'crossplay' : 'vanilla');
     const isSelected = (w.id === selectedTerminalWorldId);
     const isServerRunning = (serverStatus !== 'STOPPED');
     const isActionDisabled = isServerRunning || isRunning;
@@ -1150,7 +1150,7 @@ function renderWorlds(worlds) {
         if (isRunning) {
           if (isDownloadingJava) {
             expectedType = 'downloading';
-            expectedBtnHtml = `<button class="btn-downloading-java" disabled title="${escapeHtml(javaDownloadStep || 'Téléchargement de Java 21 LTS en cours...')}"><svg class="spinner-icon-inline" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg><span>Téléchargement</span></button>`;
+            expectedBtnHtml = `<button class="btn-downloading-java" disabled title="${escapeHtml(javaDownloadStep || 'Téléchargement de Java 25 en cours...')}"><svg class="spinner-icon-inline" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg><span>Téléchargement</span></button>`;
           } else {
             expectedType = 'stop';
             expectedBtnHtml = `<button class="btn-stop-world" onclick="stopActiveWorld()">Arrêter</button>`;
@@ -1257,7 +1257,7 @@ function updateWorldCardsLive() {
       if (isCardRunning || (isThisActive && (isCardStarting || isCardStopping))) {
         if (isDownloadingJava) {
           expectedType = 'downloading';
-          expectedBtnHtml = `<button class="btn-downloading-java" disabled title="${escapeHtml(javaDownloadStep || 'Téléchargement de Java 21 LTS en cours...')}"><svg class="spinner-icon-inline" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg><span>Téléchargement</span></button>`;
+          expectedBtnHtml = `<button class="btn-downloading-java" disabled title="${escapeHtml(javaDownloadStep || 'Téléchargement de Java 25 en cours...')}"><svg class="spinner-icon-inline" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg><span>Téléchargement</span></button>`;
         } else {
           expectedType = 'stop';
           expectedBtnHtml = `<button class="btn-stop-world" onclick="stopActiveWorld()">Arrêter</button>`;
@@ -1290,7 +1290,7 @@ function updateWorldCardsLive() {
       }
 
       const actionBtns = actionsDiv.querySelectorAll('.btn-card-action:not(.btn-card-players):not(.btn-card-delete)');
-      const isActionDisabled = isServerRunning && !isThisActive;
+      const isActionDisabled = isServerRunning;
       actionBtns.forEach(b => {
         if (b.disabled !== isActionDisabled) b.disabled = isActionDisabled;
         b.classList.toggle('disabled', isActionDisabled);
@@ -1440,7 +1440,7 @@ function updateTerminalHeader() {
     btnLaunchViewedWorld.style.display = 'none';
     cmdInput.disabled = true;
     btnSendCmd.disabled = true;
-    cmdInput.placeholder = javaDownloadStep || `Installation de Java 21 en cours pour ${selectedTerminalWorldId}...`;
+    cmdInput.placeholder = javaDownloadStep || `Installation de Java 25 en cours pour ${selectedTerminalWorldId}...`;
   } else if (isViewedRunning) {
     btnStopActiveServer.style.display = 'inline-flex';
     btnStopActiveServer.disabled = false;
@@ -2049,6 +2049,8 @@ function openCreateModal() {
   const suggested = getSuggestedWorldName();
   if (vanillaName) vanillaName.placeholder = `ex: ${suggested}`;
   if (moddedName) moddedName.placeholder = `ex: ${suggested}`;
+  const crossplayName = document.getElementById('crossplayName');
+  if (crossplayName) crossplayName.placeholder = `ex: ${suggested}`;
   const importName = document.getElementById('importWorldName');
   if (importName) importName.placeholder = `ex: ${suggested}`;
   createModal.style.display = 'flex';
@@ -2067,6 +2069,16 @@ function closeCreateModal() {
   if (vSeed) vSeed.value = '';
   if (vOff) vOff.checked = false;
   if (vVer && vVer.options.length > 0) vVer.selectedIndex = 0;
+
+  // 1b. Réinitialisation Onglet Crossplay
+  const cName = document.getElementById('crossplayName');
+  const cSeed = document.getElementById('crossplaySeed');
+  const cOff = document.getElementById('crossplayOffline');
+  const cVer = document.getElementById('crossplayVersion');
+  if (cName) cName.value = '';
+  if (cSeed) cSeed.value = '';
+  if (cOff) cOff.checked = false;
+  if (cVer && cVer.options.length > 0) cVer.selectedIndex = 0;
 
   // 2. Réinitialisation Onglet Moddé
   const mName = document.getElementById('moddedName');
@@ -2143,6 +2155,8 @@ btnCancelVanilla.addEventListener('click', closeCreateModal);
 btnCancelModded.addEventListener('click', closeCreateModal);
 const btnCancelImport = document.getElementById('btnCancelImport');
 if (btnCancelImport) btnCancelImport.addEventListener('click', closeCreateModal);
+const btnCancelCrossplay = document.getElementById('btnCancelCrossplay');
+if (btnCancelCrossplay) btnCancelCrossplay.addEventListener('click', closeCreateModal);
 if (createModal) {
   createModal.addEventListener('click', (e) => {
     if (e.target === createModal) closeCreateModal();
@@ -2176,7 +2190,9 @@ function openProgressModal(worldName, type) {
   if (progressModalSubtitle) {
     progressModalSubtitle.textContent = type === 'modded'
       ? 'Configuration et déploiement du serveur moddé...'
-      : 'Téléchargement du serveur officiel Mojang...';
+      : (type === 'crossplay'
+        ? 'Téléchargement de PaperMC et du pont Bedrock (GeyserMC)...'
+        : 'Téléchargement du serveur officiel Mojang...');
   }
   if (progressBarFill) progressBarFill.style.width = '0%';
   if (progressPctText) progressPctText.textContent = '0%';
@@ -2228,6 +2244,16 @@ if (btnCloseProgressModal) {
   });
 }
 
+// Guide déroulant Crossplay (accordeon discret et professionnel)
+const btnToggleGuide = document.getElementById("btnToggleCrossplayGuide");
+const guideDrawer = document.getElementById("crossplayGuideDrawer");
+if (btnToggleGuide && guideDrawer) {
+  btnToggleGuide.addEventListener("click", () => {
+    const isOpen = guideDrawer.classList.toggle("open");
+    btnToggleGuide.classList.toggle("expanded", isOpen);
+  });
+}
+
 // Création Vanilla
 formCreateVanilla.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -2259,6 +2285,42 @@ formCreateVanilla.addEventListener('submit', async (e) => {
     showToast(err.message, 'error');
   }
 });
+
+// Création Crossplay (Bedrock & Java)
+const formCreateCrossplay = document.getElementById('formCreateCrossplay');
+if (formCreateCrossplay) {
+  formCreateCrossplay.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const nameInput = document.getElementById('crossplayName');
+    const name = nameInput ? (nameInput.value.trim() || getSuggestedWorldName()) : getSuggestedWorldName();
+    const version = document.getElementById('crossplayVersion')?.value || '1.21.1';
+    const seed = (document.getElementById('crossplaySeed')?.value || '').trim();
+    const offline = !!document.getElementById('crossplayOffline')?.checked;
+
+    closeCreateModal();
+    openProgressModal(name, 'crossplay');
+
+    try {
+      const res = await fetch('/api/worlds/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          type: 'crossplay',
+          version,
+          seed,
+          offline
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur création serveur crossplay');
+      updateProgressModal(100, `Serveur Crossplay ${name} prêt !`);
+    } catch (err) {
+      setProgressError(err.message);
+      showToast(err.message, 'error');
+    }
+  });
+}
 
 // ----------------------------------------------------
 // Modpack & Mods Import Handling
@@ -2788,7 +2850,7 @@ window.onImportPathChosen = function (localPath) {
       } else {
         if (badge) {
           badge.className = 'auto-detected-badge visible';
-          badge.innerHTML = `<span style="color: #ef4444;">⚠️ ${escapeHtml(data.error || 'Erreur lors de l\'analyse')}</span>`;
+          badge.innerHTML = `<span style="color: #ef4444;">${escapeHtml(data.error || 'Erreur lors de l\'analyse')}</span>`;
         }
         if (btnSubmitImport) btnSubmitImport.setAttribute('disabled', 'true');
       }
@@ -2798,7 +2860,7 @@ window.onImportPathChosen = function (localPath) {
       if (importDropZone) importDropZone.classList.remove('is-loading');
       if (badge) {
         badge.className = 'auto-detected-badge visible';
-        badge.innerHTML = `<span style="color: #ef4444;">⚠️ Échec d'analyse (${escapeHtml(err.message)})</span>`;
+        badge.innerHTML = `<span style="color: #ef4444;">Échec d'analyse (${escapeHtml(err.message)})</span>`;
       }
       if (btnSubmitImport) btnSubmitImport.setAttribute('disabled', 'true');
     });
@@ -3109,7 +3171,7 @@ function handleImportFilesReceived(files) {
         } else {
           if (badge) {
             badge.className = 'auto-detected-badge visible';
-            badge.innerHTML = `<span style="color: #ef4444;">⚠️ ${escapeHtml(data.error || 'Erreur lors de l\'analyse')}</span>`;
+            badge.innerHTML = `<span style="color: #ef4444;">${escapeHtml(data.error || 'Erreur lors de l\'analyse')}</span>`;
           }
           if (btnSubmitImport) btnSubmitImport.setAttribute('disabled', 'true');
         }
@@ -3119,7 +3181,7 @@ function handleImportFilesReceived(files) {
         console.warn('Erreur détection monde direct:', err);
         if (badge) {
           badge.className = 'auto-detected-badge visible';
-          badge.innerHTML = `<span style="color: #ef4444;">⚠️ Échec d'analyse (${escapeHtml(err.message)})</span>`;
+          badge.innerHTML = `<span style="color: #ef4444;">Échec d'analyse (${escapeHtml(err.message)})</span>`;
         }
         if (btnSubmitImport) btnSubmitImport.setAttribute('disabled', 'true');
         if (importDropZone) importDropZone.classList.remove('is-loading');
@@ -3170,7 +3232,7 @@ function handleImportFilesReceived(files) {
       } else {
         if (badge) {
           badge.className = 'auto-detected-badge visible';
-          badge.innerHTML = `<span style="color: #ef4444;">⚠️ ${escapeHtml(data.error || 'Erreur lors de l\'analyse')}</span>`;
+          badge.innerHTML = `<span style="color: #ef4444;">${escapeHtml(data.error || 'Erreur lors de l\'analyse')}</span>`;
         }
         if (btnSubmitImport) btnSubmitImport.setAttribute('disabled', 'true');
       }
@@ -3180,7 +3242,7 @@ function handleImportFilesReceived(files) {
       console.warn('Erreur détection monde:', err);
       if (badge) {
         badge.className = 'auto-detected-badge visible';
-        badge.innerHTML = `<span style="color: #ef4444;">⚠️ Échec d'analyse (${escapeHtml(err.message)})</span>`;
+        badge.innerHTML = `<span style="color: #ef4444;">Échec d'analyse (${escapeHtml(err.message)})</span>`;
       }
       if (btnSubmitImport) btnSubmitImport.setAttribute('disabled', 'true');
       if (importDropZone) importDropZone.classList.remove('is-loading');
@@ -3309,7 +3371,7 @@ function syncRawToVisual() {
   if (propViewDistance) propViewDistance.value = props['view-distance'] || '12';
   if (propSimulationDistance) propSimulationDistance.value = props['simulation-distance'] || '4';
   if (propPort) propPort.value = props['server-port'] || '25565';
-  if (propMotd) propMotd.value = props['motd'] || 'Serveur Minecraft';
+  if (propMotd) propMotd.value = props['motd'] || 'Cubirium Vanilla 1.21.1';
 }
 
 function syncVisualToRaw() {
@@ -3331,7 +3393,7 @@ function syncVisualToRaw() {
     'view-distance': propViewDistance ? propViewDistance.value : '12',
     'simulation-distance': propSimulationDistance ? propSimulationDistance.value : '4',
     'server-port': propPort ? propPort.value : '25565',
-    'motd': propMotd ? propMotd.value : 'Serveur Minecraft',
+    'motd': propMotd ? propMotd.value : 'Cubirium Vanilla 1.21.1',
     'sync-chunk-writes': 'false',
     'enforce-secure-profile': 'false'
   };
@@ -3997,7 +4059,7 @@ function initDeletePlayerData(playerName) {
   // 1ère étape : passer en mode confirmation avec avertissement visuel
   btn.setAttribute('data-confirming', 'true');
   btn.classList.add('confirming-delete');
-  btn.innerHTML = `<span style="display:flex;align-items:center;gap:4px;font-size:0.72rem;font-weight:700;color:#fca5a5;">⚠️ Confirmer ?</span>`;
+  btn.innerHTML = `<span style="display:flex;align-items:center;gap:4px;font-size:0.72rem;font-weight:700;color:#fca5a5;">Confirmer ?</span>`;
   showToast(`Cliquez à nouveau pour confirmer la suppression définitive des données de ${playerName}.`, 'warning');
 
   clearTimeout(_deletePlayerTimeout);
@@ -4817,7 +4879,7 @@ function showMcTooltip(e, it) {
   if (it.enchants && it.enchants.length > 0) {
     html += '<div class="mct-enchants">';
     for (const ench of it.enchants) {
-      html += `<div class="mct-enchant-item"><span class="mct-enchant-bullet">✦</span> ${escapeHtml(ench.name)} ${escapeHtml(ench.romanLevel)}</div>`;
+      html += `<div class="mct-enchant-item"><span class="mct-enchant-bullet">•</span> ${escapeHtml(ench.name)} ${escapeHtml(ench.romanLevel)}</div>`;
     }
     html += '</div>';
   }
@@ -4900,7 +4962,7 @@ function renderPlayerInventory(items, targetWorldId = null) {
 
     const isEnch = !!it.isEnchanted;
     const enchantClass = isEnch ? ' enchanted' : '';
-    const enchantSparkle = isEnch ? `<span class="enchant-sparkle">✦</span>` : '';
+    const enchantSparkle = isEnch ? `<span class="enchant-sparkle"><svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 12 15 15 12 22 9 15 2 12 9 9 12 2"/></svg></span>` : '';
 
     // Barre de durabilité Minecraft
     let durabilityBarHtml = '';
@@ -5123,7 +5185,7 @@ if (btnDetailDeleteData) {
 
     btnDetailDeleteData.setAttribute('data-confirming', 'true');
     btnDetailDeleteData.classList.add('confirming-danger');
-    btnDetailDeleteData.textContent = '⚠️ Confirmer suppression ?';
+    btnDetailDeleteData.textContent = 'Confirmer suppression ?';
     showToast(`Cliquez à nouveau pour confirmer la suppression définitive des données de ${currentPlayerDetailName}.`, 'warning');
 
     clearTimeout(_detailDeleteTimeout);
@@ -5266,7 +5328,7 @@ function renderManageDimensions(worldId) {
       <!-- Double Approbation Inline -->
       <div class="dim-confirm-box" id="dim-confirm-${d.id}" style="display: none;">
         <div class="dim-confirm-warning">
-          ⚠️ <strong>Confirmation requise</strong> : Tous les blocs, bâtiments et structures de <em>${escapeHtml(d.name)}</em> seront définitivement supprimés et régénérés à neuf lors du prochain lancement.
+          <strong>Confirmation requise</strong> : Tous les blocs, bâtiments et structures de <em>${escapeHtml(d.name)}</em> seront définitivement supprimés et régénérés à neuf lors du prochain lancement.
         </div>
         <div class="dim-confirm-actions">
           <button type="button" class="btn-cancel-dim-confirm" onclick="cancelDimensionReset('${d.id}')">Annuler</button>
@@ -5347,7 +5409,7 @@ async function executeDimensionReset(worldId, dimensionId, dimName) {
   } catch (err) {
     if (statusBox) {
       statusBox.className = 'action-status-box error';
-      statusBox.innerHTML = `<span>❌ Erreur : ${escapeHtml(err.message)}</span>`;
+      statusBox.innerHTML = `<span>Erreur : ${escapeHtml(err.message)}</span>`;
     }
     showToast(err.message, 'error');
     if (execBtn) {
@@ -5360,7 +5422,7 @@ window.executeDimensionReset = executeDimensionReset;
 
 function openRenameWorld(worldId) {
   if (serverStatus !== 'STOPPED' && (worldId === activeWorld || serverStatus === 'RUNNING')) {
-    showToast('Arrête d\'abord le serveur pour gérer ou modifier ce monde.', 'warning');
+    showToast('Arrêtez d\'abord le serveur pour gérer ou modifier ce monde.', 'warning');
     return;
   }
   renamingWorldId = worldId;
@@ -5490,7 +5552,7 @@ function openRenameWorld(worldId) {
         if (exportStatusBox) {
           exportStatusBox.className = 'action-status-box error';
           exportStatusBox.style.display = 'flex';
-          exportStatusBox.innerHTML = `<span>❌ Erreur : ${escapeHtml(err.message)}</span>`;
+          exportStatusBox.innerHTML = `<span>Erreur : ${escapeHtml(err.message)}</span>`;
         }
         showToast(err.message, 'error');
       } finally {
@@ -5572,8 +5634,8 @@ const btnCancelDelete = document.getElementById('btnCancelDelete');
 const btnConfirmDelete = document.getElementById('btnConfirmDelete');
 
 function openDeleteWorld(worldId) {
-  if (serverStatus !== 'STOPPED' && activeWorld === worldId) {
-    showToast('Arrête d\'abord le serveur pour pouvoir supprimer ce monde.', 'error');
+  if (serverStatus !== 'STOPPED' && (activeWorld === worldId || serverStatus === 'RUNNING')) {
+    showToast('Arrêtez d\'abord le serveur pour pouvoir supprimer ce monde.', 'error');
     return;
   }
   deletingWorldId = worldId;
@@ -6106,7 +6168,7 @@ async function exportAllWorldsFromUninstall() {
     if (statusEl) {
       statusEl.className = 'uninstall-backup-status success';
       statusEl.innerHTML = `
-        <strong>✔ Sauvegarde réussie !</strong><br>
+        <strong>Sauvegarde réussie</strong><br>
         ${data.count} monde(s) archivé(s) (${data.size}) avec succès.<br>
         Fichier : <code>${escapeHtml(data.fileName)}</code><br>
         Emplacement : <code>${escapeHtml(data.destDir)}</code>
@@ -6446,7 +6508,7 @@ async function runSystemBenchmark() {
   } catch (err) {
     console.warn('Erreur diagnostic composants:', err);
     if (loader) {
-      loader.innerHTML = `<span style="color: #ef4444;">⚠️ Échec du diagnostic (${escapeHtml(err.message)})</span>`;
+      loader.innerHTML = `<span style="color: #ef4444;">Échec du diagnostic (${escapeHtml(err.message)})</span>`;
     }
   }
 }
@@ -6749,7 +6811,7 @@ async function checkForAppUpdates(silent = true) {
     const settingsModal = document.getElementById('appSettingsModal');
     if (settingsModal) settingsModal.style.display = 'none';
     if (feedback && pendingUpdateData) {
-      feedback.innerHTML = `<span style="color:#60a5fa;font-weight:600;">✨ Nouvelle version v${escapeHtml(pendingUpdateData.latestVersion)} disponible !</span>`;
+      feedback.innerHTML = `<span style="color:#60a5fa;font-weight:600;">Nouvelle version v${escapeHtml(pendingUpdateData.latestVersion)} disponible</span>`;
     }
     if (btn && origBtnHtml) {
       btn.disabled = false;
@@ -6766,14 +6828,14 @@ async function checkForAppUpdates(silent = true) {
     if (data && data.updateAvailable) {
       pendingUpdateData = data;
       if (feedback) {
-        feedback.innerHTML = `<span style="color:#60a5fa;font-weight:600;">✨ Nouvelle version v${escapeHtml(data.latestVersion)} disponible !</span>`;
+        feedback.innerHTML = `<span style="color:#60a5fa;font-weight:600;">Nouvelle version v${escapeHtml(data.latestVersion)} disponible</span>`;
       }
       showUpdateOfferModal(data);
     } else {
       const curV = data?.currentVersion || '1.0.0';
       if (!silent) {
         if (feedback) {
-          feedback.innerHTML = `<span style="color:#4ade80;font-weight:600;">✓ Votre application est parfaitement à jour (v${escapeHtml(curV)}).</span>`;
+          feedback.innerHTML = `<span style="color:#4ade80;font-weight:600;">Votre application est à jour (v${escapeHtml(curV)}).</span>`;
         }
         showToast(`Votre application est à jour (v${curV}).`, 'success');
       }
@@ -6782,7 +6844,7 @@ async function checkForAppUpdates(silent = true) {
     console.warn('[Update] Erreur de vérification:', e);
     if (!silent) {
       if (feedback) {
-        feedback.innerHTML = `<span style="color:#f87171;">⚠️ Impossible de contacter GitHub : ${escapeHtml(e.message || 'erreur réseau')}</span>`;
+        feedback.innerHTML = `<span style="color:#f87171;">Impossible de contacter GitHub : ${escapeHtml(e.message || 'erreur réseau')}</span>`;
       }
       showToast("Impossible de vérifier les mises à jour.", 'warning');
     }

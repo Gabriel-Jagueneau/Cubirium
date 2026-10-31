@@ -56,7 +56,7 @@ function downloadFileWithRedirects(url, destPath, maxRedirects = 5) {
     const client = url.startsWith('https:') ? https : http;
     const req = client.get(url, {
       headers: {
-        'User-Agent': `Cubirium/${packageJson.version || '1.1.1'}`
+        'User-Agent': `Cubirium/${packageJson.version || '1.2.0'}`
       }
     }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
@@ -579,7 +579,7 @@ const server = http.createServer(async (req, res) => {
 
     // 2c. API Check Update
     if (pathname === '/api/app/check-update' && method === 'GET') {
-      const currentVersion = packageJson.version || '1.1.1';
+      const currentVersion = packageJson.version || '1.2.0';
       try {
         const options = {
           hostname: 'api.github.com',
@@ -1831,6 +1831,10 @@ if ($res -eq [System.Windows.Forms.DialogResult]::OK) {
       return res.end('Accès refusé');
     }
 
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+      filePath = path.join(filePath, 'index.html');
+    }
+
     if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
       const ext = path.extname(filePath).toLowerCase();
       const mimeTypes = {
@@ -1866,8 +1870,8 @@ if ($res -eq [System.Windows.Forms.DialogResult]::OK) {
 function startServer(port = DEFAULT_PORT) {
   server.listen(port, () => {
     console.log(`====================================================`);
-    console.log(`🎮 Cubirium actif sur :`);
-    console.log(`👉 http://localhost:${port}`);
+    console.log(`Cubirium actif sur :`);
+    console.log(`http://localhost:${port}`);
     console.log(`====================================================`);
 
   }).on('error', (err) => {
