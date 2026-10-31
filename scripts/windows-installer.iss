@@ -2,7 +2,7 @@
 ; Génère : Cubirium-Setup.exe
 
 #define MyAppName "Cubirium"
-#define MyAppVersion "1.2.1"
+#define MyAppVersion "1.2.2"
 #define MyAppPublisher "Gabriel JAGUENEAU"
 #define MyAppURL "https://github.com/Gabriel-Jagueneau"
 #define MyAppExeName "Cubirium.exe"

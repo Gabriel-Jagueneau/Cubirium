@@ -334,30 +334,36 @@ white-list=false
 
     // 3. run.sh
     if (onProgress) onProgress(95, 'Génération du script de démarrage...');
+    const ver = String(version || '').trim();
+    let reqMajor = 21;
+    if (/^(?:25|26|27)\./.test(ver) || /^(?:24|25|26|27)w/.test(ver)) {
+      reqMajor = 25;
+    } else if (/^1\.(?:20\.[5-9]|2[1-9])/.test(ver)) {
+      reqMajor = 21;
+    } else if (/^1\.(?:1[7-9]|20(?:\.[0-4])?)/.test(ver)) {
+      reqMajor = 17;
+    } else if (/^1\.(?:[0-9]|1[0-6])/.test(ver)) {
+      reqMajor = 8;
+    }
+
     const runScript = `#!/usr/bin/env sh
 # Script de lancement automatique Vanilla ${version}
 
-JAVA_CUBIRIUM_25="$HOME/Library/Application Support/Cubirium/runtime/java-25/bin/java"
-JAVA_CUBIRIUM_21="$HOME/Library/Application Support/Cubirium/runtime/java-21/bin/java"
-JAVA_25="/opt/homebrew/opt/openjdk@25/bin/java"
-JAVA_21="/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java"
+JAVA_CUBIRIUM="$HOME/Library/Application Support/Cubirium/runtime/java-${reqMajor}/bin/java"
 
-# Recherche de la version Java adaptée
 JAVA_BIN=""
-if [ -x "$JAVA_CUBIRIUM_25" ]; then
-    JAVA_BIN="$JAVA_CUBIRIUM_25"
-elif [ -x "$JAVA_CUBIRIUM_21" ]; then
-    JAVA_BIN="$JAVA_CUBIRIUM_21"
-elif [ -x "$JAVA_25" ]; then
-    JAVA_BIN="$JAVA_25"
+if [ -n "$JAVA_EXEC" ] && [ -x "$JAVA_EXEC" ]; then
+    JAVA_BIN="$JAVA_EXEC"
+elif [ -n "$JAVA_BIN" ] && [ -x "$JAVA_BIN" ]; then
+    JAVA_BIN="$JAVA_BIN"
+elif [ -x "$JAVA_CUBIRIUM" ]; then
+    JAVA_BIN="$JAVA_CUBIRIUM"
 elif [ -n "$JAVA_HOME" ] && [ -x "$JAVA_HOME/bin/java" ]; then
     JAVA_BIN="$JAVA_HOME/bin/java"
-elif [ -x "$JAVA_21" ]; then
-    JAVA_BIN="$JAVA_21"
 elif command -v java >/dev/null 2>&1; then
     JAVA_BIN="java"
 else
-    echo "Erreur: Aucun runtime Java trouvé sur le système."
+    echo "Erreur: Aucun runtime Java ${reqMajor} trouvé sur le système."
     exit 1
 fi
 
@@ -381,28 +387,13 @@ exec "$JAVA_BIN" -Xms3G -Xmx6G \\
     fs.writeFileSync(runPath, runScript, { mode: 0o755 });
 
     // 4. run.bat pour Windows
-    const isJava25 = version.startsWith('26.') || version.startsWith('25.');
     const runBatScript = `@echo off
 rem Script de démarrage Vanilla ${version}
 cd /d "%~dp0"
 set "JAVA_EXEC="
-
-rem Recherche prioritaire du runtime Cubirium ou Java système
-for %%d in (
-    "%LOCALAPPDATA%\\Cubirium\\runtime\\java-25\\bin\\java.exe"
-    "%APPDATA%\\Cubirium\\runtime\\java-25\\bin\\java.exe"
-    "%LOCALAPPDATA%\\Cubirium\\runtime\\java-21\\bin\\java.exe"
-    "%APPDATA%\\Cubirium\\runtime\\java-21\\bin\\java.exe"
-    "%LOCALAPPDATA%\\MinecraftServerManager\\runtime\\java-25\\bin\\java.exe"
-    "%LOCALAPPDATA%\\MinecraftServerManager\\runtime\\java-21\\bin\\java.exe"
-    "%ProgramFiles%\\Eclipse Adoptium\\jdk-25*\\bin\\java.exe"
-    "%ProgramFiles%\\Eclipse Adoptium\\jdk-21*\\bin\\java.exe"
-    "%ProgramFiles%\\Microsoft\\jdk-21*\\bin\\java.exe"
-    "%ProgramFiles%\\Java\\jdk-21*\\bin\\java.exe"
-) do (
-    if not defined JAVA_EXEC if exist "%%~d" set "JAVA_EXEC=%%~d"
-)
-
+if defined JAVA_BIN if exist "%JAVA_BIN%" set "JAVA_EXEC=%JAVA_BIN%"
+if not defined JAVA_EXEC if exist "%LOCALAPPDATA%\\Cubirium\\runtime\\java-${reqMajor}\\bin\\java.exe" set "JAVA_EXEC=%LOCALAPPDATA%\\Cubirium\\runtime\\java-${reqMajor}\\bin\\java.exe"
+if not defined JAVA_EXEC if exist "%APPDATA%\\Cubirium\\runtime\\java-${reqMajor}\\bin\\java.exe" set "JAVA_EXEC=%APPDATA%\\Cubirium\\runtime\\java-${reqMajor}\\bin\\java.exe"
 if not defined JAVA_EXEC if defined JAVA_HOME if exist "%JAVA_HOME%\\bin\\java.exe" set "JAVA_EXEC=%JAVA_HOME%\\bin\\java.exe"
 if not defined JAVA_EXEC set "JAVA_EXEC=java"
 
