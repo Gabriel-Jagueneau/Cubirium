@@ -2112,6 +2112,24 @@ function closeCreateModal() {
 
   const exclUl = document.getElementById('excludedModsList');
   if (exclUl) exclUl.innerHTML = '';
+  const srvUl = document.getElementById('serverModsList');
+  if (srvUl) srvUl.innerHTML = '';
+  const searchInput = document.getElementById('modSearchInput');
+  if (searchInput) searchInput.value = '';
+  const btnKeepAll = document.getElementById('btnToggleKeepAllMods');
+  if (btnKeepAll) {
+    btnKeepAll.textContent = 'Conserver tous les mods';
+    btnKeepAll.classList.remove('is-active');
+  }
+  const tabSrvB = document.getElementById('tabServerModsBadge');
+  const tabCliB = document.getElementById('tabClientModsBadge');
+  if (tabSrvB) tabSrvB.textContent = '0';
+  if (tabCliB) tabCliB.textContent = '0';
+  currentAnalysis = null;
+  activeSelectedMods.clear();
+  isKeepAllModsActive = false;
+  switchModsListTab('server');
+
   const srvC = document.getElementById('serverModsCount');
   const cliC = document.getElementById('clientModsCount');
   if (srvC) srvC.textContent = '0';
@@ -2559,6 +2577,152 @@ async function analyzeLocalPath(sourcePath) {
   }
 }
 
+let activeSelectedMods = new Set();
+let isKeepAllModsActive = false;
+let currentModsTab = 'server';
+
+window.switchModsListTab = function (tab) {
+  currentModsTab = tab;
+  const wrapServer = document.getElementById('wrapServerModsList');
+  const wrapClient = document.getElementById('wrapExcludedModsList');
+  const btnTabServer = document.getElementById('btnTabServerMods');
+  const btnTabClient = document.getElementById('btnTabClientMods');
+  const boxServer = document.getElementById('boxServerMods');
+  const boxClient = document.getElementById('boxClientMods');
+
+  if (tab === 'server') {
+    if (wrapServer) wrapServer.style.display = 'block';
+    if (wrapClient) wrapClient.style.display = 'none';
+    if (btnTabServer) btnTabServer.classList.add('active');
+    if (btnTabClient) btnTabClient.classList.remove('active');
+    if (boxServer) boxServer.style.borderColor = 'var(--accent-green)';
+    if (boxClient) boxClient.style.borderColor = '';
+  } else {
+    if (wrapServer) wrapServer.style.display = 'none';
+    if (wrapClient) wrapClient.style.display = 'block';
+    if (btnTabServer) btnTabServer.classList.remove('active');
+    if (btnTabClient) btnTabClient.classList.add('active');
+    if (boxClient) boxClient.style.borderColor = 'var(--accent-amber)';
+    if (boxServer) boxServer.style.borderColor = '';
+  }
+};
+
+window.toggleKeepAllMods = function () {
+  if (!currentAnalysis) return;
+  const allMods = [...(currentAnalysis.serverMods || []), ...(currentAnalysis.clientOnlyMods || [])];
+  const btn = document.getElementById('btnToggleKeepAllMods');
+
+  isKeepAllModsActive = !isKeepAllModsActive;
+  if (isKeepAllModsActive) {
+    activeSelectedMods = new Set(allMods.map(m => m.filename));
+    if (btn) {
+      btn.textContent = 'Rétablir le filtrage recommandé';
+      btn.classList.add('is-active');
+    }
+    showToast(`Tous les mods (${allMods.length}) seront conservés et installés sur le serveur.`, 'info');
+  } else {
+    activeSelectedMods = new Set((currentAnalysis.serverMods || []).map(m => m.filename));
+    if (btn) {
+      btn.textContent = 'Conserver tous les mods';
+      btn.classList.remove('is-active');
+    }
+    showToast('Filtrage intelligent recommandé réactivé.', 'info');
+  }
+  renderModsInteractiveLists();
+};
+
+window.toggleModSelection = function (filename, shouldInclude) {
+  if (!currentAnalysis) return;
+  if (shouldInclude) {
+    activeSelectedMods.add(filename);
+    showToast(`Mod "${filename}" ajouté aux mods serveur.`, 'success');
+  } else {
+    activeSelectedMods.delete(filename);
+    showToast(`Mod "${filename}" retiré des mods serveur.`, 'info');
+  }
+  renderModsInteractiveLists();
+};
+
+window.filterModsListDisplay = function () {
+  renderModsInteractiveLists();
+};
+
+function renderModsInteractiveLists() {
+  if (!currentAnalysis) return;
+  const allMods = [...(currentAnalysis.serverMods || []), ...(currentAnalysis.clientOnlyMods || [])];
+  const searchInput = document.getElementById('modSearchInput');
+  const query = (searchInput?.value || '').trim().toLowerCase();
+
+  const serverUl = document.getElementById('serverModsList');
+  const clientUl = document.getElementById('excludedModsList');
+
+  const retainedMods = [];
+  const excludedMods = [];
+
+  for (const mod of allMods) {
+    if (activeSelectedMods.has(mod.filename)) {
+      retainedMods.push(mod);
+    } else {
+      excludedMods.push(mod);
+    }
+  }
+
+  // Mise à jour des compteurs et badges
+  const serverCountEl = document.getElementById('serverModsCount');
+  const clientCountEl = document.getElementById('clientModsCount');
+  const tabServerBadge = document.getElementById('tabServerModsBadge');
+  const tabClientBadge = document.getElementById('tabClientModsBadge');
+
+  if (serverCountEl) serverCountEl.textContent = retainedMods.length;
+  if (clientCountEl) clientCountEl.textContent = excludedMods.length;
+  if (tabServerBadge) tabServerBadge.textContent = retainedMods.length;
+  if (tabClientBadge) tabClientBadge.textContent = excludedMods.length;
+
+  const filteredRetained = query
+    ? retainedMods.filter(m => (m.modName || '').toLowerCase().includes(query) || m.filename.toLowerCase().includes(query))
+    : retainedMods;
+
+  const filteredExcluded = query
+    ? excludedMods.filter(m => (m.modName || '').toLowerCase().includes(query) || m.filename.toLowerCase().includes(query))
+    : excludedMods;
+
+  if (serverUl) {
+    if (filteredRetained.length === 0) {
+      serverUl.innerHTML = '<li class="mods-empty-hint">' + (query ? 'Aucun mod correspondant à la recherche' : 'Aucun mod sélectionné pour le serveur') + '</li>';
+    } else {
+      serverUl.innerHTML = filteredRetained.map(m => `
+        <li class="mods-item">
+          <span class="mods-item-name" title="${escapeHtml(m.filename)}">${escapeHtml(m.modName || m.filename)}</span>
+          <div class="mods-item-actions">
+            <span class="mod-reason-tag server">Serveur</span>
+            <button type="button" class="mods-btn-action exclude" onclick="toggleModSelection('${escapeHtml(m.filename).replace(/'/g, "\\'")}', false)">Exclure</button>
+          </div>
+        </li>
+      `).join('');
+    }
+  }
+
+  if (clientUl) {
+    if (filteredExcluded.length === 0) {
+      clientUl.innerHTML = '<li class="mods-empty-hint">' + (query ? 'Aucun mod exclu correspondant à la recherche' : 'Tous les mods sont actuellement inclus sur le serveur !') + '</li>';
+    } else {
+      clientUl.innerHTML = filteredExcluded.map(m => `
+        <li class="mods-item">
+          <span class="mods-item-name" title="${escapeHtml(m.filename)}">${escapeHtml(m.modName || m.filename)}</span>
+          <div class="mods-item-actions">
+            <span class="mod-reason-tag" title="${escapeHtml(m.reason || '')}">${escapeHtml(m.reason || 'Client')}</span>
+            <button type="button" class="mods-btn-action include" onclick="toggleModSelection('${escapeHtml(m.filename).replace(/'/g, "\\'")}', true)">Ajouter au serveur</button>
+          </div>
+        </li>
+      `).join('');
+    }
+  }
+
+  if (btnSubmitModded) {
+    btnSubmitModded.disabled = retainedMods.length === 0;
+  }
+}
+
 // Application des résultats d'analyse sur l'interface
 function applyAnalysisResult(analysis, sourcePath, label) {
   try {
@@ -2603,31 +2767,38 @@ function applyAnalysisResult(analysis, sourcePath, label) {
       }
     }
 
+    // Initialisation de la sélection interactive des mods
+    const allMods = [...(analysis?.serverMods || []), ...(analysis?.clientOnlyMods || [])];
+    const btnKeepAll = document.getElementById('btnToggleKeepAllMods');
+    if (analysis && analysis.isServerPack) {
+      // Dans un Pack Serveur officiel, tous les mods sont conservés d'emblée
+      activeSelectedMods = new Set(allMods.map(m => m.filename));
+      isKeepAllModsActive = true;
+      if (btnKeepAll) {
+        btnKeepAll.textContent = 'Rétablir le filtrage recommandé';
+        btnKeepAll.classList.add('is-active');
+      }
+    } else {
+      activeSelectedMods = new Set((analysis?.serverMods || []).map(m => m.filename));
+      isKeepAllModsActive = false;
+      if (btnKeepAll) {
+        btnKeepAll.textContent = 'Conserver tous les mods';
+        btnKeepAll.classList.remove('is-active');
+      }
+    }
+
     // Résultats du filtrage serveur / client
     if (analysisResults) {
       analysisResults.style.display = 'block';
     }
-    if (serverModsCount) {
-      serverModsCount.textContent = (analysis && analysis.serverMods) ? analysis.serverMods.length : 0;
-    }
-    if (clientModsCount) {
-      clientModsCount.textContent = (analysis && analysis.clientOnlyMods) ? analysis.clientOnlyMods.length : 0;
-    }
 
-    if (excludedModsList) {
-      const excluded = (analysis && analysis.clientOnlyMods) ? analysis.clientOnlyMods : [];
-      excludedModsList.innerHTML = excluded.map(m => `
-        <li>
-          <span class="mod-name">${escapeHtml(m.modName || m.filename)}</span>
-          <span class="mod-reason">${escapeHtml(m.reason || 'Mod visuel client')}</span>
-        </li>
-      `).join('') || '<li>Aucun mod exclu (tous compatibles serveur)</li>';
-    }
+    renderModsInteractiveLists();
+    switchModsListTab('server');
 
     if (btnSubmitModded) {
       btnSubmitModded.disabled = false;
     }
-    showToast(`Analyse réussie : ${(analysis && analysis.serverMods) ? analysis.serverMods.length : 0} mods serveur retenus.`, 'success');
+    showToast(`Analyse réussie : ${activeSelectedMods.size} mods serveur retenus sur ${allMods.length}.`, 'success');
   } catch (err) {
     console.error('Erreur applyAnalysisResult:', err);
     showToast('Erreur affichage mods: ' + err.message, 'error');
@@ -2742,6 +2913,8 @@ formCreateModded.addEventListener('submit', async (e) => {
   const offline = !!document.getElementById('moddedOffline')?.checked;
   const sourcePathToDeploy = uploadedFilePath;
 
+  const selectedModsList = Array.from(activeSelectedMods);
+
   closeCreateModal();
   openProgressModal(name, 'modded');
 
@@ -2756,7 +2929,9 @@ formCreateModded.addEventListener('submit', async (e) => {
         loader,
         sourcePath: sourcePathToDeploy,
         seed,
-        offline
+        offline,
+        selectedMods: selectedModsList,
+        keepAllMods: !!isKeepAllModsActive
       })
     });
     const data = await res.json();

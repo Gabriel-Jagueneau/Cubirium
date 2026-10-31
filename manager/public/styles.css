@@ -2310,30 +2310,187 @@ select option {
   font-weight: 600;
 }
 
-.list-title {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  margin-bottom: 6px;
-}
-
-.excluded-mods-list {
-  max-height: 120px;
-  overflow-y: auto;
-  list-style: none;
-  font-size: 0.75rem;
-  color: var(--text-dim);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.excluded-mods-list li {
-  padding: 4px 8px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
+.mods-filter-controls {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.mods-filter-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.mods-tab-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-dim);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mods-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+}
+
+.mods-tab-btn.active {
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: #fff;
+}
+
+.btn-toggle-keep-all {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #93c5fd;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-toggle-keep-all:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: #60a5fa;
+  color: #ffffff;
+}
+
+.btn-toggle-keep-all.is-active {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #a7f3d0;
+}
+
+.mods-search-wrap {
+  margin-bottom: 10px;
+}
+
+.mods-search-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  font-size: 0.78rem;
+  color: var(--text-main);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.mods-search-input:focus {
+  border-color: var(--accent-blue);
+}
+
+.mods-list-wrap {
+  max-height: 180px;
+  overflow-y: auto;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 4px;
+}
+
+.mods-interactive-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+}
+
+.mods-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  gap: 8px;
+}
+
+.mods-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.mods-item-name {
+  font-weight: 500;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.mods-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.mod-reason-tag {
+  font-size: 0.68rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.mod-reason-tag.server {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.mods-btn-action {
+  border: none;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mods-btn-action.include {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #a7f3d0;
+}
+
+.mods-btn-action.include:hover {
+  background: rgba(16, 185, 129, 0.35);
+  color: #ffffff;
+}
+
+.mods-btn-action.exclude {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+.mods-btn-action.exclude:hover {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ffffff;
+}
+
+.mods-empty-hint {
+  text-align: center;
+  padding: 16px;
+  color: var(--text-dim);
+  font-size: 0.75rem;
 }
 
 /* Toast */
@@ -3065,6 +3222,21 @@ select option {
 
 /* Responsive options & players */
 @media (max-width: 768px) {
+  .mods-filter-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mods-filter-tabs {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .btn-toggle-keep-all {
+    width: 100%;
+    text-align: center;
+  }
+
   .options-grid {
     grid-template-columns: 1fr;
   }

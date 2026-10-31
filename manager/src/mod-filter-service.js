@@ -7,10 +7,17 @@ function readJarEntry(jarPath, entryPath) {
   const isWin = process.platform === 'win32';
   if (isWin) {
     try {
-      return execSync(`tar -xOf "${jarPath}" "${entryPath}" 2>nul`, { maxBuffer: 1024 * 1024, windowsHide: true }).toString('utf8');
+      const normForward = entryPath.replace(/\\/g, '/');
+      const normBack = entryPath.replace(/\//g, '\\');
+      try {
+        return execSync(`tar -xOf "${jarPath}" "${normForward}" 2>nul`, { maxBuffer: 1024 * 1024, windowsHide: true }).toString('utf8');
+      } catch (_) {
+        return execSync(`tar -xOf "${jarPath}" "${normBack}" 2>nul`, { maxBuffer: 1024 * 1024, windowsHide: true }).toString('utf8');
+      }
     } catch (_) {
       try {
-        const ps = `Add-Type -AssemblyName System.IO.Compression.FileSystem; $z = [System.IO.Compression.ZipFile]::OpenRead('${jarPath.replace(/'/g, "''")}'); $e = $z.GetEntry('${entryPath.replace(/'/g, "''")}'); if ($e) { $sr = New-Object System.IO.StreamReader($e.Open()); $sr.ReadToEnd() }`;
+        const norm = entryPath.replace(/\\/g, '/');
+        const ps = `Add-Type -AssemblyName System.IO.Compression.FileSystem; $z = [System.IO.Compression.ZipFile]::OpenRead('${jarPath.replace(/'/g, "''")}'); $e = $z.Entries | Where-Object { ($_.FullName -replace '\\\\','/') -eq '${norm}' } | Select-Object -First 1; if ($e) { $sr = New-Object System.IO.StreamReader($e.Open()); $sr.ReadToEnd() }`;
         return execSync(`powershell -NoProfile -NonInteractive -Command "${ps}"`, { maxBuffer: 1024 * 1024, windowsHide: true }).toString('utf8');
       } catch (__) {
         return '';
@@ -25,77 +32,51 @@ function readJarEntry(jarPath, entryPath) {
   }
 }
 
-
-// Liste exhaustive de mods connus comme étant strictement réservés au client
-const CLIENT_ONLY_PATTERNS = [
-  // Graphismes, shaders, rendu
+// Liste ciblée des mods purement client (moteurs graphiques et cosmétiques sans code serveur)
+// connus pour planter systématiquement sur un serveur dédié headless
+const STRICT_CLIENT_CRASH_PATTERNS = [
+  // Graphismes, shaders, moteurs de rendu exclusivement client
   /optifine/i,
-  /sodium/i,
+  /sodium[_-]?fabric/i,
   /rubidium/i,
   /embeddium/i,
-  /iris/i,
+  /iris-mc|\biris-/i,
   /oculus/i,
   /canvas/i,
   /indium/i,
-  /reeses[_-]?sodium[_-]?options/i,
+  /reeses[_-]?sodium/i,
   /sodium[_-]?extra/i,
   /entityculling/i,
-  /dynamiclights/i,
-  /continuity/i,
   /cullleaves/i,
-  /fastipflop/i,
   /lambdynamiclights/i,
   /fabric[_-]?skyboxes/i,
   /custom[_-]?fog/i,
-  /distanthorizons/i,
   /nvidium/i,
   /vulkanmod/i,
   /gpumemleakfix/i,
 
-  // HUD, Menus, GUI, cosmétique d'interface
+  // HUD, Écrans personnalisés, Menus exclusivement client
   /fancymenu/i,
   /drippy/i,
   /customloadingscreen/i,
-  /modmenu/i,
-  /catalogue/i,
-  /configured/i,
-  /controlling/i,
-  /searchables/i,
-  /toastcontrol/i,
+  /\bmodmenu-/i,
   /betterf3/i,
-  /shulkerboxtooltip/i,
   /inventoryhud/i,
   /armorstatushud/i,
-  /clickadv/i,
-  /highlighter/i,
-  /tip[_-]?the[_-]?scales/i,
   /chat[_-]?heads/i,
-  /chatheads/i,
   /authme[_-]?client/i,
-  /smoothboot/i,
   /borderless/i,
   /fullscreenwindowed/i,
 
-  // Minimap client-only
-  /xaeros[_-]?minimap/i,
-  /xaerominimap/i,
-  /voxelmap/i,
-  /mapwriter/i,
-
-  // Animations, physique visuelle, cosmétiques
-  /skinlayers3d/i,
-  /3d[_-]?skin[_-]?layers/i,
+  // Animations et cosmétiques visuels client
+  /skinlayers3d|3d[_-]?skin[_-]?layers/i,
   /waveycapes/i,
   /notenoughanimations/i,
   /firstperson/i,
   /eatinganimation/i,
   /visuallayers/i,
   /customskinloader/i,
-  /ears/i,
   /physicsmod[_-]client/i,
-  /ambientenvironment/i,
-  /presencefootsteps/i,
-  /soundphysics/i,
   /dynamic[_-]?crosshair/i,
   /visuality/i,
 
@@ -105,7 +86,6 @@ const CLIENT_ONLY_PATTERNS = [
   /litematica/i,
   /tweakeroo/i,
   /itemscroller/i,
-  /malilib/i,
   /freecam/i,
   /zoomify/i,
   /ok[_-]?zoomer/i,
@@ -120,7 +100,7 @@ class ModFilterService {
   /**
    * Inspecte les métadonnées d'un fichier jar individuel
    */
-  inspectJar(jarPath) {
+  inspectJar(jarPath, { isServerPack = false } = {}) {
     const filename = path.basename(jarPath);
     let isClientOnly = false;
     let reason = null;
@@ -128,29 +108,28 @@ class ModFilterService {
     let modName = null;
     let detectedLoader = null;
     let detectedMcVersion = null;
+    let detectedLoaderVersion = null;
+    let hasManifest = false;
 
-    // 1. Test heuristique par nom de fichier
-    for (const pattern of CLIENT_ONLY_PATTERNS) {
-      if (pattern.test(filename)) {
-        isClientOnly = true;
-        reason = `Mod client identifié par signature (${pattern.source})`;
-        break;
-      }
-    }
-
-    // 2. Inspection interne Fabric (fabric.mod.json)
+    // 1. Inspection interne Fabric (fabric.mod.json)
     try {
       const fabricJson = readJarEntry(jarPath, 'fabric.mod.json');
-
-      if (fabricJson.trim()) {
+      if (fabricJson && fabricJson.trim()) {
+        hasManifest = true;
         detectedLoader = 'fabric';
         const parsed = JSON.parse(fabricJson);
         modId = parsed.id || modId;
         modName = parsed.name || modName;
 
-        if (parsed.environment === 'client') {
+        const hasServerEntrypoint = parsed.entrypoints && (parsed.entrypoints.server || parsed.entrypoints.main);
+        const onlyClientEntrypoint = parsed.entrypoints && parsed.entrypoints.client && !parsed.entrypoints.server && !parsed.entrypoints.main;
+
+        if (parsed.environment === 'client' || (onlyClientEntrypoint && !hasServerEntrypoint)) {
           isClientOnly = true;
-          reason = "Déclaré explicitement 'environment: client' dans fabric.mod.json";
+          reason = "Déclaré réservé au client dans fabric.mod.json";
+        } else {
+          isClientOnly = false;
+          reason = "Compatible serveur (Fabric)";
         }
 
         if (parsed.depends && parsed.depends.minecraft) {
@@ -159,40 +138,19 @@ class ModFilterService {
           if (mcMatch) detectedMcVersion = mcMatch[0];
         }
       }
-    } catch (e) {
-      // Pas de fabric.mod.json ou parse error
-    }
+    } catch (_) {}
 
-    // 3. Inspection interne Quilt (quilt.mod.json)
-    if (!isClientOnly) {
-      try {
-        const quiltJson = readJarEntry(jarPath, 'quilt.mod.json');
-
-        if (quiltJson.trim()) {
-          detectedLoader = 'quilt';
-          const parsed = JSON.parse(quiltJson);
-          if (parsed.quilt_loader && parsed.quilt_loader.environment === 'client') {
-            isClientOnly = true;
-            reason = "Déclaré 'environment: client' dans quilt.mod.json";
-          }
-        }
-      } catch (e) {
-        // Pas de quilt.mod.json
-      }
-    }
-
-    let detectedLoaderVersion = null;
-
-    // 4. Inspection Forge / NeoForge (mods.toml ou neoforge.mods.toml)
-    if (!isClientOnly) {
+    // 2. Inspection Forge / NeoForge (META-INF/neoforge.mods.toml ou META-INF/mods.toml)
+    if (!hasManifest) {
       try {
         let tomlContent = readJarEntry(jarPath, 'META-INF/neoforge.mods.toml');
-        if (!tomlContent.trim()) {
+        if (!tomlContent || !tomlContent.trim()) {
           tomlContent = readJarEntry(jarPath, 'META-INF/mods.toml');
         }
 
-        if (tomlContent.trim()) {
-          const isNeo = /neoforge/i.test(tomlContent);
+        if (tomlContent && tomlContent.trim()) {
+          hasManifest = true;
+          const isNeo = /neoforge/i.test(tomlContent) || readJarEntry(jarPath, 'META-INF/neoforge.mods.toml').trim().length > 0;
           detectedLoader = isNeo ? 'neoforge' : 'forge';
 
           const idMatch = tomlContent.match(/modId\s*=\s*["']([^"']+)["']/i);
@@ -200,39 +158,111 @@ class ModFilterService {
           const nameMatch = tomlContent.match(/displayName\s*=\s*["']([^"']+)["']/i);
           if (nameMatch) modName = nameMatch[1];
 
-          // 1. Chercher spécifiquement la version NeoForge/Forge
+          // Détection versions loader & Minecraft
           const loaderDepMatch = tomlContent.match(/modId\s*=\s*["'](?:neoforge|forge)["'][\s\S]*?versionRange\s*=\s*["']\[?([0-9\.]+)/i);
-          if (loaderDepMatch) {
-            detectedLoaderVersion = loaderDepMatch[1];
-          }
+          if (loaderDepMatch) detectedLoaderVersion = loaderDepMatch[1];
 
-          // 2. Chercher spécifiquement la version Minecraft
           const mcDepMatch = tomlContent.match(/modId\s*=\s*["']minecraft["'][\s\S]*?versionRange\s*=\s*["']\[?([0-9\.]+)/i);
           if (mcDepMatch) {
             detectedMcVersion = mcDepMatch[1];
-          } else {
-            // Repli sur conversion de la version NeoForge (ex: 21.1.206 -> 1.21.1)
-            if (detectedLoaderVersion && detectedLoaderVersion.startsWith('21.')) {
-              detectedMcVersion = detectedLoaderVersion.startsWith('21.1') ? '1.21.1' : '1.21';
-            } else if (detectedLoaderVersion && detectedLoaderVersion.startsWith('20.')) {
-              const sub = detectedLoaderVersion.split('.')[1] || '1';
-              detectedMcVersion = `1.20.${sub}`;
+          } else if (detectedLoaderVersion) {
+            if (detectedLoaderVersion.startsWith('21.')) detectedMcVersion = detectedLoaderVersion.startsWith('21.1') ? '1.21.1' : '1.21';
+            else if (detectedLoaderVersion.startsWith('20.')) detectedMcVersion = `1.20.${detectedLoaderVersion.split('.')[1] || '1'}`;
+          }
+
+          // Dans Forge / NeoForge, les mods sont universels par défaut (side = "BOTH").
+          // On vérifie UNIQUEMENT dans les blocs [[mods]] si le mod lui-même déclare side = "CLIENT" ou clientSideOnly = true
+          const modBlocks = tomlContent.split(/\[\[mods\]\]/i).slice(1);
+          let declaredClientOnly = false;
+          for (const block of modBlocks) {
+            const modDef = block.split(/\[\[/)[0];
+            if (/side\s*=\s*["']CLIENT["']/i.test(modDef) || /clientSideOnly\s*=\s*true/i.test(modDef)) {
+              declaredClientOnly = true;
+              break;
             }
           }
 
-          // Ne vérifier le side que dans la déclaration du mod lui-même [[mods]] et non dans ses dépendances
-          const modSectionMatch = tomlContent.match(/\[\[mods\]\]([\s\S]*?)(?:\[\[dependencies|$)/i);
-          if (modSectionMatch && /side\s*=\s*["']CLIENT["']/i.test(modSectionMatch[1])) {
+          if (declaredClientOnly) {
             isClientOnly = true;
-            reason = "Spécifié 'side = CLIENT' au niveau du mod dans mods.toml";
+            reason = "Déclaré réservé au client dans mods.toml";
+          } else {
+            isClientOnly = false;
+            reason = "Compatible serveur (Forge / NeoForge)";
           }
         }
-      } catch (e) {
-        // Pas de toml
+      } catch (_) {}
+    }
+
+    // 3. Inspection interne Quilt (quilt.mod.json)
+    if (!hasManifest) {
+      try {
+        const quiltJson = readJarEntry(jarPath, 'quilt.mod.json');
+        if (quiltJson && quiltJson.trim()) {
+          hasManifest = true;
+          detectedLoader = 'quilt';
+          const parsed = JSON.parse(quiltJson);
+          if (parsed.quilt_loader && parsed.quilt_loader.environment === 'client') {
+            isClientOnly = true;
+            reason = "Déclaré réservé au client dans quilt.mod.json";
+          } else {
+            isClientOnly = false;
+            reason = "Compatible serveur (Quilt)";
+          }
+        }
+      } catch (_) {}
+    }
+
+    // 4. Inspection Legacy Forge 1.7.10 - 1.12.2 (mcmod.info)
+    if (!hasManifest) {
+      try {
+        const mcmodInfo = readJarEntry(jarPath, 'mcmod.info');
+        if (mcmodInfo && mcmodInfo.trim()) {
+          hasManifest = true;
+          detectedLoader = 'forge';
+          try {
+            const parsed = JSON.parse(mcmodInfo);
+            const m = Array.isArray(parsed) ? parsed[0] : (parsed.modList ? parsed.modList[0] : null);
+            if (m) {
+              modId = m.modid || modId;
+              modName = m.name || modName;
+              if (m.mcversion) detectedMcVersion = m.mcversion;
+            }
+          } catch (_) {}
+          isClientOnly = false;
+          reason = "Compatible serveur (Legacy Forge)";
+        }
+      } catch (_) {}
+    }
+
+    // 5. Règle spéciale : si c'est un pack de serveur officiel, tous les mods sont conservés
+    if (isServerPack) {
+      isClientOnly = false;
+      reason = "Inclus d'office (Pack de serveur)";
+    } else {
+      // 6. Heuristiques sur le nom de fichier :
+      // - Si aucun manifest n'a été trouvé, ou si c'est un moteur graphique incompatible headless
+      if (!hasManifest || isClientOnly) {
+        for (const pattern of STRICT_CLIENT_CRASH_PATTERNS) {
+          if (pattern.test(filename)) {
+            isClientOnly = true;
+            reason = `Mod client visuel identifié (${pattern.source})`;
+            break;
+          }
+        }
+      } else {
+        // Exception stricte : les moteurs graphiques purs comme OptiFine, Embeddium, Oculus
+        // font planter le serveur dédié même s'ils ne définissent pas side=CLIENT
+        for (const crashPattern of [/optifine/i, /embeddium/i, /rubidium/i, /oculus/i]) {
+          if (crashPattern.test(filename)) {
+            isClientOnly = true;
+            reason = `Moteur graphique client incompatible serveur (${crashPattern.source})`;
+            break;
+          }
+        }
       }
     }
 
-    // Heuristiques prioritaires sur le nom de fichier (ex: [1.21.1] SecurityCraft...)
+    // Heuristiques prioritaires sur le nom de fichier pour la version MC
     const fnMcMatch = filename.match(/(?:\[|\b|\D)(1\.\d+(?:\.\d+)?|2[56]\.\d+)(?:\]|\b|\D)/);
     if (fnMcMatch) {
       detectedMcVersion = fnMcMatch[1];
@@ -241,7 +271,7 @@ class ModFilterService {
       if (fnVerMatch) detectedMcVersion = fnVerMatch[1];
     }
 
-    // Fallback et normalisation stricte : une version Minecraft ne commence pas par 21. ou 20.
+    // Normalisation de version MC
     if (detectedMcVersion && /^(?:20|21)\.\d+/.test(detectedMcVersion)) {
       if (detectedMcVersion.startsWith('21.1')) detectedMcVersion = '1.21.1';
       else if (detectedMcVersion.startsWith('21.0') || detectedMcVersion === '21') detectedMcVersion = '1.21';
@@ -305,6 +335,19 @@ class ModFilterService {
       isTempZip = true;
     }
 
+    // Détection si la source est un Pack Serveur officiel
+    const sourceBase = path.basename(sourcePath).toLowerCase();
+    const parentBase = path.basename(path.dirname(sourcePath)).toLowerCase();
+    const isServerPack = /server[_\s-]*pack|server[_\s-]*files|serverpack|serverfiles/i.test(sourceBase) ||
+      /server[_\s-]*pack|server[_\s-]*files|serverpack|serverfiles/i.test(parentBase) ||
+      fs.existsSync(path.join(workingDir, 'server.properties')) ||
+      fs.existsSync(path.join(workingDir, 'run.sh')) ||
+      fs.existsSync(path.join(workingDir, 'run.bat')) ||
+      fs.existsSync(path.join(workingDir, 'server.jar')) ||
+      fs.existsSync(path.join(path.dirname(workingDir), 'server.properties')) ||
+      fs.existsSync(path.join(path.dirname(workingDir), 'run.sh')) ||
+      fs.existsSync(path.join(path.dirname(workingDir), 'server.jar'));
+
     // Trouver tous les fichiers .jar
     const jarFiles = [];
     if (stat.isFile() && sourcePath.toLowerCase().endsWith('.jar')) {
@@ -336,6 +379,7 @@ class ModFilterService {
     // Analyse Modrinth mrpack index si présent
     const modrinthIndex = path.join(workingDir, 'modrinth.index.json');
     let modrinthServerUnsupported = new Set();
+    let modrinthServerSupported = new Set();
     let modrinthGameVersion = null;
     let modrinthLoader = null;
 
@@ -351,8 +395,13 @@ class ModFilterService {
         }
         if (mdata.files && Array.isArray(mdata.files)) {
           for (const f of mdata.files) {
-            if (f.env && f.env.server === 'unsupported' && f.path) {
-              modrinthServerUnsupported.add(path.basename(f.path));
+            if (f.path) {
+              const fname = path.basename(f.path);
+              if (f.env && f.env.server === 'unsupported') {
+                modrinthServerUnsupported.add(fname);
+              } else if (f.env && (f.env.server === 'required' || f.env.server === 'optional')) {
+                modrinthServerSupported.add(fname);
+              }
             }
           }
         }
@@ -372,10 +421,13 @@ class ModFilterService {
         onProgress(pct, `Tri du mod ${i + 1}/${totalJars} : ${filename}`, i + 1, totalJars);
       }
 
-      const info = this.inspectJar(jarPath);
+      const info = this.inspectJar(jarPath, { isServerPack });
       if (modrinthServerUnsupported.has(info.filename)) {
         info.isClientOnly = true;
         info.reason = "Marqué 'env.server: unsupported' dans modrinth.index.json";
+      } else if (modrinthServerSupported.has(info.filename)) {
+        info.isClientOnly = false;
+        info.reason = "Compatible serveur selon modrinth.index.json";
       }
 
       if (info.detectedLoader) {
@@ -402,7 +454,7 @@ class ModFilterService {
       const sortedLoaders = Object.entries(loaderCounts).sort((a, b) => b[1] - a[1]);
       if (sortedLoaders.length > 0) detectedLoader = sortedLoaders[0][0];
     }
-    if (!detectedLoader) detectedLoader = 'fabric'; // Default standard
+    if (!detectedLoader) detectedLoader = 'fabric';
 
     // Déterminer la version Minecraft prédominante
     let detectedMcVersion = modrinthGameVersion || null;
@@ -410,7 +462,7 @@ class ModFilterService {
       const sortedVersions = Object.entries(versionCounts).sort((a, b) => b[1] - a[1]);
       if (sortedVersions.length > 0) detectedMcVersion = sortedVersions[0][0];
     }
-    if (!detectedMcVersion) detectedMcVersion = '1.21.1'; // Default stable
+    if (!detectedMcVersion) detectedMcVersion = '1.21.1';
 
     return {
       isZip: isTempZip,
@@ -419,6 +471,7 @@ class ModFilterService {
       totalCount: jarFiles.length,
       detectedLoader,
       detectedMcVersion,
+      isServerPack,
       serverMods,
       clientOnlyMods
     };
@@ -427,17 +480,19 @@ class ModFilterService {
   /**
    * Déploie les mods serveur filtrés vers le dossier mods cible
    */
-  async deployServerMods(analysisResult, targetModsDir, overrideSelection = null, onProgress = null) {
+  async deployServerMods(analysisResult, targetModsDir, overrideSelection = null, onProgress = null, keepAllMods = false) {
     if (!fs.existsSync(targetModsDir)) {
       fs.mkdirSync(targetModsDir, { recursive: true });
     }
 
-    let toInstall = analysisResult.serverMods;
+    const allMods = [...(analysisResult.serverMods || []), ...(analysisResult.clientOnlyMods || [])];
+    let toInstall = analysisResult.serverMods || [];
 
-    // Si l'utilisateur a ajusté la sélection
-    if (overrideSelection && Array.isArray(overrideSelection)) {
-      const allMods = [...analysisResult.serverMods, ...analysisResult.clientOnlyMods];
-      toInstall = allMods.filter(m => overrideSelection.includes(m.filename));
+    if (keepAllMods) {
+      toInstall = allMods;
+    } else if (overrideSelection && Array.isArray(overrideSelection) && overrideSelection.length > 0) {
+      const selSet = new Set(overrideSelection.map(s => String(s).trim().toLowerCase()));
+      toInstall = allMods.filter(m => selSet.has(m.filename.trim().toLowerCase()));
     }
 
     let installedCount = 0;
@@ -455,7 +510,7 @@ class ModFilterService {
       }
     }
 
-    // Si un dossier temporaire avait été extrait pour un zip, on peut le supprimer
+    // Nettoyage éventuel du dossier temporaire extrait
     if (analysisResult.tempExtractDir && fs.existsSync(analysisResult.tempExtractDir)) {
       try {
         fs.rmSync(analysisResult.tempExtractDir, { recursive: true, force: true });

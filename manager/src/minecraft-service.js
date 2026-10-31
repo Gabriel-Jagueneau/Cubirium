@@ -2471,7 +2471,7 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
   /**
    * Création d'un nouveau monde (Vanilla, Crossplay ou Moddé avec filtrage)
    */
-  async createWorld({ name, type, version, loader, sourcePath, overrideMods, seed, offline }) {
+  async createWorld({ name, type, version, loader, sourcePath, overrideMods, selectedMods, keepAllMods, seed, offline }) {
     const cleanId = (name && name.trim()) 
       ? name.trim().replace(/[^a-zA-Z0-9_-]/g, '-') 
       : this.getNextDefaultWorldName();
@@ -2553,9 +2553,10 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
             const scaled = 10 + Math.round(pct * 0.2); // 10% à 30%
             this.broadcast('install_progress', { progress: scaled, msg, worldId: cleanId });
           });
-          filterReport = await modFilterService.deployServerMods(analysis, modsDir, overrideMods, (pct, msg) => {
+          const effectiveOverride = keepAllMods ? null : (selectedMods || overrideMods || null);
+          filterReport = await modFilterService.deployServerMods(analysis, modsDir, effectiveOverride, (pct, msg) => {
             this.broadcast('install_progress', { progress: pct, msg, worldId: cleanId });
-          });
+          }, !!keepAllMods);
           if (analysis.detectedLoader) detectedLoader = analysis.detectedLoader;
           if (analysis.detectedMcVersion) detectedMcVersion = analysis.detectedMcVersion;
         } else {

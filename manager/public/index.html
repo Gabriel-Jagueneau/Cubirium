@@ -438,20 +438,46 @@
 
               <!-- Mod Analysis Preview -->
               <div class="analysis-results" id="analysisResults" style="display: none;">
+                <!-- En-tête résumé et statut Server Pack -->
                 <div class="analysis-summary">
-                  <div class="summary-box success">
+                  <div class="summary-box success" id="boxServerMods" onclick="switchModsListTab('server')" style="cursor: pointer;">
                     <span class="summary-val" id="serverModsCount">0</span>
                     <span class="summary-lbl">Mods Serveur retenus</span>
                   </div>
-                  <div class="summary-box warning">
+                  <div class="summary-box warning" id="boxClientMods" onclick="switchModsListTab('client')" style="cursor: pointer;">
                     <span class="summary-val" id="clientModsCount">0</span>
                     <span class="summary-lbl">Mods Client exclus</span>
                   </div>
                 </div>
 
-                <div class="excluded-mods-list-wrap">
-                  <div class="list-title">Filtrage des mods incompatibles :</div>
-                  <ul class="excluded-mods-list" id="excludedModsList"></ul>
+                <!-- Barre d'actions & Contrôle utilisateur -->
+                <div class="mods-filter-controls">
+                  <div class="mods-filter-tabs">
+                    <button type="button" class="mods-tab-btn active" id="btnTabServerMods" onclick="switchModsListTab('server')">
+                      Mods Serveur (<span id="tabServerModsBadge">0</span>)
+                    </button>
+                    <button type="button" class="mods-tab-btn" id="btnTabClientMods" onclick="switchModsListTab('client')">
+                      Mods Exclus (<span id="tabClientModsBadge">0</span>)
+                    </button>
+                  </div>
+                  <button type="button" class="btn-toggle-keep-all" id="btnToggleKeepAllMods" onclick="toggleKeepAllMods()">
+                    Conserver tous les mods
+                  </button>
+                </div>
+
+                <!-- Champ de recherche de mod -->
+                <div class="mods-search-wrap">
+                  <input type="text" id="modSearchInput" class="mods-search-input" placeholder="Filtrer ou rechercher un mod..." oninput="filterModsListDisplay()" />
+                </div>
+
+                <!-- Liste des mods serveur retenus -->
+                <div class="mods-list-wrap" id="wrapServerModsList">
+                  <ul class="mods-interactive-list" id="serverModsList"></ul>
+                </div>
+
+                <!-- Liste des mods exclus -->
+                <div class="mods-list-wrap" id="wrapExcludedModsList" style="display: none;">
+                  <ul class="mods-interactive-list" id="excludedModsList"></ul>
                 </div>
               </div>
 
