@@ -11,14 +11,16 @@ class ModTextureService {
       try {
         return execFileSync('tar', ['-xOf', jarPath, entryPath], {
           maxBuffer: 10 * 1024 * 1024,
-          stdio: ['pipe', 'pipe', 'ignore']
+          stdio: ['pipe', 'pipe', 'ignore'],
+          windowsHide: true
         });
       } catch (_) {
         try {
           const ps = `Add-Type -AssemblyName System.IO.Compression.FileSystem; $z = [System.IO.Compression.ZipFile]::OpenRead('${jarPath.replace(/'/g, "''")}'); $e = $z.GetEntry('${entryPath.replace(/'/g, "''")}'); if ($e) { $s = $e.Open(); $ms = New-Object System.IO.MemoryStream; $s.CopyTo($ms); [System.Console]::OpenStandardOutput().Write($ms.ToArray(), 0, $ms.Length) }`;
           return execSync(`powershell -NoProfile -NonInteractive -Command "${ps}"`, {
             maxBuffer: 10 * 1024 * 1024,
-            stdio: ['pipe', 'pipe', 'ignore']
+            stdio: ['pipe', 'pipe', 'ignore'],
+            windowsHide: true
           });
         } catch (__) {
           return null;

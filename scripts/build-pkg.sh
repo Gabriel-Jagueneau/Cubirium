@@ -45,7 +45,7 @@ fi
 echo -n "APPL????" > "$PROJECT_ROOT/Cubirium.app/Contents/PkgInfo"
 
 # Mise à jour automatique de Info.plist avec la version de package.json
-APP_VERSION=$(node -e "try{console.log(require('$PROJECT_ROOT/manager/package.json').version)}catch(_){console.log('1.2.0')}")
+APP_VERSION=$(node -e "try{console.log(require('$PROJECT_ROOT/manager/package.json').version)}catch(_){console.log('1.2.1')}")
 PLIST_FILE="$PROJECT_ROOT/Cubirium.app/Contents/Info.plist"
 if [ -f "$PROJECT_ROOT/manager/src/native-app/Info.plist" ]; then
   cp "$PROJECT_ROOT/manager/src/native-app/Info.plist" "$PLIST_FILE"
@@ -161,9 +161,6 @@ if [ -n "$LOGGED_USER" ] && [ "$LOGGED_USER" != "root" ]; then
   TARGET_RUNTIME="$USER_HOME/Library/Application Support/Cubirium/runtime/java-25"
   JAVA_EXISTS=0
   if [ -x "$TARGET_RUNTIME/bin/java" ] || [ -x "$TARGET_RUNTIME/Contents/Home/bin/java" ]; then
-    JAVA_EXISTS=1
-  fi
-  if [ -x "$USER_HOME/Library/Application Support/Cubirium/runtime/java-21/bin/java" ]; then
     JAVA_EXISTS=1
   fi
   if [ -x "/opt/homebrew/opt/openjdk@25/bin/java" ] || [ -x "/usr/local/opt/openjdk@25/bin/java" ]; then

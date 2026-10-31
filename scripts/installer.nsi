@@ -79,10 +79,9 @@ Section "Application Principale" SecMain
 
   ; Vérification et installation automatique de la toute dernière version de Java (Java 25)
   IfFileExists "$LOCALAPPDATA\Cubirium\runtime\java-25\bin\java.exe" JavaAlreadyInstalled 0
-  IfFileExists "$LOCALAPPDATA\Cubirium\runtime\java-21\bin\java.exe" JavaAlreadyInstalled 0
-  DetailPrint "Verification et configuration du runtime Java (derniere version)..."
+  DetailPrint "Verification et configuration du runtime Java 25 (derniere version)..."
   CreateDirectory "$LOCALAPPDATA\Cubirium\runtime"
-  nsExec::ExecToLog 'powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "try { $$j=(Get-Command java -ErrorAction SilentlyContinue); if(!$$j){ $$url=\"https://api.adoptium.net/v3/binary/latest/25/ga/windows/x64/jre/hotspot/normal/eclipse\"; $$zip=\"$$env:TEMP\temurin25.zip\"; Invoke-WebRequest -Uri $$url -OutFile $$zip; $$dest=\"$LOCALAPPDATA\Cubirium\runtime\"; Expand-Archive -Path $$zip -DestinationPath \"$$dest\temp_j\"; $$sub=(Get-ChildItem \"$$dest\temp_j\" | Select-Object -First 1).FullName; Move-Item -Path $$sub -Destination \"$$dest\java-25\" -Force; Remove-Item \"$$dest\temp_j\" -Recurse -Force; Remove-Item $$zip -Force; } } catch {}"'
+  nsExec::ExecToLog 'powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "try { $$dest=\"$LOCALAPPDATA\Cubirium\runtime\"; $$jExe=\"$$dest\java-25\bin\java.exe\"; if (!(Test-Path $$jExe)) { $$arch = if ($$env:PROCESSOR_ARCHITECTURE -eq \"ARM64\") { \"aarch64\" } else { \"x64\" }; $$url=\"https://api.adoptium.net/v3/binary/latest/25/ga/windows/\" + $$arch + \"/jre/hotspot/normal/eclipse\"; $$zip=\"$$env:TEMP\temurin25.zip\"; Invoke-WebRequest -Uri $$url -OutFile $$zip; Expand-Archive -Path $$zip -DestinationPath \"$$dest\temp_j\" -Force; $$sub=(Get-ChildItem \"$$dest\temp_j\" | Select-Object -First 1).FullName; if (Test-Path \"$$dest\java-25\") { Remove-Item \"$$dest\java-25\" -Recurse -Force; } Move-Item -Path $$sub -Destination \"$$dest\java-25\" -Force; Remove-Item \"$$dest\temp_j\" -Recurse -Force; Remove-Item $$zip -Force; } } catch {}"'
 JavaAlreadyInstalled:
 
   ; Répertoire de travail pour les raccourcis
@@ -106,7 +105,7 @@ JavaAlreadyInstalled:
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "DisplayIcon" "$\"$INSTDIR\AppIcon.ico$\""
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "Publisher" "Gabriel JAGUENEAU"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "DisplayVersion" "1.2.0"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "DisplayVersion" "1.2.1"
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "NoModify" 1
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "NoRepair" 1
 SectionEnd

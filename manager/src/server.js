@@ -56,7 +56,7 @@ function downloadFileWithRedirects(url, destPath, maxRedirects = 5) {
     const client = url.startsWith('https:') ? https : http;
     const req = client.get(url, {
       headers: {
-        'User-Agent': `Cubirium/${packageJson.version || '1.2.0'}`
+        'User-Agent': `Cubirium/${packageJson.version || '1.2.1'}`
       }
     }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
@@ -579,7 +579,7 @@ const server = http.createServer(async (req, res) => {
 
     // 2c. API Check Update
     if (pathname === '/api/app/check-update' && method === 'GET') {
-      const currentVersion = packageJson.version || '1.2.0';
+      const currentVersion = packageJson.version || '1.2.1';
       try {
         const options = {
           hostname: 'api.github.com',
@@ -850,7 +850,8 @@ const server = http.createServer(async (req, res) => {
               detached: true,
               stdio: 'ignore',
               cwd: path.resolve(__dirname, '..'),
-              env: process.env
+              env: process.env,
+              windowsHide: true
             });
             child.unref();
             process.exit(0);
@@ -970,22 +971,21 @@ const server = http.createServer(async (req, res) => {
           const winPath = path.normalize(targetPath);
           try {
             const isFile = fs.existsSync(winPath) && fs.statSync(winPath).isFile();
-            const explorerArgs = isFile ? `/select,"${winPath}"` : `"${winPath}"`;
-            
-            // Invoquer via cmd start pour activer la fenêtre dans la session interactive de bureau
-            exec(`start "" explorer.exe ${explorerArgs}`, (err) => {
-              if (err) {
-                exec(`explorer.exe ${explorerArgs}`, (err2) => {
-                  if (err2 && err2.code !== 1) {
-                    const psSafe = winPath.replace(/'/g, "''");
-                    const psArgs = isFile ? `/select,\`"${psSafe}\`"` : `\`"${psSafe}\`"`;
-                    exec(`powershell -NoProfile -Command "Start-Process explorer.exe -ArgumentList '${psArgs}'"`);
-                  }
-                });
-              }
+            const child = spawn('explorer.exe', isFile ? [`/select,${winPath}`] : [winPath], {
+              detached: true,
+              stdio: 'ignore',
+              windowsHide: true
             });
+            child.unref();
           } catch (_) {
-            try { exec(`start "" "${winPath}"`); } catch (__) {}
+            try {
+              const child = spawn('cmd.exe', ['/c', 'start', '""', winPath], {
+                detached: true,
+                stdio: 'ignore',
+                windowsHide: true
+              });
+              child.unref();
+            } catch (__) {}
           }
         } else if (isMac) {
           const safePath = targetPath.replace(/"/g, '\\"');
@@ -1016,7 +1016,21 @@ const server = http.createServer(async (req, res) => {
         const isWin = process.platform === 'win32';
         const isMac = process.platform === 'darwin';
         if (isWin) {
-          exec(`start "" "${url}"`);
+          try {
+            const child = spawn('explorer.exe', [url], {
+              detached: true,
+              stdio: 'ignore',
+              windowsHide: true
+            });
+            child.unref();
+          } catch (_) {
+            const child = spawn('cmd.exe', ['/c', 'start', '""', url], {
+              detached: true,
+              stdio: 'ignore',
+              windowsHide: true
+            });
+            child.unref();
+          }
         } else if (isMac) {
           exec(`open "${url}"`);
         } else {
@@ -1095,7 +1109,7 @@ if ($res -eq [System.Windows.Forms.DialogResult]::OK) {
 }
 `;
           const encoded = Buffer.from(psScript, 'utf16le').toString('base64');
-          execFile('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-STA', '-EncodedCommand', encoded], { timeout: 120000 }, (err, stdout) => {
+          execFile('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-STA', '-EncodedCommand', encoded], { timeout: 120000, windowsHide: true }, (err, stdout) => {
             if (err || !stdout || !stdout.trim()) {
               return sendJson(res, 200, { cancelled: true });
             }
@@ -1554,7 +1568,15 @@ if ($res -eq [System.Windows.Forms.DialogResult]::OK) {
       // 5. Fermeture différée des processus
       if (isWin) {
         setTimeout(() => {
-          try { exec(`taskkill /pid ${process.pid} /T /F 2>nul`); } catch (_) { process.exit(0); }
+          try {
+            spawn('taskkill', ['/pid', String(process.pid), '/T', '/F'], {
+              detached: true,
+              stdio: 'ignore',
+              windowsHide: true
+            }).unref();
+          } catch (_) {
+            process.exit(0);
+          }
         }, 800);
       } else {
         const cleanupCommands = [
@@ -1578,8 +1600,22 @@ if ($res -eq [System.Windows.Forms.DialogResult]::OK) {
         const body = await parseBody(req);
         const targetUrl = (body && body.url) ? String(body.url).trim() : '';
         if (targetUrl && (targetUrl.startsWith('https://') || targetUrl.startsWith('http://'))) {
-          const safeUrl = targetUrl.replace(/"/g, '\\"');
-          exec(`open "${safeUrl}"`);
+          const isWin = process.platform === 'win32';
+          const isMac = process.platform === 'darwin';
+          if (isWin) {
+            try {
+              const child = spawn('explorer.exe', [targetUrl], { detached: true, stdio: 'ignore', windowsHide: true });
+              child.unref();
+            } catch (_) {
+              const child = spawn('cmd.exe', ['/c', 'start', '""', targetUrl], { detached: true, stdio: 'ignore', windowsHide: true });
+              child.unref();
+            }
+          } else if (isMac) {
+            const safeUrl = targetUrl.replace(/"/g, '\\"');
+            exec(`open "${safeUrl}"`);
+          } else {
+            exec(`xdg-open "${targetUrl}"`);
+          }
           return sendJson(res, 200, { success: true });
         }
         return sendJson(res, 400, { error: 'URL invalide ou non sécurisée' });

@@ -210,7 +210,8 @@ class ModloaderInstallerService {
           execSync(`java -jar neoforge-installer.jar --installServer .`, {
             cwd: targetDir,
             stdio: 'ignore',
-            timeout: 240000
+            timeout: 240000,
+            windowsHide: true
           });
         } finally {
           clearInterval(installerTimer);
@@ -290,7 +291,8 @@ class ModloaderInstallerService {
           execSync(`java -jar forge-installer.jar --installServer .`, {
             cwd: targetDir,
             stdio: 'ignore',
-            timeout: 300000
+            timeout: 300000,
+            windowsHide: true
           });
         } finally {
           clearInterval(installerTimer);

@@ -76,10 +76,11 @@ function revealFileInOs(targetPath) {
   if (isWin) {
     try {
       const stat = fs.statSync(targetPath);
+      const winPath = targetPath.replace(/\//g, '\\');
       if (stat.isFile()) {
-        execSync(`explorer.exe /select,"${targetPath.replace(/\//g, '\\')}"`, { stdio: 'ignore' });
+        spawn('explorer.exe', [`/select,${winPath}`], { detached: true, stdio: 'ignore', windowsHide: true }).unref();
       } else {
-        execSync(`explorer.exe "${targetPath.replace(/\//g, '\\')}"`, { stdio: 'ignore' });
+        spawn('explorer.exe', [winPath], { detached: true, stdio: 'ignore', windowsHide: true }).unref();
       }
     } catch (_) {}
   } else if (isMac) {
@@ -212,17 +213,44 @@ class MinecraftService {
   }
 
   /**
+   * Analyse et extrait les métadonnées réelles d'un exécutable Java (statut, version majeure, chaîne brute)
+   */
+  getJavaInfo(binPath) {
+    if (!binPath) return { isWorking: false, major: 0, versionStr: '' };
+    try {
+      const { spawnSync } = require('child_process');
+      const res = spawnSync(binPath, ['-version'], { timeout: 3500, stdio: 'pipe', windowsHide: true });
+      if (res.status !== 0 && res.status !== null) return { isWorking: false, major: 0, versionStr: '' };
+
+      const out = (res.stderr ? res.stderr.toString('utf8') : '') + (res.stdout ? res.stdout.toString('utf8') : '');
+      if (!out) return { isWorking: false, major: 0, versionStr: '' };
+
+      let major = 0;
+      const match = out.match(/(?:java|openjdk)\s+version\s+"([^"]+)"/i) || out.match(/version\s+"([^"]+)"/i);
+      const versionStr = match ? match[1] : '';
+      if (versionStr) {
+        if (versionStr.startsWith('1.8')) {
+          major = 8;
+        } else {
+          const m = versionStr.match(/^([0-9]+)/);
+          if (m) major = parseInt(m[1], 10);
+        }
+      }
+      return {
+        isWorking: true,
+        major,
+        versionStr
+      };
+    } catch (_) {
+      return { isWorking: false, major: 0, versionStr: '' };
+    }
+  }
+
+  /**
    * Vérifie si un exécutable Java est réellement opérationnel sur le système
    */
   isJavaRunnable(binPath) {
-    if (!binPath) return false;
-    try {
-      const { spawnSync } = require('child_process');
-      const res = spawnSync(binPath, ['-version'], { timeout: 3500, stdio: 'pipe' });
-      return res.status === 0;
-    } catch (_) {
-      return false;
-    }
+    return this.getJavaInfo(binPath).isWorking;
   }
 
   /**
@@ -236,7 +264,8 @@ class MinecraftService {
     // Déterminer la version de Java requise selon la version Minecraft du monde
     const isJava25 = version.startsWith('26.') || version.startsWith('25.') ||
                      version.startsWith('24w') || version.startsWith('25w') || version.startsWith('26w') ||
-                     /(?:MC|Minecraft|Vanilla)\s*2[56]\./i.test(content);
+                     /(?:MC|Minecraft|Vanilla)\s*2[56]\./i.test(content) ||
+                     /class file version 69/i.test(content);
     const isJava8 = version.startsWith('1.7') || version.startsWith('1.8') || version.startsWith('1.9') ||
                     version.startsWith('1.10') || version.startsWith('1.11') || version.startsWith('1.12') ||
                     version.startsWith('1.13') || version.startsWith('1.14') || version.startsWith('1.15') ||
@@ -259,23 +288,24 @@ class MinecraftService {
       }
     }
 
-    // 0. Dossiers de runtime locaux de Cubirium
+    // 0. Dossiers de runtime locaux de Cubirium (Priorité absolue à Java 25)
     const appSupportDir = isWin
-      ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), 'Cubirium')
+      ? (process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'Cubirium') : path.join(process.env.APPDATA || os.homedir(), 'Cubirium'))
       : path.join(os.homedir(), 'Library/Application Support/Cubirium');
+    const roamingAppSupportDir = isWin && process.env.APPDATA ? path.join(process.env.APPDATA, 'Cubirium') : null;
     const legacyAppSupportDir = isWin
-      ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), 'MinecraftServerManager')
+      ? path.join(process.env.LOCALAPPDATA || os.homedir(), 'MinecraftServerManager')
       : path.join(os.homedir(), 'Library/Application Support/MinecraftServerManager');
 
     const localRuntimeDirs = [
       path.join(appSupportDir, 'runtime', 'java-25'),
-      path.join(appSupportDir, 'runtime', 'java-21'),
+      roamingAppSupportDir ? path.join(roamingAppSupportDir, 'runtime', 'java-25') : null,
       path.join(this.gamesDir, '..', 'runtime', 'java-25'),
-      path.join(this.gamesDir, '..', 'runtime', 'java-21'),
       path.join(legacyAppSupportDir, 'runtime', 'java-25'),
+      path.join(appSupportDir, 'runtime', 'java-21'),
+      roamingAppSupportDir ? path.join(roamingAppSupportDir, 'runtime', 'java-21') : null,
+      path.join(this.gamesDir, '..', 'runtime', 'java-21'),
       path.join(legacyAppSupportDir, 'runtime', 'java-21'),
-      isWin ? path.join(process.env.LOCALAPPDATA || os.homedir(), 'Cubirium', 'runtime', 'java-25') : null,
-      isWin ? path.join(process.env.LOCALAPPDATA || os.homedir(), 'Cubirium', 'runtime', 'java-21') : null
     ].filter(Boolean);
 
     for (const rDir of localRuntimeDirs) {
@@ -366,18 +396,28 @@ class MinecraftService {
 
     for (const cand of candidates) {
       if (cand === 'java' || cand === 'java.exe') {
-        if (!foundExec && this.isJavaRunnable(cand)) {
-          foundExec = cand;
+        const info = this.getJavaInfo(cand);
+        if (info.isWorking) {
+          if (isJava25 && info.major < 25) continue;
+          if (isJava8 && info.major !== 8) continue;
+          if (!foundExec) {
+            foundExec = cand;
+          }
         }
         continue;
       }
-      if (fs.existsSync(cand) && this.isJavaRunnable(cand)) {
-        foundExec = cand;
-        const binDir = path.dirname(cand);
-        if (path.basename(binDir).toLowerCase() === 'bin') {
-          foundJavaHome = path.dirname(binDir);
+      if (fs.existsSync(cand)) {
+        const info = this.getJavaInfo(cand);
+        if (info.isWorking) {
+          if (isJava25 && info.major < 25) continue;
+          if (isJava8 && info.major !== 8) continue;
+          foundExec = cand;
+          const binDir = path.dirname(cand);
+          if (path.basename(binDir).toLowerCase() === 'bin') {
+            foundJavaHome = path.dirname(binDir);
+          }
+          break;
         }
-        break;
       }
     }
 
@@ -390,7 +430,7 @@ class MinecraftService {
 
   /**
    * S'assure que Java est fonctionnel avant de démarrer un monde.
-   * Si aucun Java opérationnel n'est présent, installe automatiquement Temurin JRE 21.
+   * Si aucun Java opérationnel n'est présent, installe automatiquement Temurin JRE 25.
    */
   async ensureJavaReady(worldId = null, checkContent = '') {
     let javaInfo = this.findJavaExecutable(worldId, checkContent);
@@ -430,14 +470,35 @@ class MinecraftService {
   }
 
   /**
+   * Installation automatique en arrière-plan d'OpenJDK 25 sans bloquer l'interface
+   */
+  ensureJava25Background(worldId = null) {
+    if (this._activeJavaDownloadPromise) return this._activeJavaDownloadPromise;
+    this.appendLog('[Java] Téléchargement et installation d\'OpenJDK 25 portable en cours...', worldId);
+    this._activeJavaDownloadPromise = (async () => {
+      try {
+        await this.downloadAndSetupJavaLatest(25, (msg) => {
+          this.appendLog(`[Java] ${msg}`, worldId);
+        });
+        this.appendLog('[Java] OpenJDK 25 a été installé avec succès. Vous pouvez maintenant relancer le monde.', worldId);
+      } catch (err) {
+        this.appendLog(`[Java] Échec du téléchargement d'OpenJDK 25 : ${err.message}`, worldId);
+      } finally {
+        this._activeJavaDownloadPromise = null;
+      }
+    })();
+    return this._activeJavaDownloadPromise;
+  }
+
+  /**
    * Vérification et téléchargement en tâche de fond au démarrage de l'appli si Java manque
    */
   checkJavaInBackground() {
     setTimeout(async () => {
       try {
-        const javaInfo = this.findJavaExecutable();
+        const javaInfo = this.findJavaExecutable(null, 'Minecraft 26.3');
         if (!javaInfo.isWorking) {
-          console.log('[Cubirium] Aucun Java détecté, pré-installation de Java 25 en arrière-plan...');
+          console.log('[Cubirium] Aucun Java compatible détecté, pré-installation de Java 25 en arrière-plan...');
           await this.downloadAndSetupJavaLatest(25);
           console.log('[Cubirium] Java 25 pré-installé avec succès dans le runtime.');
         }
@@ -451,51 +512,55 @@ class MinecraftService {
    * Télécharge et extrait Eclipse Temurin JRE (dernière version 25 par défaut) portable dans le dossier runtime de Cubirium
    */
   async downloadAndSetupJavaLatest(version = 25, onProgress = null) {
-    const isWin = process.platform === 'win32';
-    const isMac = process.platform === 'darwin';
-    const arch = os.arch();
-
-    const appSupportDir = isWin
-      ? path.join(process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'), 'Cubirium')
-      : path.join(os.homedir(), 'Library/Application Support/Cubirium');
-    const runtimeBase = path.join(appSupportDir, 'runtime');
-    const targetJavaDir = path.join(runtimeBase, `java-${version}`);
-    const tempDir = path.join(runtimeBase, 'temp-java-download');
-
-    if (!fs.existsSync(runtimeBase)) {
-      fs.mkdirSync(runtimeBase, { recursive: true });
+    if (this._activeJavaDownloadPromise) {
+      return this._activeJavaDownloadPromise;
     }
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
+    this._activeJavaDownloadPromise = (async () => {
+      const isWin = process.platform === 'win32';
+      const isMac = process.platform === 'darwin';
+      const arch = os.arch();
 
-    const osParam = isWin ? 'windows' : (isMac ? 'mac' : 'linux');
-    const archParam = (arch === 'arm64' || arch === 'aarch64') ? 'aarch64' : 'x64';
-    const downloadUrl = `https://api.adoptium.net/v3/binary/latest/${version}/ga/${osParam}/${archParam}/jre/hotspot/normal/eclipse`;
+      const appSupportDir = isWin
+        ? (process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'Cubirium') : path.join(process.env.APPDATA || os.homedir(), 'Cubirium'))
+        : path.join(os.homedir(), 'Library/Application Support/Cubirium');
+      const runtimeBase = path.join(appSupportDir, 'runtime');
+      const targetJavaDir = path.join(runtimeBase, `java-${version}`);
+      const tempDir = path.join(runtimeBase, 'temp-java-download');
 
-    const archiveExt = isWin ? '.zip' : '.tar.gz';
-    const archivePath = path.join(tempDir, `java${version}${archiveExt}`);
-    const extractDir = path.join(tempDir, 'extracted');
-
-    try {
-      if (typeof onProgress === 'function') onProgress(`Téléchargement de Java ${version}...`);
-      await this._downloadHttpFile(downloadUrl, archivePath);
-
-      if (typeof onProgress === 'function') onProgress(`Extraction du runtime Java ${version}...`);
-      if (fs.existsSync(extractDir)) {
-        try { fs.rmSync(extractDir, { recursive: true, force: true }); } catch (_) {}
+      if (!fs.existsSync(runtimeBase)) {
+        fs.mkdirSync(runtimeBase, { recursive: true });
       }
-      fs.mkdirSync(extractDir, { recursive: true });
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
 
-      if (isWin) {
-        try {
-          execSync(`tar -xf "${archivePath}" -C "${extractDir}"`, { stdio: 'ignore' });
-        } catch (_) {
-          execSync(`powershell -NoProfile -NonInteractive -Command "Expand-Archive -LiteralPath '${archivePath}' -DestinationPath '${extractDir}' -Force"`, { stdio: 'ignore' });
+      const osParam = isWin ? 'windows' : (isMac ? 'mac' : 'linux');
+      const archParam = (arch === 'arm64' || arch === 'aarch64') ? 'aarch64' : 'x64';
+      const downloadUrl = `https://api.adoptium.net/v3/binary/latest/${version}/ga/${osParam}/${archParam}/jre/hotspot/normal/eclipse`;
+
+      const archiveExt = isWin ? '.zip' : '.tar.gz';
+      const archivePath = path.join(tempDir, `java${version}${archiveExt}`);
+      const extractDir = path.join(tempDir, 'extracted');
+
+      try {
+        if (typeof onProgress === 'function') onProgress(`Téléchargement de Java ${version}...`);
+        await this._downloadHttpFile(downloadUrl, archivePath);
+
+        if (typeof onProgress === 'function') onProgress(`Extraction du runtime Java ${version}...`);
+        if (fs.existsSync(extractDir)) {
+          try { fs.rmSync(extractDir, { recursive: true, force: true }); } catch (_) {}
         }
-      } else {
-        execSync(`tar -xzf "${archivePath}" -C "${extractDir}"`, { stdio: 'ignore' });
-      }
+        fs.mkdirSync(extractDir, { recursive: true });
+
+        if (isWin) {
+          try {
+            execSync(`tar -xf "${archivePath}" -C "${extractDir}"`, { stdio: 'ignore', windowsHide: true });
+          } catch (_) {
+            execSync(`powershell -NoProfile -NonInteractive -Command "Expand-Archive -LiteralPath '${archivePath}' -DestinationPath '${extractDir}' -Force"`, { stdio: 'ignore', windowsHide: true });
+          }
+        } else {
+          execSync(`tar -xzf "${archivePath}" -C "${extractDir}"`, { stdio: 'ignore' });
+        }
 
       let foundHome = null;
       const findJavaDir = (current) => {
@@ -544,14 +609,18 @@ class MinecraftService {
         ? path.join(targetJavaDir, 'bin', 'java.exe')
         : path.join(targetJavaDir, 'bin', 'java');
 
-      return {
-        execFile: finalBin,
-        javaHome: targetJavaDir
-      };
-    } catch (err) {
-      try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (_) {}
-      throw err;
-    }
+        return {
+          execFile: finalBin,
+          javaHome: targetJavaDir
+        };
+      } catch (err) {
+        try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (_) {}
+        throw err;
+      }
+    })().finally(() => {
+      this._activeJavaDownloadPromise = null;
+    });
+    return this._activeJavaDownloadPromise;
   }
 
   async downloadAndSetupJava21(onProgress = null) {
@@ -567,7 +636,7 @@ class MinecraftService {
         if (depth > 10) return reject(new Error('Trop de redirections'));
         const client = currentUrl.startsWith('https://') ? https : http;
         const req = client.get(currentUrl, {
-          headers: { 'User-Agent': 'Cubirium/1.2.0' }
+          headers: { 'User-Agent': 'Cubirium/1.2.1' }
         }, (res) => {
           if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
             return getUrl(res.headers.location, depth + 1);
@@ -1402,7 +1471,12 @@ class MinecraftService {
     const javaInfo = await this.ensureJavaReady(worldId, checkContent);
     const selectedJavaHome = javaInfo.javaHome;
 
-    if (isWin && (fs.existsSync(runBatPath) || fs.existsSync(runCmdPath))) {
+    // Priorité à l'exécution directe du binaire Java lorsque server.jar est présent
+    // afin de garantir une exécution 100% silencieuse sans aucune fenêtre console (conhost/cmd)
+    if (fs.existsSync(serverJarPath)) {
+      execFile = javaInfo.execFile || (isWin ? 'java.exe' : 'java');
+      execArgs = ['-Xms3G', '-Xmx6G', '-XX:+UnlockExperimentalVMOptions', '-XX:+UseG1GC', '-jar', 'server.jar', 'nogui'];
+    } else if (isWin && (fs.existsSync(runBatPath) || fs.existsSync(runCmdPath))) {
       const batFile = fs.existsSync(runBatPath) ? runBatPath : runCmdPath;
       execFile = 'cmd.exe';
       execArgs = ['/c', batFile, 'nogui'];
@@ -1410,9 +1484,6 @@ class MinecraftService {
       try { fs.chmodSync(runShPath, 0o755); } catch (e) {}
       execFile = '/bin/sh';
       execArgs = [runShPath, 'nogui'];
-    } else if (fs.existsSync(serverJarPath)) {
-      execFile = javaInfo.execFile || (isWin ? 'java.exe' : 'java');
-      execArgs = ['-Xmx4G', '-Xms2G', '-jar', 'server.jar', 'nogui'];
     } else {
       this.status = 'STOPPED';
       this.activeWorld = null;
@@ -1439,7 +1510,8 @@ class MinecraftService {
     const child = spawn(execFile, execArgs, {
       cwd: worldPath,
       stdio: ['pipe', 'pipe', 'pipe'],
-      env: childEnv
+      env: childEnv,
+      windowsHide: true
     });
 
     this.activeProcess = child;
@@ -1624,7 +1696,10 @@ class MinecraftService {
         this.appendLog(`[Manager] Force kill du serveur Minecraft...`);
         try {
           if (process.platform === 'win32' && this.activeProcess.pid) {
-            exec(`taskkill /pid ${this.activeProcess.pid} /T /F 2>nul`);
+            spawn('taskkill', ['/pid', String(this.activeProcess.pid), '/T', '/F'], {
+              windowsHide: true,
+              stdio: 'ignore'
+            });
           } else {
             this.activeProcess.kill('SIGKILL');
           }
@@ -2036,6 +2111,19 @@ class MinecraftService {
           report.push("Allocation de mémoire vive rehaussée à 6G dans run.sh.");
         }
       } catch (_) {}
+    }
+
+    // 8-bis. Vérification et mise à niveau du runtime Java si nécessaire
+    try {
+      const javaCheck = this.findJavaExecutable(worldId);
+      if (!javaCheck.isWorking) {
+        report.push("Runtime Java manquant ou incompatible pour ce monde. Configuration d'OpenJDK 25...");
+        await this.downloadAndSetupJavaLatest(25);
+        fixes.push("Installation et configuration d'OpenJDK 25 pour ce monde");
+        report.push("OpenJDK 25 a été configuré avec succès.");
+      }
+    } catch (jErr) {
+      report.push(`Note Java: ${jErr.message}`);
     }
 
     // 9. Vérification des exécutables manquants

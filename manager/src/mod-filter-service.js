@@ -7,11 +7,11 @@ function readJarEntry(jarPath, entryPath) {
   const isWin = process.platform === 'win32';
   if (isWin) {
     try {
-      return execSync(`tar -xOf "${jarPath}" "${entryPath}" 2>nul`, { maxBuffer: 1024 * 1024 }).toString('utf8');
+      return execSync(`tar -xOf "${jarPath}" "${entryPath}" 2>nul`, { maxBuffer: 1024 * 1024, windowsHide: true }).toString('utf8');
     } catch (_) {
       try {
         const ps = `Add-Type -AssemblyName System.IO.Compression.FileSystem; $z = [System.IO.Compression.ZipFile]::OpenRead('${jarPath.replace(/'/g, "''")}'); $e = $z.GetEntry('${entryPath.replace(/'/g, "''")}'); if ($e) { $sr = New-Object System.IO.StreamReader($e.Open()); $sr.ReadToEnd() }`;
-        return execSync(`powershell -NoProfile -NonInteractive -Command "${ps}"`, { maxBuffer: 1024 * 1024 }).toString('utf8');
+        return execSync(`powershell -NoProfile -NonInteractive -Command "${ps}"`, { maxBuffer: 1024 * 1024, windowsHide: true }).toString('utf8');
       } catch (__) {
         return '';
       }
@@ -294,9 +294,9 @@ class ModFilterService {
       fs.mkdirSync(tempExtract, { recursive: true });
       if (process.platform === 'win32') {
         try {
-          execSync(`tar -xf "${sourcePath}" -C "${tempExtract}" 2>nul`);
+          execSync(`tar -xf "${sourcePath}" -C "${tempExtract}" 2>nul`, { stdio: 'ignore', windowsHide: true });
         } catch (_) {
-          execSync(`powershell -NoProfile -NonInteractive -Command "Expand-Archive -LiteralPath '${sourcePath}' -DestinationPath '${tempExtract}' -Force"`);
+          execSync(`powershell -NoProfile -NonInteractive -Command "Expand-Archive -LiteralPath '${sourcePath}' -DestinationPath '${tempExtract}' -Force"`, { stdio: 'ignore', windowsHide: true });
         }
       } else {
         execSync(`/usr/bin/unzip -q "${sourcePath}" -d "${tempExtract}" 2>/dev/null || unzip -q "${sourcePath}" -d "${tempExtract}" 2>/dev/null`);
