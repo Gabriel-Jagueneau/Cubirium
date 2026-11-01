@@ -1,14 +1,19 @@
 import Cocoa
 import WebKit
 
-class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMessageHandler, WKUIDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMessageHandler, WKUIDelegate, WKNavigationDelegate {
     var window: NSWindow!
     var webView: WKWebView!
     var serverProcess: Process?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // 0. Configurer dynamiquement l'icône de l'application et la tuile du Dock (macOS Dock API)
-        setupDockTileAndAppIcon()
+        // 0. Définir explicitement l'icône de l'application standard macOS
+        if let iconURL = Bundle.main.url(forResource: "AppIcon", withExtension: "icns"),
+           let iconImage = NSImage(contentsOf: iconURL) {
+            NSApp.applicationIconImage = iconImage
+        }
+        NSApp.dockTile.contentView = nil
+        NSApp.dockTile.display()
 
         // 1. Démarrer le serveur Node.js s'il n'est pas déjà actif
         ensureServerRunning()
@@ -48,8 +53,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMe
 
         webView = WKWebView(frame: window.contentView!.bounds, configuration: config)
         webView.uiDelegate = self
+        webView.navigationDelegate = self
         webView.autoresizingMask = [.width, .height]
         webView.underPageBackgroundColor = NSColor(red: 13/255.0, green: 17/255.0, blue: 23/255.0, alpha: 1.0)
+        webView.setValue(false, forKey: "drawsBackground")
         window.contentView?.addSubview(webView)
 
         setupMenu()
@@ -128,21 +135,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMe
         let devServerScript = (parentDir as NSString).appendingPathComponent("manager/src/server.js")
         let devManagerDir = (parentDir as NSString).appendingPathComponent("manager")
 
-        var nodePath = "/usr/local/bin/node"
+        // 1. Déterminer l'emplacement du script backend server.js
         var serverScript = devServerScript
         var workingDir = devManagerDir
 
-        if let bNode = bundledNode, FileManager.default.isExecutableFile(atPath: bNode),
-           let bScript = bundledServer, FileManager.default.fileExists(atPath: bScript) {
-            nodePath = bNode
+        if let bScript = bundledServer, FileManager.default.fileExists(atPath: bScript) {
             serverScript = bScript
             if let bDir = bundledManagerDir {
                 workingDir = bDir
             }
+        } else if FileManager.default.fileExists(atPath: devServerScript) {
+            serverScript = devServerScript
+            workingDir = devManagerDir
+        }
+
+        // 2. Déterminer l'exécutable node (embarqué ou système)
+        var nodePath = "/usr/local/bin/node"
+        if let bNode = bundledNode, FileManager.default.isExecutableFile(atPath: bNode) {
+            nodePath = bNode
         } else {
             var possibleNodes = [
                 "/opt/homebrew/bin/node",
-                "/usr/local/bin/node"
+                "/usr/local/bin/node",
+                "/usr/bin/node"
             ]
             let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
             let nvmDir = (homeDir as NSString).appendingPathComponent(".nvm/versions/node")
@@ -154,6 +169,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMe
                     }
                 }
             }
+
+            // Détection dynamique via le shell utilisateur
+            let whichProc = Process()
+            whichProc.executableURL = URL(fileURLWithPath: "/bin/zsh")
+            whichProc.arguments = ["-l", "-c", "which node"]
+            let pipe = Pipe()
+            whichProc.standardOutput = pipe
+            try? whichProc.run()
+            whichProc.waitUntilExit()
+            let whichData = pipe.fileHandleForReading.readDataToEndOfFile()
+            if let whichOut = String(data: whichData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !whichOut.isEmpty, FileManager.default.isExecutableFile(atPath: whichOut) {
+                possibleNodes.insert(whichOut, at: 0)
+            }
+
             for p in possibleNodes {
                 if FileManager.default.isExecutableFile(atPath: p) {
                     nodePath = p
@@ -180,13 +210,32 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMe
         try? process.run()
         self.serverProcess = process
 
-        Thread.sleep(forTimeInterval: 0.5)
+        Thread.sleep(forTimeInterval: 0.6)
     }
 
-    func loadAppUrl() {
-        if let targetUrl = URL(string: "http://localhost:4567") {
-            webView.load(URLRequest(url: targetUrl))
-        }
+    func loadAppUrl(retries: Int = 12) {
+        guard let statusUrl = URL(string: "http://localhost:4567/api/status") else { return }
+        var request = URLRequest(url: statusUrl)
+        request.timeoutInterval = 0.5
+        URLSession.shared.dataTask(with: request) { [weak self] _, response, error in
+            if let http = response as? HTTPURLResponse, http.statusCode == 200 {
+                DispatchQueue.main.async {
+                    if let targetUrl = URL(string: "http://localhost:4567") {
+                        self?.webView.load(URLRequest(url: targetUrl))
+                    }
+                }
+            } else if retries > 0 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    self?.loadAppUrl(retries: retries - 1)
+                }
+            } else {
+                DispatchQueue.main.async {
+                    if let targetUrl = URL(string: "http://localhost:4567") {
+                        self?.webView.load(URLRequest(url: targetUrl))
+                    }
+                }
+            }
+        }.resume()
     }
 
     func setupMenu() {
@@ -480,54 +529,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMe
         }
     }
 
-    // MARK: - Configuration native de l'icône et du Dock macOS (NSDockTile & UI macOS Tile)
-    private func setupDockTileAndAppIcon() {
-        var baseIconImage: NSImage?
-        if let iconURL = Bundle.main.url(forResource: "AppIcon", withExtension: "icns") {
-            baseIconImage = NSImage(contentsOf: iconURL)
-        } else if let iconURL = Bundle.main.url(forResource: "AppIcon", withExtension: "png") {
-            baseIconImage = NSImage(contentsOf: iconURL)
+    // Gestion des erreurs de navigation Web (reconnexion automatique sans écran blanc)
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
+            self?.loadAppUrl()
         }
+    }
 
-        guard let base = baseIconImage else { return }
-
-        // 1. Définir l'icône de l'application SANS AUCUN FOND (image originale transparente)
-        NSApp.applicationIconImage = base
-
-        // 2. Configurer la tuile du Dock via l'API NSDockTile avec le composant UI natif macOS (NSVisualEffectView)
-        let dockTile = NSApp.dockTile
-        let tileSize = dockTile.size.width > 0 ? dockTile.size : NSSize(width: 128, height: 128)
-
-        let tileContainer = NSView(frame: NSRect(origin: .zero, size: tileSize))
-        tileContainer.wantsLayer = true
-
-        // Composant d'effet visuel natif macOS (tuile UI système HUD / sombre avec vibration native)
-        let visualEffect = NSVisualEffectView(frame: NSRect(origin: .zero, size: tileSize))
-        visualEffect.material = .hudWindow
-        visualEffect.blendingMode = .withinWindow
-        visualEffect.state = .active
-        visualEffect.wantsLayer = true
-
-        if let effectLayer = visualEffect.layer {
-            effectLayer.cornerCurve = .continuous
-            effectLayer.cornerRadius = tileSize.width * 0.224
-            effectLayer.masksToBounds = true
-            effectLayer.borderWidth = 0.5
-            effectLayer.borderColor = NSColor(white: 1.0, alpha: 0.15).cgColor
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
+            self?.loadAppUrl()
         }
-        tileContainer.addSubview(visualEffect)
-
-        // Icône de l'application sans fond centrée directement au-dessus de la tuile UI macOS
-        let inset = tileSize.width * 0.12
-        let iconFrame = NSRect(origin: .zero, size: tileSize).insetBy(dx: inset, dy: inset)
-        let imageView = NSImageView(frame: iconFrame)
-        imageView.image = base
-        imageView.imageScaling = .scaleProportionallyUpOrDown
-        imageView.wantsLayer = true
-        tileContainer.addSubview(imageView)
-
-        dockTile.contentView = tileContainer
-        dockTile.display()
     }
 
     func windowShouldClose(_ sender: NSWindow) -> Bool {

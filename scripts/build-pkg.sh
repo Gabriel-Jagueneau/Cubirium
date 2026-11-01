@@ -41,6 +41,22 @@ if [ -f "$PROJECT_ROOT/AppIcon.icns" ]; then
   cp "$PROJECT_ROOT/AppIcon.icns" "$LOCAL_RESOURCES/AppIcon.icns"
 fi
 
+# Intégration du binaire autonome Node.js dans le bundle local
+mkdir -p "$LOCAL_RESOURCES/bin"
+NODE_CANDIDATE="$(which node 2>/dev/null || true)"
+if [ -z "$NODE_CANDIDATE" ] || [ ! -x "$NODE_CANDIDATE" ]; then
+  for cand in "$HOME/.nvm/versions/node/"*/bin/node /opt/homebrew/bin/node /usr/local/bin/node /usr/bin/node; do
+    if [ -x "$cand" ]; then
+      NODE_CANDIDATE="$cand"
+      break
+    fi
+  done
+fi
+if [ -n "$NODE_CANDIDATE" ] && [ -x "$NODE_CANDIDATE" ]; then
+  cp "$NODE_CANDIDATE" "$LOCAL_RESOURCES/bin/node"
+  chmod +x "$LOCAL_RESOURCES/bin/node"
+fi
+
 # Création du fichier standard PkgInfo
 echo -n "APPL????" > "$PROJECT_ROOT/Cubirium.app/Contents/PkgInfo"
 
