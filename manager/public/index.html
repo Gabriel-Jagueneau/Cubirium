@@ -1526,7 +1526,7 @@
                 <div class="settings-prop-top">
                   <div class="settings-prop-title-wrap">
                     <label for="settingsTunnelRelayHost" class="settings-prop-name">Serveur Relais & Port</label>
-                    <span class="settings-code-tag">bore-relay</span>
+                    <span class="settings-code-tag">tunnel-relay</span>
                   </div>
                 </div>
                 <div style="display: flex; gap: 8px; margin-top: 10px; align-items: center; flex-wrap: wrap;">
@@ -1539,8 +1539,28 @@
                     Générer nouveau port
                   </button>
                 </div>
-                <div class="settings-prop-desc" style="margin-top: 8px;">Relais public par défaut :
-                  <code>bore.pub:7835</code>. Reconnexion automatique avec persistance de votre port public.
+                <div class="settings-prop-desc" style="margin-top: 8px;">Relais par défaut :
+                  <code>bore.pub:7835</code> ou l'adresse IP / nom d'hôte de votre propre relais dédié.
+                </div>
+              </div>
+
+              <div class="settings-prop-card" style="grid-column: 1 / -1; margin-top: 10px;">
+                <div class="settings-prop-top">
+                  <div class="settings-prop-title-wrap">
+                    <label for="settingsTunnelAuthToken" class="settings-prop-name">Jeton d'authentification (Token)</label>
+                    <span class="settings-code-tag">auth-token</span>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 10px; align-items: center;">
+                  <input type="password" id="settingsTunnelAuthToken" placeholder="Optionnel (pour relais privé ou haute performance)" autocomplete="off"
+                    style="flex: 1; height: 34px; padding: 0 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-family: monospace; font-size: 0.85rem;" />
+                  <button type="button" class="btn-copy-tunnel" id="btnToggleTunnelToken" onclick="toggleTunnelTokenVisibility()"
+                    title="Afficher / Masquer le jeton" style="height: 34px; padding: 0 10px;">
+                    Afficher
+                  </button>
+                </div>
+                <div class="settings-prop-desc" style="margin-top: 8px;">
+                  Laissez vide pour le relais public standard. Renseignez un jeton si votre serveur relais privé requiert une authentification.
                 </div>
               </div>
             </div>

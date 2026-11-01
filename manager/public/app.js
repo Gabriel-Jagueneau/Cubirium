@@ -1504,7 +1504,8 @@ function updateTerminalHeader() {
       } else if (st === 'RECONNECTING' || st === 'STARTING') {
         const label = tunnelAddress ? `${tunnelAddress} (reconnexion...)` : 'Reconnexion tunnel...';
         tunnelShareIp.textContent = label;
-        tunnelShareIp.title = 'Reconnexion automatique au relais bore.pub en cours...';
+        const relayName = (currentTunnelState && currentTunnelState.relay) || 'tunnel';
+        tunnelShareIp.title = `Reconnexion automatique au relais ${relayName} en cours...`;
         if (tunnelPulseDot) tunnelPulseDot.className = 'tunnel-pulse-dot reconnecting';
         if (btnCopyTunnel) btnCopyTunnel.style.display = tunnelAddress ? 'inline-flex' : 'none';
       } else if (st === 'ERROR') {
@@ -5892,6 +5893,20 @@ const settingsDefaultGamemode = document.getElementById('settingsDefaultGamemode
 const settingsDefaultDifficulty = document.getElementById('settingsDefaultDifficulty');
 const settingsTunnelRelayHost = document.getElementById('settingsTunnelRelayHost');
 const settingsTunnelRelayPort = document.getElementById('settingsTunnelRelayPort');
+const settingsTunnelAuthToken = document.getElementById('settingsTunnelAuthToken');
+
+function toggleTunnelTokenVisibility() {
+  const input = document.getElementById('settingsTunnelAuthToken');
+  const btn = document.getElementById('btnToggleTunnelToken');
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    if (btn) btn.textContent = 'Masquer';
+  } else {
+    input.type = 'password';
+    if (btn) btn.textContent = 'Afficher';
+  }
+}
 
 let initialSettingsState = null;
 
@@ -5910,6 +5925,7 @@ function applySettingsState(state) {
   if (settingsDefaultDifficulty) settingsDefaultDifficulty.value = state.defaultDifficulty || 'normal';
   if (settingsTunnelRelayHost) settingsTunnelRelayHost.value = state.tunnelRelayHost || 'bore.pub';
   if (settingsTunnelRelayPort) settingsTunnelRelayPort.value = state.tunnelRelayPort || 7835;
+  if (settingsTunnelAuthToken) settingsTunnelAuthToken.value = state.tunnelAuthToken || '';
 }
 
 function getSettingsFromInputs() {
@@ -5920,7 +5936,8 @@ function getSettingsFromInputs() {
     defaultGamemode: settingsDefaultGamemode ? settingsDefaultGamemode.value : 'survival',
     defaultDifficulty: settingsDefaultDifficulty ? settingsDefaultDifficulty.value : 'normal',
     tunnelRelayHost: settingsTunnelRelayHost ? settingsTunnelRelayHost.value.trim() : 'bore.pub',
-    tunnelRelayPort: settingsTunnelRelayPort ? parseInt(settingsTunnelRelayPort.value, 10) : 7835
+    tunnelRelayPort: settingsTunnelRelayPort ? parseInt(settingsTunnelRelayPort.value, 10) : 7835,
+    tunnelAuthToken: settingsTunnelAuthToken ? settingsTunnelAuthToken.value.trim() : ''
   };
 }
 

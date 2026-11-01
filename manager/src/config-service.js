@@ -186,8 +186,10 @@ const DEFAULT_CONFIG = {
   defaultSimulationDistance: 4,
   defaultGamemode: 'survival',
   defaultDifficulty: 'normal',
+  tunnelProvider: 'bore',
   tunnelRelayHost: 'bore.pub',
-  tunnelRelayPort: 7835
+  tunnelRelayPort: 7835,
+  tunnelAuthToken: ''
 };
 
 function getSettings() {
@@ -218,8 +220,10 @@ function getSettings() {
         defaultSimulationDistance: parseInt(data.defaultSimulationDistance, 10) || DEFAULT_CONFIG.defaultSimulationDistance,
         defaultGamemode: data.defaultGamemode || DEFAULT_CONFIG.defaultGamemode,
         defaultDifficulty: data.defaultDifficulty || DEFAULT_CONFIG.defaultDifficulty,
+        tunnelProvider: (data.tunnelProvider === 'custom') ? 'custom' : DEFAULT_CONFIG.tunnelProvider,
         tunnelRelayHost: data.tunnelRelayHost ? data.tunnelRelayHost.trim() : DEFAULT_CONFIG.tunnelRelayHost,
-        tunnelRelayPort: parseInt(data.tunnelRelayPort, 10) || DEFAULT_CONFIG.tunnelRelayPort
+        tunnelRelayPort: parseInt(data.tunnelRelayPort, 10) || DEFAULT_CONFIG.tunnelRelayPort,
+        tunnelAuthToken: data.tunnelAuthToken !== undefined ? String(data.tunnelAuthToken).trim() : DEFAULT_CONFIG.tunnelAuthToken
       };
 
       if (needsAutoFix) {
@@ -277,11 +281,17 @@ function saveSettings(newSettings) {
 
   updated.defaultViewDistance = Math.min(32, Math.max(2, parseInt(updated.defaultViewDistance, 10) || 12));
   updated.defaultSimulationDistance = Math.min(32, Math.max(2, parseInt(updated.defaultSimulationDistance, 10) || 4));
+  if (updated.tunnelProvider) {
+    updated.tunnelProvider = updated.tunnelProvider === 'custom' ? 'custom' : 'bore';
+  }
   if (updated.tunnelRelayHost) {
     updated.tunnelRelayHost = updated.tunnelRelayHost.trim();
   }
   if (updated.tunnelRelayPort) {
     updated.tunnelRelayPort = parseInt(updated.tunnelRelayPort, 10) || DEFAULT_CONFIG.tunnelRelayPort;
+  }
+  if (updated.tunnelAuthToken !== undefined) {
+    updated.tunnelAuthToken = String(updated.tunnelAuthToken).trim();
   }
 
   try {

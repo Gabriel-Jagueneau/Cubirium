@@ -10,6 +10,8 @@ class TunnelService {
     this.publicAddress = null;
     this.activePort = null;
     this.preferredPort = null;
+    this.tunnelProvider = 'bore';
+    this.tunnelAuthToken = '';
     this.relayHost = 'bore.pub';
     this.relayControlPort = 7835;
     this.controlSocket = null;
@@ -54,11 +56,19 @@ class TunnelService {
   reloadConfig() {
     try {
       const cfg = configService.getSettings();
-      if (cfg && cfg.tunnelRelayHost) {
-        this.relayHost = cfg.tunnelRelayHost.trim();
-      }
-      if (cfg && cfg.tunnelRelayPort) {
-        this.relayControlPort = parseInt(cfg.tunnelRelayPort, 10) || 7835;
+      if (cfg) {
+        if (cfg.tunnelProvider) {
+          this.tunnelProvider = cfg.tunnelProvider;
+        }
+        if (cfg.tunnelRelayHost) {
+          this.relayHost = cfg.tunnelRelayHost.trim();
+        }
+        if (cfg.tunnelRelayPort) {
+          this.relayControlPort = parseInt(cfg.tunnelRelayPort, 10) || 7835;
+        }
+        if (cfg.tunnelAuthToken !== undefined) {
+          this.tunnelAuthToken = String(cfg.tunnelAuthToken).trim();
+        }
       }
     } catch (_) {}
   }
@@ -108,6 +118,7 @@ class TunnelService {
       publicAddress: this.publicAddress,
       activePort: this.activePort,
       relay: this.relayHost,
+      provider: this.tunnelProvider,
       connectionsCount: this.activeSockets.size,
       retryAttempts: this.retryAttempts,
       lastLogs: this.lastLogs.slice(-20)
@@ -219,7 +230,12 @@ class TunnelService {
           this.log('Liaison de contrôle établie. Demande d\'attribution de port...');
 
           try {
-            control.write(JSON.stringify({ Hello: targetPort }) + '\0');
+            const helloPayload = { Hello: targetPort };
+            if (this.tunnelAuthToken) {
+              helloPayload.auth = this.tunnelAuthToken;
+              helloPayload.token = this.tunnelAuthToken;
+            }
+            control.write(JSON.stringify(helloPayload) + '\0');
           } catch (err) {
             this.log(`Échec d'envoi du message Hello : ${err.message}`);
             finish(this.getState());
@@ -285,47 +301,65 @@ class TunnelService {
   }
 
   handleServerMessage(msg, control, onReady) {
-    // Bore envoie régulièrement "Heartbeat" (string sérialisée en JSON)
-    if (typeof msg === 'string' && msg === 'Heartbeat') {
-      this.lastActivityTime = Date.now();
-      return;
-    }
-
-    if (msg && msg.Heartbeat !== undefined) {
-      this.lastActivityTime = Date.now();
-      return;
-    }
-
-    if (msg && msg.Hello !== undefined) {
-      const assignedPort = msg.Hello;
-      this.activePort = assignedPort;
-      this.preferredPort = assignedPort;
-      this.publicAddress = `${this.relayHost}:${assignedPort}`;
-      this.status = 'RUNNING';
-      this.retryAttempts = 0;
-      this.saveCachedAddress(this.publicAddress);
-      this.log(`Tunnel public prêt et actif : ${this.publicAddress}`);
-      this.startWatchdog();
-      this.emitChange();
-      if (typeof onReady === 'function') onReady(this.getState());
-      return;
-    }
-
-    if (msg && msg.Connection) {
-      this.spawnProxyStream(msg.Connection);
-      return;
-    }
-
-    if (msg && msg.Error) {
-      this.log(`Message d'erreur reçu du relais : ${msg.Error}`);
-      // Si un port précis a été refusé (ex: déjà occupé), basculer sur n'importe quel port
-      if (this.preferredPort) {
-        this.log(`Port préféré (${this.preferredPort}) refusé ou occupé. Prochaine tentative sur port aléatoire.`);
-        this.preferredPort = null;
+    // 1. Heartbeats standard Bore et pings/pongs personnalisés
+    if (typeof msg === 'string') {
+      if (msg === 'Heartbeat' || msg === 'pong') {
+        this.lastActivityTime = Date.now();
+        return;
       }
-      try {
-        control.destroy();
-      } catch (_) {}
+      if (msg === 'ping') {
+        this.lastActivityTime = Date.now();
+        try { control.write(JSON.stringify('pong') + '\0'); } catch (_) {}
+        return;
+      }
+    }
+
+    if (msg && typeof msg === 'object') {
+      if (msg.Heartbeat !== undefined || msg.pong) {
+        this.lastActivityTime = Date.now();
+        return;
+      }
+
+      if (msg.ping) {
+        this.lastActivityTime = Date.now();
+        try { control.write(JSON.stringify({ pong: true }) + '\0'); } catch (_) {}
+        return;
+      }
+
+      if (msg.Hello !== undefined || msg.port !== undefined) {
+        const assignedPort = msg.Hello !== undefined ? msg.Hello : msg.port;
+        this.activePort = assignedPort;
+        this.preferredPort = assignedPort;
+        this.publicAddress = `${this.relayHost}:${assignedPort}`;
+        this.status = 'RUNNING';
+        this.retryAttempts = 0;
+        this.saveCachedAddress(this.publicAddress);
+        this.log(`Tunnel public prêt et actif : ${this.publicAddress}`);
+        this.startWatchdog();
+        this.emitChange();
+        if (typeof onReady === 'function') onReady(this.getState());
+        return;
+      }
+
+      const connId = msg.Connection || msg.connection || msg.id;
+      if (connId) {
+        this.spawnProxyStream(connId);
+        return;
+      }
+
+      const errMsg = msg.Error || msg.error;
+      if (errMsg) {
+        this.log(`Message d'erreur reçu du relais : ${errMsg}`);
+        // Si un port précis a été refusé (ex: déjà occupé), basculer sur n'importe quel port
+        if (this.preferredPort) {
+          this.log(`Port préféré (${this.preferredPort}) refusé ou occupé. Prochaine tentative sur port aléatoire.`);
+          this.preferredPort = null;
+        }
+        try {
+          control.destroy();
+        } catch (_) {}
+        return;
+      }
     }
   }
 
@@ -334,11 +368,22 @@ class TunnelService {
       clearInterval(this.watchdogTimer);
     }
     this.lastActivityTime = Date.now();
+    let pingTick = 0;
     this.watchdogTimer = setInterval(() => {
       if (this.status !== 'RUNNING' || !this.shouldRun) return;
 
       const idleMs = Date.now() - this.lastActivityTime;
-      // Le relais bore envoie un Heartbeat toutes les 500ms
+
+      // Pour les relais personnalisés (ou non bore.pub), ping actif toutes les 15s
+      pingTick++;
+      if (pingTick % 3 === 0 && (this.tunnelProvider === 'custom' || this.relayHost !== 'bore.pub')) {
+        if (this.controlSocket && !this.controlSocket.destroyed) {
+          try {
+            this.controlSocket.write(JSON.stringify({ ping: true }) + '\0');
+          } catch (_) {}
+        }
+      }
+
       // Si 35 secondes s'écoulent sans aucune donnée reçue, la liaison est gelée/perdue
       if (idleMs > 35000) {
         this.log(`Inactivité du relais détectée (${Math.round(idleMs / 1000)}s sans signal). Relance du tunnel...`);
@@ -352,9 +397,9 @@ class TunnelService {
   }
 
   /**
-   * Lorsqu'un joueur externe se connecte sur bore.pub:port,
-   * le serveur nous envoie un UUID de connexion.
-   * Nous ouvrons alors une nouvelle connexion TCP vers bore.pub:7835,
+   * Lorsqu'un joueur externe se connecte sur le relais public,
+   * le serveur nous envoie un identifiant/UUID de connexion.
+   * Nous ouvrons alors une nouvelle connexion TCP vers le port de contrôle,
    * envoyons { Accept: uuid }\0, et la branchons directement sur le serveur Minecraft local.
    */
   spawnProxyStream(connId) {
@@ -387,7 +432,12 @@ class TunnelService {
 
       relayStream.on('connect', () => {
         try {
-          relayStream.write(JSON.stringify({ Accept: connId }) + '\0');
+          const acceptPayload = { Accept: connId };
+          if (this.tunnelAuthToken) {
+            acceptPayload.auth = this.tunnelAuthToken;
+            acceptPayload.token = this.tunnelAuthToken;
+          }
+          relayStream.write(JSON.stringify(acceptPayload) + '\0');
         } catch (_) {
           cleanup();
           return;
