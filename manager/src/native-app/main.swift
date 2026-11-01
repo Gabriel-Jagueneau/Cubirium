@@ -7,11 +7,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMe
     var serverProcess: Process?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // 0. Définir explicitement l'icône de l'application
-        if let iconURL = Bundle.main.url(forResource: "AppIcon", withExtension: "icns"),
-           let iconImage = NSImage(contentsOf: iconURL) {
-            NSApp.applicationIconImage = iconImage
-        }
+        // 0. Configurer dynamiquement l'icône de l'application et la tuile du Dock (macOS Dock API)
+        setupDockTileAndAppIcon()
 
         // 1. Démarrer le serveur Node.js s'il n'est pas déjà actif
         ensureServerRunning()
@@ -481,6 +478,61 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMe
             let res = alert.runModal()
             completionHandler(res == .alertFirstButtonReturn)
         }
+    }
+
+    // MARK: - Configuration native de l'icône et du Dock macOS (NSDockTile API)
+    private func setupDockTileAndAppIcon() {
+        var baseIconImage: NSImage?
+        if let iconURL = Bundle.main.url(forResource: "AppIcon", withExtension: "icns") {
+            baseIconImage = NSImage(contentsOf: iconURL)
+        } else if let iconURL = Bundle.main.url(forResource: "AppIcon", withExtension: "png") {
+            baseIconImage = NSImage(contentsOf: iconURL)
+        }
+
+        guard let base = baseIconImage else { return }
+
+        // 1. Configurer la tuile du Dock via l'API NSDockTile avec squircle Apple continuous et fond sombre
+        let dockTile = NSApp.dockTile
+        let tileSize = dockTile.size.width > 0 ? dockTile.size : NSSize(width: 128, height: 128)
+
+        let tileView = NSView(frame: NSRect(origin: .zero, size: tileSize))
+        tileView.wantsLayer = true
+        if let layer = tileView.layer {
+            layer.cornerCurve = .continuous
+            layer.cornerRadius = tileSize.width * 0.224
+            layer.masksToBounds = true
+            // Fond sombre macOS (#1f1f1f / RGB 31, 31, 31) standard Apple
+            layer.backgroundColor = NSColor(red: 31/255.0, green: 31/255.0, blue: 31/255.0, alpha: 1.0).cgColor
+        }
+
+        let inset = tileSize.width * 0.12
+        let iconFrame = NSRect(origin: .zero, size: tileSize).insetBy(dx: inset, dy: inset)
+        let imageView = NSImageView(frame: iconFrame)
+        imageView.image = base
+        imageView.imageScaling = .scaleProportionallyUpOrDown
+        imageView.wantsLayer = true
+        tileView.addSubview(imageView)
+
+        dockTile.contentView = tileView
+        dockTile.display()
+
+        // 2. Générer l'icône d'application compositée pour le sélecteur Cmd+Tab, Moniteur d'activité, etc.
+        let canvasSize: CGFloat = 512
+        let compositedImage = NSImage(size: NSSize(width: canvasSize, height: canvasSize))
+        compositedImage.lockFocus()
+
+        let rect = NSRect(x: 0, y: 0, width: canvasSize, height: canvasSize)
+        let cornerRadius = canvasSize * 0.224
+        let path = NSBezierPath(roundedRect: rect, xRadius: cornerRadius, yRadius: cornerRadius)
+        NSColor(red: 31/255.0, green: 31/255.0, blue: 31/255.0, alpha: 1.0).setFill()
+        path.fill()
+
+        let iconInset = canvasSize * 0.12
+        let compositedIconRect = rect.insetBy(dx: iconInset, dy: iconInset)
+        base.draw(in: compositedIconRect, from: .zero, operation: .sourceOver, fraction: 1.0)
+
+        compositedImage.unlockFocus()
+        NSApp.applicationIconImage = compositedImage
     }
 
     func windowShouldClose(_ sender: NSWindow) -> Bool {
