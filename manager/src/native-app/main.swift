@@ -480,7 +480,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMe
         }
     }
 
-    // MARK: - Configuration native de l'icône et du Dock macOS (NSDockTile API)
+    // MARK: - Configuration native de l'icône et du Dock macOS (NSDockTile & UI macOS Tile)
     private func setupDockTileAndAppIcon() {
         var baseIconImage: NSImage?
         if let iconURL = Bundle.main.url(forResource: "AppIcon", withExtension: "icns") {
@@ -491,48 +491,43 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMe
 
         guard let base = baseIconImage else { return }
 
-        // 1. Configurer la tuile du Dock via l'API NSDockTile avec squircle Apple continuous et fond sombre
+        // 1. Définir l'icône de l'application SANS AUCUN FOND (image originale transparente)
+        NSApp.applicationIconImage = base
+
+        // 2. Configurer la tuile du Dock via l'API NSDockTile avec le composant UI natif macOS (NSVisualEffectView)
         let dockTile = NSApp.dockTile
         let tileSize = dockTile.size.width > 0 ? dockTile.size : NSSize(width: 128, height: 128)
 
-        let tileView = NSView(frame: NSRect(origin: .zero, size: tileSize))
-        tileView.wantsLayer = true
-        if let layer = tileView.layer {
-            layer.cornerCurve = .continuous
-            layer.cornerRadius = tileSize.width * 0.224
-            layer.masksToBounds = true
-            // Fond sombre macOS (#1f1f1f / RGB 31, 31, 31) standard Apple
-            layer.backgroundColor = NSColor(red: 31/255.0, green: 31/255.0, blue: 31/255.0, alpha: 1.0).cgColor
-        }
+        let tileContainer = NSView(frame: NSRect(origin: .zero, size: tileSize))
+        tileContainer.wantsLayer = true
 
+        // Composant d'effet visuel natif macOS (tuile UI système HUD / sombre avec vibration native)
+        let visualEffect = NSVisualEffectView(frame: NSRect(origin: .zero, size: tileSize))
+        visualEffect.material = .hudWindow
+        visualEffect.blendingMode = .withinWindow
+        visualEffect.state = .active
+        visualEffect.wantsLayer = true
+
+        if let effectLayer = visualEffect.layer {
+            effectLayer.cornerCurve = .continuous
+            effectLayer.cornerRadius = tileSize.width * 0.224
+            effectLayer.masksToBounds = true
+            effectLayer.borderWidth = 0.5
+            effectLayer.borderColor = NSColor(white: 1.0, alpha: 0.15).cgColor
+        }
+        tileContainer.addSubview(visualEffect)
+
+        // Icône de l'application sans fond centrée directement au-dessus de la tuile UI macOS
         let inset = tileSize.width * 0.12
         let iconFrame = NSRect(origin: .zero, size: tileSize).insetBy(dx: inset, dy: inset)
         let imageView = NSImageView(frame: iconFrame)
         imageView.image = base
         imageView.imageScaling = .scaleProportionallyUpOrDown
         imageView.wantsLayer = true
-        tileView.addSubview(imageView)
+        tileContainer.addSubview(imageView)
 
-        dockTile.contentView = tileView
+        dockTile.contentView = tileContainer
         dockTile.display()
-
-        // 2. Générer l'icône d'application compositée pour le sélecteur Cmd+Tab, Moniteur d'activité, etc.
-        let canvasSize: CGFloat = 512
-        let compositedImage = NSImage(size: NSSize(width: canvasSize, height: canvasSize))
-        compositedImage.lockFocus()
-
-        let rect = NSRect(x: 0, y: 0, width: canvasSize, height: canvasSize)
-        let cornerRadius = canvasSize * 0.224
-        let path = NSBezierPath(roundedRect: rect, xRadius: cornerRadius, yRadius: cornerRadius)
-        NSColor(red: 31/255.0, green: 31/255.0, blue: 31/255.0, alpha: 1.0).setFill()
-        path.fill()
-
-        let iconInset = canvasSize * 0.12
-        let compositedIconRect = rect.insetBy(dx: iconInset, dy: iconInset)
-        base.draw(in: compositedIconRect, from: .zero, operation: .sourceOver, fraction: 1.0)
-
-        compositedImage.unlockFocus()
-        NSApp.applicationIconImage = compositedImage
     }
 
     func windowShouldClose(_ sender: NSWindow) -> Bool {
