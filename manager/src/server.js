@@ -895,8 +895,8 @@ const server = http.createServer(async (req, res) => {
 
     // 5. API Stop World
     if (pathname === '/api/worlds/stop' && method === 'POST') {
-      const { force } = await parseBody(req);
-      const state = await minecraftService.stopWorld(!!force);
+      const { force, clientRuntime } = await parseBody(req);
+      const state = await minecraftService.stopWorld(!!force, clientRuntime);
       return sendJson(res, 200, { success: true, state });
     }
 

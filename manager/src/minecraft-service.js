@@ -1091,12 +1091,15 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       if (fileToRead) {
         try { currentData = JSON.parse(fs.readFileSync(fileToRead, 'utf8')); } catch (_) {}
       }
+      const existingRuntime = (typeof currentData.totalRuntime === 'number') ? currentData.totalRuntime : 0;
+      const safeTotal = Math.max(existingRuntime, Math.max(0, Math.floor(totalSeconds)));
+
       const lastStartedAt = (newLastStartedAt !== null)
         ? newLastStartedAt
         : (currentData.lastStartedAt || 0);
 
       const payload = JSON.stringify({
-        totalRuntime: Math.max(0, Math.floor(totalSeconds)),
+        totalRuntime: safeTotal,
         lastStartedAt,
         updatedAt: Date.now()
       }, null, 2);
@@ -1323,9 +1326,9 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
     const isRunning = (this.activeWorld && this.startTime && this.status !== 'STOPPED');
     const elapsed = isRunning ? Math.max(0, Math.floor((Date.now() - this.startTime) / 1000)) : 0;
     const baseRuntime = isRunning
-      ? (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : 0)
+      ? Math.max(typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : 0, (this.activeWorld ? this.getWorldRuntime(this.activeWorld) : 0))
       : (this.activeWorld ? this.getWorldRuntime(this.activeWorld) : 0);
-    const activeRuntime = isRunning ? baseRuntime + elapsed : baseRuntime;
+    const activeRuntime = isRunning ? Math.max(baseRuntime, baseRuntime + elapsed) : baseRuntime;
 
     return {
       status: this.status,
@@ -1607,12 +1610,12 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       const isThisRunning = this.activeWorld === entry.name && this.status !== 'STOPPED';
       const runtimeInfo = this.getWorldRuntimeInfo(entry.name);
       const baseRuntime = isThisRunning
-        ? (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : runtimeInfo.totalRuntime)
+        ? Math.max(typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : 0, runtimeInfo.totalRuntime)
         : runtimeInfo.totalRuntime;
       const elapsed = (isThisRunning && this.startTime)
         ? Math.max(0, Math.floor((Date.now() - this.startTime) / 1000))
         : 0;
-      const currentRuntime = isThisRunning ? baseRuntime + elapsed : baseRuntime;
+      const currentRuntime = isThisRunning ? Math.max(runtimeInfo.totalRuntime, baseRuntime + elapsed) : runtimeInfo.totalRuntime;
 
       worlds.push({
         id: entry.name,
@@ -2061,7 +2064,7 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
   /**
    * Arrêt propre du serveur Minecraft
    */
-  async stopWorld(force = false) {
+  async stopWorld(force = false, clientRuntime = null) {
     if (this.isDownloadingJava && !force) {
       throw new Error("Téléchargement de Java en cours. L'arrêt du serveur est temporairement bloqué pendant cette étape.");
     }
@@ -2069,6 +2072,10 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
     if (this.status === 'STOPPED') {
       return this.getState();
     }
+
+    const stoppingWorld = this.activeWorld;
+    const stoppingStartTime = this.startTime;
+    const stoppingSessionBase = typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : 0;
 
     this.status = 'STOPPING';
     this.appendLog(`[Manager] Arrêt gracieux du serveur en cours...`);
@@ -2111,11 +2118,19 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       clearInterval(this.serverSyncInterval);
       this.serverSyncInterval = null;
     }
-    const stoppedWorld = this.activeWorld;
-    if (stoppedWorld && this.startTime) {
-      const elapsed = Math.max(0, Math.floor((Date.now() - this.startTime) / 1000));
-      const finalRuntime = (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : 0) + elapsed;
-      this.saveWorldRuntime(stoppedWorld, finalRuntime, this.startTime);
+    const targetWorld = stoppingWorld || this.activeWorld;
+    const targetStart = stoppingStartTime || this.startTime;
+    const targetBase = stoppingSessionBase || (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : 0);
+    if (targetWorld) {
+      let finalRuntime = targetBase;
+      if (targetStart) {
+        const elapsed = Math.max(0, Math.floor((Date.now() - targetStart) / 1000));
+        finalRuntime = targetBase + elapsed;
+      }
+      if (typeof clientRuntime === 'number' && clientRuntime > finalRuntime) {
+        finalRuntime = Math.floor(clientRuntime);
+      }
+      this.saveWorldRuntime(targetWorld, finalRuntime, targetStart);
     }
 
     this.status = 'STOPPED';
