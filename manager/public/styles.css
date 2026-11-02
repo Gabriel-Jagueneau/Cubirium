@@ -946,18 +946,19 @@ body {
 
 #btnStopActiveServer.btn-downloading-java-header,
 .console-actions .btn-downloading-java-header {
-  background: rgba(14, 30, 48, 0.9) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  background: rgba(15, 23, 42, 0.98) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
   color: #38bdf8 !important;
-  border: 1px solid rgba(56, 189, 248, 0.35) !important;
+  border: 1px solid rgba(56, 189, 248, 0.45) !important;
   cursor: not-allowed !important;
   opacity: 1 !important;
   display: inline-flex !important;
   align-items: center !important;
   gap: 8px !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6) !important;
   border-radius: var(--radius-pill) !important;
+  padding: 6px 16px !important;
 }
 
 .console-actions .btn-small {
@@ -1354,21 +1355,22 @@ body {
 
 .btn-downloading-java {
   flex: 1;
-  background: rgba(14, 30, 48, 0.9);
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  color: #38bdf8;
-  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: rgba(15, 23, 42, 0.98) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.45) !important;
   font-size: 0.82rem;
   font-weight: 700;
-  padding: 8px 14px;
+  padding: 8px 16px !important;
+  min-width: 135px !important;
   border-radius: var(--radius-pill);
   cursor: not-allowed;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  gap: 8px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6) !important;
   user-select: none;
 }
 
@@ -1384,17 +1386,17 @@ body {
 }
 
 .btn-downloading-java-header {
-  background: rgba(14, 30, 48, 0.9) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  background: rgba(15, 23, 42, 0.98) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
   color: #38bdf8 !important;
-  border: 1px solid rgba(56, 189, 248, 0.35) !important;
+  border: 1px solid rgba(56, 189, 248, 0.45) !important;
   cursor: not-allowed !important;
   opacity: 1 !important;
   display: inline-flex !important;
   align-items: center !important;
   gap: 8px !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6) !important;
 }
 
 .btn-repair {

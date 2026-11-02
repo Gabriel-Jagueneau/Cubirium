@@ -374,11 +374,12 @@ class MinecraftService {
       return isModded ? installedMajor === 17 : (installedMajor >= 17);
     }
     if (requiredMajor === 21) {
-      // Tout monde 1.20.5+ et 1.21+ tourne sur Java >= 21 (21, 22, 23, 24, 25+)
+      // Tout monde 1.20.5+ et moderne tourne sur Java >= 21 (21, 22, 23, 24, 25+)
       return installedMajor >= 21;
     }
     if (requiredMajor >= 25) {
-      return installedMajor >= 25;
+      // Rétrocompatibilité : tout runtime Java 21+ satisfait les versions récentes
+      return installedMajor >= 21;
     }
     return installedMajor >= requiredMajor;
   }
@@ -668,10 +669,9 @@ class MinecraftService {
 
     let reqMajor = javaInfo.requiredMajor || 21;
     // Si le monde n'est pas un monde moddé exigeant strictement Java 8 ou Java 17,
-    // on installe directement Java 25 (version moderne de référence rétrocompatible)
-    // plutôt qu'une version antérieure inutile.
-    if (!isModded && reqMajor >= 17) {
-      reqMajor = 25;
+    // cibler Java 21 LTS de référence
+    if (!isModded && reqMajor < 21 && reqMajor > 8) {
+      reqMajor = 21;
     }
 
     this.isDownloadingJava = true;
@@ -738,12 +738,12 @@ class MinecraftService {
   checkJavaInBackground() {
     setTimeout(async () => {
       try {
-        // 1. S'assurer qu'au moins un runtime Java moderne (Java 25) est prêt sur le système
-        const javaModern = this.findJavaExecutable(null, 'Vanilla 26.3');
+        // 1. S'assurer qu'au moins un runtime Java moderne (Java 21+) est prêt sur le système
+        const javaModern = this.findJavaExecutable(null, 'Vanilla 1.21.1');
         if (!javaModern.isWorking) {
-          console.log('[Cubirium] Pré-installation d\'OpenJDK 25 en tâche de fond...');
-          await this.downloadAndSetupJavaLatest(25);
-          console.log('[Cubirium] OpenJDK 25 configuré avec succès.');
+          console.log('[Cubirium] Configuration d\'un runtime Java 21 moderne en tâche de fond...');
+          await this.downloadAndSetupJavaLatest(21);
+          console.log('[Cubirium] Runtime Java moderne configuré.');
         }
 
         // 2. Parcourir tous les mondes existants dans games/ et pré-installer uniquement si aucun runtime compatible n'existe
@@ -753,15 +753,15 @@ class MinecraftService {
             if (!ent.isDirectory() || ent.name.startsWith('.')) continue;
             const check = this.findJavaExecutable(ent.name);
             if (!check.isWorking && check.requiredMajor) {
-              const targetVer = check.requiredMajor < 21 ? check.requiredMajor : 25;
-              console.log(`[Cubirium] Pré-installation d'OpenJDK ${targetVer} pour le monde ${ent.name}...`);
+              const targetVer = check.requiredMajor;
+              console.log(`[Cubirium] Configuration du runtime Java ${targetVer} pour le monde ${ent.name}...`);
               await this.downloadAndSetupJavaLatest(targetVer);
-              console.log(`[Cubirium] OpenJDK ${targetVer} pré-installé avec succès.`);
+              console.log(`[Cubirium] Runtime Java ${targetVer} configuré avec succès.`);
             }
           }
         }
       } catch (e) {
-        console.warn('[Cubirium] Note: Pré-téléchargement Java en arrière-plan:', e.message);
+        console.warn('[Cubirium] Note: Pré-vérification Java en arrière-plan:', e.message);
       }
     }, 4000);
   }
@@ -769,7 +769,7 @@ class MinecraftService {
   /**
    * Télécharge et extrait Eclipse Temurin JDK portable dans le dossier runtime de Cubirium
    */
-  async downloadAndSetupJavaLatest(version = 25, onProgress = null) {
+  async downloadAndSetupJavaLatest(version = 21, onProgress = null) {
     if (this._activeJavaDownloadPromise) {
       return this._activeJavaDownloadPromise;
     }
@@ -784,6 +784,25 @@ class MinecraftService {
       const runtimeBase = path.join(appSupportDir, 'runtime');
       const targetJavaDir = path.join(runtimeBase, `java-${version}`);
       const tempDir = path.join(runtimeBase, `temp-java-${version}`);
+
+      // Vérification immédiate : si la version est déjà installée et fonctionnelle, ne JAMAIS retélécharger !
+      const candidateBin = isWin
+        ? path.join(targetJavaDir, 'bin', 'java.exe')
+        : path.join(targetJavaDir, 'bin', 'java');
+      const candidateMacBin = path.join(targetJavaDir, 'Contents', 'Home', 'bin', 'java');
+      for (const cand of [candidateBin, candidateMacBin]) {
+        if (fs.existsSync(cand)) {
+          const check = this.getJavaInfo(cand);
+          if (check.isWorking) {
+            const binDir = path.dirname(cand);
+            const jHome = path.basename(binDir).toLowerCase() === 'bin' ? path.dirname(binDir) : targetJavaDir;
+            return {
+              execFile: cand,
+              javaHome: jHome
+            };
+          }
+        }
+      }
 
       if (!fs.existsSync(runtimeBase)) {
         fs.mkdirSync(runtimeBase, { recursive: true });

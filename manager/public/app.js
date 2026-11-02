@@ -820,7 +820,7 @@ function buildWorldCardHtml(w, opts) {
         <div class="primary-action-container" data-type="${isRunning ? (isDownloadingJava ? 'downloading' : 'stop') : w.isCorrupted ? 'corrupted' : w.needsRepair ? 'repair' : 'launch'}">
         ${isRunning
       ? (isDownloadingJava
-        ? `<button class="btn-downloading-java" disabled title="${escapeHtml(javaDownloadStep || 'Téléchargement de Java 25 en cours...')}">
+        ? `<button class="btn-downloading-java" disabled title="${escapeHtml(javaDownloadStep || 'Téléchargement de Java en cours...')}">
             <svg class="spinner-icon-inline" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/>
             </svg>
@@ -1162,7 +1162,7 @@ function renderWorlds(worlds) {
         if (isRunning) {
           if (isDownloadingJava) {
             expectedType = 'downloading';
-            expectedBtnHtml = `<button class="btn-downloading-java" disabled title="${escapeHtml(javaDownloadStep || 'Téléchargement de Java 25 en cours...')}"><svg class="spinner-icon-inline" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg><span>Téléchargement</span></button>`;
+            expectedBtnHtml = `<button class="btn-downloading-java" disabled title="${escapeHtml(javaDownloadStep || 'Téléchargement de Java en cours...')}"><svg class="spinner-icon-inline" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg><span>Téléchargement</span></button>`;
           } else {
             expectedType = 'stop';
             expectedBtnHtml = `<button class="btn-stop-world" onclick="stopActiveWorld()">Arrêter</button>`;
@@ -1286,7 +1286,7 @@ function updateWorldCardsLive() {
       if (isCardRunning || (isThisActive && (isCardStarting || isCardStopping))) {
         if (isDownloadingJava) {
           expectedType = 'downloading';
-          expectedBtnHtml = `<button class="btn-downloading-java" disabled title="${escapeHtml(javaDownloadStep || 'Téléchargement de Java 25 en cours...')}"><svg class="spinner-icon-inline" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg><span>Téléchargement</span></button>`;
+          expectedBtnHtml = `<button class="btn-downloading-java" disabled title="${escapeHtml(javaDownloadStep || 'Téléchargement de Java en cours...')}"><svg class="spinner-icon-inline" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg><span>Téléchargement</span></button>`;
         } else {
           expectedType = 'stop';
           expectedBtnHtml = `<button class="btn-stop-world" onclick="stopActiveWorld()">Arrêter</button>`;
@@ -1469,7 +1469,7 @@ function updateTerminalHeader() {
     btnLaunchViewedWorld.style.display = 'none';
     cmdInput.disabled = true;
     btnSendCmd.disabled = true;
-    cmdInput.placeholder = javaDownloadStep || `Installation de Java 25 en cours pour ${selectedTerminalWorldId}...`;
+    cmdInput.placeholder = javaDownloadStep || `Installation de Java en cours pour ${selectedTerminalWorldId}...`;
   } else if (isViewedRunning) {
     btnStopActiveServer.style.display = 'inline-flex';
     btnStopActiveServer.disabled = false;
