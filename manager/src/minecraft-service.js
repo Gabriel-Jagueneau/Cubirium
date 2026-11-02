@@ -1033,7 +1033,8 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
   }
 
   /**
-   * Récupère les infos de runtime persistant et dernier allumage d'un monde
+   * Récupère les infos de runtime persistant et dernier allumage d'un monde.
+   * Le runtime représente strictement le temps cumulé (en secondes) où le monde a été allumé.
    */
   getWorldRuntimeInfo(worldId) {
     if (!worldId) return { totalRuntime: 0, lastStartedAt: 0 };
@@ -1050,41 +1051,19 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
           totalRuntime = Math.max(0, Math.floor(data.totalRuntime));
         }
         if (typeof data.lastStartedAt === 'number') {
-          lastStartedAt = data.lastStartedAt;
+          lastStartedAt = Math.floor(data.lastStartedAt);
         }
       } catch (e) {}
     }
 
-    // Si pas de métadonnée enregistrée pour le runtime, initialiser depuis Time dans level.dat (20 ticks/sec)
-    if (totalRuntime === 0) {
-      const worldDataFolder = this.getWorldDataFolder(path.join(this.gamesDir, worldId));
-      const levelDatPath = path.join(worldDataFolder, 'level.dat');
-      if (fs.existsSync(levelDatPath)) {
-        try {
-          const zlib = require('zlib');
-          const buf = zlib.gunzipSync(fs.readFileSync(levelDatPath));
-          const timeMarker = Buffer.from([0x04, 0x00, 0x04, 0x54, 0x69, 0x6d, 0x65]); // TAG_Long Time
-          const idx = buf.indexOf(timeMarker);
-          if (idx !== -1 && idx + timeMarker.length + 8 <= buf.length) {
-            const ticks = Number(buf.readBigInt64BE(idx + timeMarker.length));
-            if (ticks > 0) {
-              totalRuntime = Math.floor(ticks / 20);
-              this.saveWorldRuntime(worldId, totalRuntime);
-            }
-          }
-        } catch (e) {}
-      }
-    }
-
-    // Si aucun lastStartedAt connu, fallback sur mtime du log ou du dossier
     if (!lastStartedAt) {
       const logFile = path.join(this.gamesDir, worldId, 'logs', 'latest.log');
       if (fs.existsSync(logFile)) {
-        try { lastStartedAt = fs.statSync(logFile).mtimeMs; } catch (_) {}
+        try { lastStartedAt = Math.floor(fs.statSync(logFile).mtimeMs); } catch (_) {}
       } else {
         const worldDir = path.join(this.gamesDir, worldId);
         if (fs.existsSync(worldDir)) {
-          try { lastStartedAt = fs.statSync(worldDir).mtimeMs; } catch (_) {}
+          try { lastStartedAt = Math.floor(fs.statSync(worldDir).mtimeMs); } catch (_) {}
         }
       }
     }
@@ -1341,14 +1320,18 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
   }
 
   getState() {
-    const activeRuntime = (this.activeWorld && this.startTime && this.status !== 'STOPPED')
-      ? this.sessionStartRuntime + Math.floor((Date.now() - this.startTime) / 1000)
+    const isRunning = (this.activeWorld && this.startTime && this.status !== 'STOPPED');
+    const elapsed = isRunning ? Math.max(0, Math.floor((Date.now() - this.startTime) / 1000)) : 0;
+    const baseRuntime = isRunning
+      ? (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : 0)
       : (this.activeWorld ? this.getWorldRuntime(this.activeWorld) : 0);
+    const activeRuntime = isRunning ? baseRuntime + elapsed : baseRuntime;
 
     return {
       status: this.status,
       activeWorld: this.activeWorld,
       startTime: this.startTime,
+      baseRuntime,
       runtime: activeRuntime,
       uptime: activeRuntime,
       players: this.players,
@@ -1623,10 +1606,13 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
 
       const isThisRunning = this.activeWorld === entry.name && this.status !== 'STOPPED';
       const runtimeInfo = this.getWorldRuntimeInfo(entry.name);
-      const savedRuntime = runtimeInfo.totalRuntime;
-      const currentRuntime = isThisRunning && this.startTime
-        ? this.sessionStartRuntime + Math.floor((Date.now() - this.startTime) / 1000)
-        : savedRuntime;
+      const baseRuntime = isThisRunning
+        ? (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : runtimeInfo.totalRuntime)
+        : runtimeInfo.totalRuntime;
+      const elapsed = (isThisRunning && this.startTime)
+        ? Math.max(0, Math.floor((Date.now() - this.startTime) / 1000))
+        : 0;
+      const currentRuntime = isThisRunning ? baseRuntime + elapsed : baseRuntime;
 
       worlds.push({
         id: entry.name,
@@ -1646,7 +1632,7 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
         isRunning: isThisRunning,
         startTime: isThisRunning ? this.startTime : null,
         lastStartedAt: isThisRunning ? (this.startTime || Date.now()) : (runtimeInfo.lastStartedAt || 0),
-        baseRuntime: savedRuntime,
+        baseRuntime,
         runtime: currentRuntime,
         uptime: currentRuntime,
         dimensions
@@ -1971,14 +1957,16 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
         clearInterval(this.serverSyncInterval);
         this.serverSyncInterval = null;
       }
-      if (this.activeWorld && this.startTime) {
-        const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
-        this.saveWorldRuntime(this.activeWorld, this.sessionStartRuntime + elapsed);
+      if (stoppedWorld && this.startTime) {
+        const elapsed = Math.max(0, Math.floor((Date.now() - this.startTime) / 1000));
+        const finalRuntime = (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : 0) + elapsed;
+        this.saveWorldRuntime(stoppedWorld, finalRuntime, this.startTime);
       }
       this.status = 'STOPPED';
       this.activeWorld = null;
       this.activeProcess = null;
       this.startTime = null;
+      this.sessionStartRuntime = 0;
       this.players = [];
       this.broadcast('players', []);
       try { tunnelService.stop().catch(() => {}); } catch (_) {}
@@ -2008,12 +1996,16 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
         clearInterval(this.serverSyncInterval);
         this.serverSyncInterval = null;
       }
-      if (this.activeWorld && this.startTime) {
-        const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
-        this.saveWorldRuntime(this.activeWorld, this.sessionStartRuntime + elapsed);
+      if (stoppedWorld && this.startTime) {
+        const elapsed = Math.max(0, Math.floor((Date.now() - this.startTime) / 1000));
+        const finalRuntime = (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : 0) + elapsed;
+        this.saveWorldRuntime(stoppedWorld, finalRuntime, this.startTime);
       }
       this.status = 'STOPPED';
+      this.activeWorld = null;
+      this.activeProcess = null;
       this.startTime = null;
+      this.sessionStartRuntime = 0;
       this.broadcast('status', this.getState());
     });
 
@@ -2119,15 +2111,18 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       clearInterval(this.serverSyncInterval);
       this.serverSyncInterval = null;
     }
-    if (this.activeWorld && this.startTime) {
-      const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
-      this.saveWorldRuntime(this.activeWorld, this.sessionStartRuntime + elapsed);
+    const stoppedWorld = this.activeWorld;
+    if (stoppedWorld && this.startTime) {
+      const elapsed = Math.max(0, Math.floor((Date.now() - this.startTime) / 1000));
+      const finalRuntime = (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : 0) + elapsed;
+      this.saveWorldRuntime(stoppedWorld, finalRuntime, this.startTime);
     }
 
     this.status = 'STOPPED';
     this.activeWorld = null;
     this.activeProcess = null;
     this.startTime = null;
+    this.sessionStartRuntime = 0;
     this.players = [];
     this.broadcast('players', []);
     try { tunnelService.stop().catch(() => {}); } catch (_) {}
@@ -4095,26 +4090,6 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"
             importedLastStartedAt = rtData.lastStartedAt;
           }
         } catch (_) {}
-      }
-
-      // Fallback si pas de fichier de métadonnées runtime : déduire depuis Time dans level.dat (ticks/20)
-      if (importedRuntime === 0) {
-        const worldDataFolder = this.getWorldDataFolder(targetDir);
-        const levelDatPath = path.join(worldDataFolder, 'level.dat');
-        if (fs.existsSync(levelDatPath)) {
-          try {
-            const zlib = require('zlib');
-            const buf = zlib.gunzipSync(fs.readFileSync(levelDatPath));
-            const timeMarker = Buffer.from([0x04, 0x00, 0x04, 0x54, 0x69, 0x6d, 0x65]);
-            const idx = buf.indexOf(timeMarker);
-            if (idx !== -1 && idx + timeMarker.length + 8 <= buf.length) {
-              const ticks = Number(buf.readBigInt64BE(idx + timeMarker.length));
-              if (ticks > 0) {
-                importedRuntime = Math.floor(ticks / 20);
-              }
-            }
-          } catch (_) {}
-        }
       }
 
       if (importedRuntime > 0 || importedLastStartedAt > 0) {

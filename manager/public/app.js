@@ -343,22 +343,19 @@ function getSuggestedWorldName() {
   return `monde-${nextNum}`;
 }
 
-// Ticker de Runtime chaque seconde (affiche toujours le chronomètre et conserve le runtime actuel)
+// Ticker de Runtime chaque seconde (compte exactement le temps d'allumage du serveur sans jamais dériver ni doubler)
 setInterval(() => {
-  document.querySelectorAll('.runtime-val, .uptime-val').forEach(el => {
+  document.querySelectorAll('.runtime-val').forEach(el => {
     const wid = el.getAttribute('data-world-id');
-    const isThisRunning = (serverStatus === 'RUNNING' && (wid === activeWorld || (!activeWorld && wid === selectedTerminalWorldId)));
+    const isThisRunning = ((serverStatus === 'RUNNING' || serverStatus === 'STARTING') && wid === activeWorld);
     const baseRuntime = parseInt(el.getAttribute('data-base-runtime') || '0', 10);
-    const currRuntime = parseInt(el.getAttribute('data-current-runtime') || el.getAttribute('data-base-runtime') || '0', 10);
     let startTimeStr = el.getAttribute('data-start-time');
 
-    // Si le monde tourne mais n'avait pas encore son timestamp d'origine
-    if ((!startTimeStr || startTimeStr === '0') && isThisRunning && currentServerStartTime) {
-      startTimeStr = String(currentServerStartTime);
-      el.setAttribute('data-start-time', startTimeStr);
-    }
-
-    if (isThisRunning && startTimeStr) {
+    if (isThisRunning) {
+      if ((!startTimeStr || startTimeStr === '0' || startTimeStr === '') && currentServerStartTime) {
+        startTimeStr = String(currentServerStartTime);
+        el.setAttribute('data-start-time', startTimeStr);
+      }
       const st = parseInt(startTimeStr, 10);
       if (st > 0) {
         const elapsed = Math.max(0, Math.floor((Date.now() - st) / 1000));
@@ -370,8 +367,9 @@ setInterval(() => {
       }
     }
 
-    // Si le monde ne tourne pas : afficher son runtime actuel enregistré (persistant, jamais 00:00:00 arbitraire)
-    const formatted = formatSeconds(currRuntime);
+    // Si le monde est arrêté : afficher son runtime cumulé enregistré (persistant)
+    const curr = parseInt(el.getAttribute('data-current-runtime') || el.getAttribute('data-base-runtime') || '0', 10);
+    const formatted = formatSeconds(curr);
     if (el.textContent !== formatted) el.textContent = formatted;
   });
 }, 1000);
@@ -801,7 +799,7 @@ function buildWorldCardHtml(w, opts) {
                   data-world-id="${w.id}" 
                   data-base-runtime="${baseRuntimeSecs}" 
                   data-current-runtime="${runtimeSecs}" 
-                  data-start-time="${effectiveStartTime}">${displayRuntime}</strong>
+                  data-start-time="${isRunning ? effectiveStartTime : ''}">${displayRuntime}</strong>
         </div>
         <div class="meta-item">
           <span>Taille:</span>
@@ -1018,7 +1016,7 @@ function renderWorlds(worlds) {
 
   sortedWorlds.forEach(w => {
     let card = existingCardsMap.get(w.id);
-    const isRunning = w.isRunning || (w.id === activeWorld && serverStatus === 'RUNNING');
+    const isRunning = w.isRunning || (w.id === activeWorld && (serverStatus === 'RUNNING' || serverStatus === 'STARTING'));
     const typeClass = w.type === 'Moddé' ? 'modded' : (w.type === 'Crossplay' ? 'crossplay' : 'vanilla');
     const isSelected = (w.id === selectedTerminalWorldId);
     const isServerRunning = (serverStatus !== 'STOPPED');
@@ -1026,10 +1024,12 @@ function renderWorlds(worlds) {
     const isPinned = pinnedIds.includes(w.id);
     const isCollapsed = collapsedIds.includes(w.id);
 
-    const runtimeSecs = (typeof w.runtime === 'number') ? w.runtime : ((typeof w.uptime === 'number') ? w.uptime : 0);
-    const baseRuntimeSecs = (typeof w.baseRuntime === 'number') ? w.baseRuntime : runtimeSecs;
-    const effectiveStartTime = w.startTime || (isRunning ? (currentServerStartTime || Date.now()) : '');
-    const displayRuntime = isRunning ? formatRuntime(effectiveStartTime, baseRuntimeSecs) : formatSeconds(runtimeSecs);
+    const baseRuntimeSecs = (typeof w.baseRuntime === 'number') ? w.baseRuntime : ((typeof w.runtime === 'number') ? w.runtime : 0);
+    const effectiveStartTime = isRunning ? (w.startTime || currentServerStartTime || Date.now()) : '';
+    const runtimeSecs = isRunning && effectiveStartTime
+      ? baseRuntimeSecs + Math.max(0, Math.floor((Date.now() - Number(effectiveStartTime)) / 1000))
+      : ((typeof w.runtime === 'number') ? w.runtime : baseRuntimeSecs);
+    const displayRuntime = formatSeconds(runtimeSecs);
 
     if (!card) {
       // Nouvelle carte créée
@@ -1134,7 +1134,7 @@ function renderWorlds(worlds) {
         if (runtimeEl.textContent !== displayRuntime) runtimeEl.textContent = displayRuntime;
         runtimeEl.setAttribute('data-base-runtime', String(baseRuntimeSecs));
         runtimeEl.setAttribute('data-current-runtime', String(runtimeSecs));
-        runtimeEl.setAttribute('data-start-time', String(effectiveStartTime));
+        runtimeEl.setAttribute('data-start-time', isRunning && effectiveStartTime ? String(effectiveStartTime) : '');
       }
 
       const sizeEl = card.querySelector('.world-meta .meta-item:last-child strong');
@@ -1238,6 +1238,18 @@ function updateWorldCardsLive() {
     card.classList.toggle('starting', isCardStarting && !isCardDownloading);
     card.classList.toggle('stopping', isCardStopping);
     card.classList.toggle('downloading', isCardDownloading);
+
+    // Mettre à jour l'ancrage temporel du runtime
+    const runtimeEl = card.querySelector('.runtime-val');
+    if (runtimeEl) {
+      if (isCardRunning || (isThisActive && isCardStarting)) {
+        if (currentServerStartTime) {
+          runtimeEl.setAttribute('data-start-time', String(currentServerStartTime));
+        }
+      } else if (!isThisActive || serverStatus === 'STOPPED') {
+        runtimeEl.setAttribute('data-start-time', '');
+      }
+    }
 
     // Mettre à jour la pastille lumineuse (pulse-dot)
     const dot = card.querySelector('.world-title-row .pulse-dot, .world-title-row [class*="pulse-dot"]');
