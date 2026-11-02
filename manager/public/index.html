@@ -72,49 +72,8 @@
         </div>
       </section>
 
-      <!-- Right Panel: Live Console & Controls -->
+      <!-- Right Panel: Live Console & Controls (Sans top bar) -->
       <section class="console-panel">
-        <div class="console-header">
-          <div class="console-title">
-            <span class="pulse-dot" id="serverPulseDot"></span>
-            <span id="activeWorldTitle">Terminal</span>
-            <span class="terminal-status-tag" id="terminalStatusTag" style="display: none;"></span>
-          </div>
-          <div class="console-actions">
-            <div class="players-online" id="playersOnlineBadge" style="display: none;">
-              <span id="playersCount"></span>
-            </div>
-            <div class="tunnel-share-pill" id="tunnelSharePill" style="display: none;" onclick="copyTunnelShareIp()"
-              title="Copier l'adresse IP">
-              <span class="tunnel-pulse-dot" id="tunnelPulseDot"></span>
-              <span class="tunnel-share-ip" id="tunnelShareIp" title="Adresse de connexion">...</span>
-              <button type="button" class="btn-copy-tunnel" id="btnCopyTunnel"
-                onclick="copyTunnelShareIp(); event.stopPropagation();" title="Copier l'adresse IP">
-                Copier l'IP
-              </button>
-              <button type="button" class="btn-copy-tunnel btn-restart-tunnel" id="btnRestartTunnel"
-                onclick="restartTunnelManual(event); event.stopPropagation();"
-                title="Reconnexion rapide / Actualiser le tunnel" style="padding: 0 7px; margin-left: 2px;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
-                </svg>
-              </button>
-            </div>
-            <button class="btn-primary-small" id="btnLaunchViewedWorld" style="display: none;">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="5 3 19 12 5 21 5 3"></polygon>
-              </svg>
-              Lancer ce monde
-            </button>
-            <button class="btn-danger" id="btnStopActiveServer" style="display: none;">
-              Arrêter le Serveur
-            </button>
-            <button class="btn-small" id="btnClearConsole" title="Effacer les logs de ce monde">Effacer</button>
-          </div>
-        </div>
-
-
         <!-- Terminal Output -->
         <div class="terminal-body" id="terminalOutput">
           <div class="terminal-welcome">
@@ -123,8 +82,47 @@
           </div>
         </div>
 
-        <!-- Suggestions de commandes dynamiques & Saisie Console pleine largeur (sans trait de séparation) -->
+        <!-- Console Footer: Status Bar intégrée & Saisie commande -->
         <div class="console-footer">
+          <div class="console-status-bar">
+            <div class="console-status-left">
+              <span class="pulse-dot" id="serverPulseDot"></span>
+              <span id="activeWorldTitle">Terminal</span>
+              <span class="terminal-status-tag" id="terminalStatusTag" style="display: none;"></span>
+              <div class="players-online" id="playersOnlineBadge" style="display: none;">
+                <span id="playersCount"></span>
+              </div>
+            </div>
+            <div class="console-status-right">
+              <div class="tunnel-share-pill" id="tunnelSharePill" style="display: none;" onclick="copyTunnelShareIp()"
+                title="Copier l'adresse IP">
+                <span class="tunnel-pulse-dot" id="tunnelPulseDot"></span>
+                <span class="tunnel-share-ip" id="tunnelShareIp" title="Adresse de connexion">...</span>
+                <button type="button" class="btn-copy-tunnel" id="btnCopyTunnel"
+                  onclick="copyTunnelShareIp(); event.stopPropagation();" title="Copier l'adresse IP">
+                  Copier l'IP
+                </button>
+                <button type="button" class="btn-copy-tunnel btn-restart-tunnel" id="btnRestartTunnel"
+                  onclick="restartTunnelManual(event); event.stopPropagation();"
+                  title="Reconnexion rapide / Actualiser le tunnel" style="padding: 0 7px; margin-left: 2px;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+                  </svg>
+                </button>
+              </div>
+              <button class="btn-primary-small" id="btnLaunchViewedWorld" style="display: none;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                Lancer ce monde
+              </button>
+              <button class="btn-danger" id="btnStopActiveServer" style="display: none;">
+                Arrêter le Serveur
+              </button>
+              <button class="btn-small btn-clear-console" id="btnClearConsole" title="Effacer les logs de ce monde">Effacer</button>
+            </div>
+          </div>
           <div class="cmd-suggestions-box" id="cmdSuggestionsBox" style="display: none;">
             <div class="suggestions-header">
               <span>Suggestions de commandes :</span>
