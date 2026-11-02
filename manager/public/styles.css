@@ -667,6 +667,42 @@ body {
   z-index: 1;
 }
 
+/* Dégradés de fade out fluide en haut et en bas du terminal (laissant la scrollbar 100% visible au-dessus) */
+.console-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 10px;
+  height: 52px;
+  background: linear-gradient(
+    to bottom,
+    var(--bg-terminal) 0%,
+    rgba(7, 9, 14, 0.6) 24px,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 6;
+}
+
+.console-panel::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 10px;
+  height: 96px;
+  background: linear-gradient(
+    to top,
+    var(--bg-terminal) 0%,
+    rgba(7, 9, 14, 0.9) 35px,
+    rgba(7, 9, 14, 0.45) 65px,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 6;
+}
+
 /* Floating HUD Top Overlay (Infos & contrôles au sommet du terminal sans bandeau lourd) */
 .console-hud-top {
   position: absolute;
@@ -948,12 +984,12 @@ body {
   font-weight: 600;
 }
 
-/* Terminal Body (Plein écran, le texte passe sous le HUD en haut et sous la saisie en bas avec fade out court) */
+/* Terminal Body (Plein écran, le texte passe sous le HUD en haut et sous la saisie en bas) */
 .terminal-body {
   flex: 1;
   min-height: 0;
   background-color: var(--bg-terminal);
-  padding: 64px 14px 74px 10px;
+  padding: 64px 14px 88px 10px;
   overflow-y: auto;
   overflow-y: overlay;
   scrollbar-gutter: stable;
@@ -961,24 +997,6 @@ body {
   font-size: 0.83rem;
   line-height: 1.6;
   color: #cbd5e1;
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 0px,
-    rgba(0, 0, 0, 0.4) 18px,
-    #000 50px,
-    #000 calc(100% - 50px),
-    rgba(0, 0, 0, 0.4) calc(100% - 18px),
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0px,
-    rgba(0, 0, 0, 0.4) 18px,
-    #000 50px,
-    #000 calc(100% - 50px),
-    rgba(0, 0, 0, 0.4) calc(100% - 18px),
-    transparent 100%
-  );
 }
 
 .terminal-line {
