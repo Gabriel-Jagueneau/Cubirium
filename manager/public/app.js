@@ -5908,9 +5908,18 @@ function toggleTunnelTokenVisibility() {
   }
 }
 
+const settingsCustomDomainPrefix = document.getElementById('settingsCustomDomainPrefix');
+
+function openOfficialWebsite() {
+  openExternalUrl('https://cubirium.fr');
+}
+window.openOfficialWebsite = openOfficialWebsite;
+
 function copyCustomDomainDemo(event) {
   if (event) event.stopPropagation();
-  const domain = 'superduperserveuravecmecpotes.cubirium.fr';
+  const input = document.getElementById('settingsCustomDomainPrefix');
+  const prefix = input && input.value ? input.value.trim() : 'lesMondesAvecMesPotes';
+  const domain = `${prefix}.cubirium.fr`;
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(domain).then(() => {
       showToast('Adresse copiée : ' + domain, 'success');
@@ -5923,17 +5932,24 @@ function copyCustomDomainDemo(event) {
 }
 window.copyCustomDomainDemo = copyCustomDomainDemo;
 
-function switchLegalTab(tab) {
+function switchLegalTab(tab, btn) {
   const tabs = ['privacy', 'terms', 'notices'];
   tabs.forEach(t => {
     const pane = document.getElementById(`legalPane${t.charAt(0).toUpperCase() + t.slice(1)}`);
-    const btn = document.getElementById(`btnLegalTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+    const b = document.getElementById(`btnLegalTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
     if (pane) pane.style.display = (t === tab) ? 'block' : 'none';
-    if (btn) {
-      if (t === tab) btn.classList.add('active');
-      else btn.classList.remove('active');
+    if (b) {
+      if (t === tab) b.classList.add('active');
+      else b.classList.remove('active');
     }
   });
+
+  const pill = document.getElementById('legalSlidingPill');
+  const targetBtn = btn || document.getElementById(`btnLegalTab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+  if (pill && targetBtn) {
+    pill.style.width = targetBtn.offsetWidth + 'px';
+    pill.style.transform = `translateX(${targetBtn.offsetLeft}px)`;
+  }
 }
 window.switchLegalTab = switchLegalTab;
 
@@ -5972,6 +5988,7 @@ function applySettingsState(state) {
   }
   if (settingsDefaultGamemode) settingsDefaultGamemode.value = state.defaultGamemode || 'survival';
   if (settingsDefaultDifficulty) settingsDefaultDifficulty.value = state.defaultDifficulty || 'normal';
+  if (settingsCustomDomainPrefix) settingsCustomDomainPrefix.value = state.customDomainPrefix || 'lesMondesAvecMesPotes';
   if (settingsTunnelRelayHost) settingsTunnelRelayHost.value = state.tunnelRelayHost || 'bore.pub';
   if (settingsTunnelRelayPort) settingsTunnelRelayPort.value = state.tunnelRelayPort || 7835;
   if (settingsTunnelAuthToken) settingsTunnelAuthToken.value = state.tunnelAuthToken || '';
@@ -5984,6 +6001,7 @@ function getSettingsFromInputs() {
     defaultSimulationDistance: settingsSimulationDistance ? parseInt(settingsSimulationDistance.value, 10) : 4,
     defaultGamemode: settingsDefaultGamemode ? settingsDefaultGamemode.value : 'survival',
     defaultDifficulty: settingsDefaultDifficulty ? settingsDefaultDifficulty.value : 'normal',
+    customDomainPrefix: settingsCustomDomainPrefix ? settingsCustomDomainPrefix.value.trim() : 'lesMondesAvecMesPotes',
     tunnelRelayHost: settingsTunnelRelayHost ? settingsTunnelRelayHost.value.trim() : 'bore.pub',
     tunnelRelayPort: settingsTunnelRelayPort ? parseInt(settingsTunnelRelayPort.value, 10) : 7835,
     tunnelAuthToken: settingsTunnelAuthToken ? settingsTunnelAuthToken.value.trim() : ''
@@ -6046,6 +6064,9 @@ async function openAppSettingsModal() {
   if (!appSettingsModal) return;
   resetAppSettingsModalUI();
   appSettingsModal.style.display = 'flex';
+  requestAnimationFrame(() => {
+    switchLegalTab('privacy');
+  });
 
   try {
     const res = await fetch('/api/settings');

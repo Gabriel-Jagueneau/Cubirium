@@ -1677,29 +1677,91 @@ body {
   transform: scale(1.08);
 }
 
-.legal-tab-btn {
+.legal-segmented-control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border-color);
+  border-radius: var(--radius-pill, 50px);
+  padding: 3px;
+  gap: 2px;
+  margin-top: 14px;
+}
+
+.legal-sliding-pill {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 0;
+  border-radius: var(--radius-pill, 50px);
+  background: var(--accent-indigo);
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.35);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), width 0.25s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.legal-seg-btn {
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  border: none;
   color: var(--text-dim);
-  padding: 6px 14px;
+  padding: 6px 16px;
   border-radius: var(--radius-pill, 50px);
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease;
+  white-space: nowrap;
 }
 
-.legal-tab-btn:hover {
-  background: rgba(255, 255, 255, 0.09);
+.legal-seg-btn:hover {
   color: var(--text-main);
-  border-color: rgba(255, 255, 255, 0.2);
 }
 
-.legal-tab-btn.active {
-  background: var(--accent-indigo);
-  border-color: var(--accent-indigo);
+.legal-seg-btn.active {
   color: #ffffff;
-  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.35);
+}
+
+.custom-domain-field-wrap {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0 12px;
+  height: 38px;
+  flex: 1;
+  min-width: 240px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.custom-domain-field-wrap:focus-within {
+  border-color: var(--accent-indigo);
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.4);
+}
+
+.custom-domain-prefix-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--accent-indigo);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88rem;
+  font-weight: 600;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+}
+
+.custom-domain-suffix {
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88rem;
+  user-select: none;
+  white-space: nowrap;
 }
 
 .btn-close {
