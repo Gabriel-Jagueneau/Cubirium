@@ -1811,54 +1811,294 @@ let cmdHistoryIndex = -1;
 const DEFAULT_COMMANDS = [
   { cmd: 'help', desc: 'Affiche la liste des commandes ou l’aide' },
   { cmd: 'list', desc: 'Liste les joueurs actuellement connectés' },
-  { cmd: 'gamemode survival', desc: 'Passe en mode Survie' },
-  { cmd: 'gamemode creative', desc: 'Passe en mode Créatif' },
-  { cmd: 'gamemode spectator', desc: 'Passe en mode Spectateur' },
-  { cmd: 'gamemode adventure', desc: 'Passe en mode Aventure' },
-  { cmd: 'time set day', desc: 'Règle l’heure sur le jour (1000 ticks)' },
-  { cmd: 'time set noon', desc: 'Règle l’heure sur midi (6000 ticks)' },
-  { cmd: 'time set night', desc: 'Règle l’heure sur la nuit (13000 ticks)' },
-  { cmd: 'time set midnight', desc: 'Règle l’heure sur minuit (18000 ticks)' },
-  { cmd: 'weather clear', desc: 'Définit le temps sur dégagé' },
-  { cmd: 'weather rain', desc: 'Déclenche la pluie' },
-  { cmd: 'weather thunder', desc: 'Déclenche un orage violent' },
+  { cmd: 'gamemode <mode>', desc: 'Change le mode de jeu (survival, creative, spectator, adventure)' },
+  { cmd: 'time set <valeur>', desc: 'Règle l’heure du monde (day, night, noon, midnight ou ticks)' },
+  { cmd: 'time add <valeur>', desc: 'Avance le temps du monde' },
+  { cmd: 'time query <type>', desc: 'Consulte l’heure (daytime, gametime, day)' },
+  { cmd: 'weather <type>', desc: 'Définit la météo (clear, rain, thunder)' },
   { cmd: 'op <joueur>', desc: 'Donne les permissions administrateur' },
   { cmd: 'deop <joueur>', desc: 'Retire les permissions administrateur' },
-  { cmd: 'whitelist on', desc: 'Active la liste blanche' },
-  { cmd: 'whitelist off', desc: 'Désactive la liste blanche' },
-  { cmd: 'whitelist list', desc: 'Liste les joueurs autorisés' },
-  { cmd: 'whitelist add <joueur>', desc: 'Ajoute un joueur à la liste' },
-  { cmd: 'whitelist remove <joueur>', desc: 'Retire un joueur de la liste' },
-  { cmd: 'tp <joueur> <cible>', desc: 'Téléporte un joueur' },
-  { cmd: 'give <joueur> <item>', desc: 'Donne un objet à un joueur' },
-  { cmd: 'difficulty peaceful', desc: 'Difficulté Paisible' },
-  { cmd: 'difficulty easy', desc: 'Difficulté Facile' },
-  { cmd: 'difficulty normal', desc: 'Difficulté Normale' },
-  { cmd: 'difficulty hard', desc: 'Difficulté Difficile' },
-  { cmd: 'say <message>', desc: 'Diffuse un message à tous les joueurs' },
-  { cmd: 'save-all', desc: 'Sauvegarde l’ensemble du monde' },
-  { cmd: 'stop', desc: 'Arrête proprement le serveur' },
+  { cmd: 'whitelist <action>', desc: 'Gère la liste blanche (on, off, list, add, remove, reload)' },
+  { cmd: 'whitelist add <joueur>', desc: 'Ajoute un joueur à la liste blanche' },
+  { cmd: 'whitelist remove <joueur>', desc: 'Retire un joueur de la liste blanche' },
+  { cmd: 'tp <joueur> <cible>', desc: 'Téléporte un joueur vers un autre joueur ou des coordonnées' },
+  { cmd: 'tp <cible> <x> <y> <z>', desc: 'Téléporte une entité vers des coordonnées absolues ou relatives (~ ~ ~)' },
+  { cmd: 'give <joueur> <item> [quantite]', desc: 'Donne un objet à un joueur' },
+  { cmd: 'clear [joueur]', desc: 'Vide l’inventaire d’un joueur ou de soi-même' },
+  { cmd: 'kill <cible>', desc: 'Élimine un joueur ou une entité' },
+  { cmd: 'difficulty <niveau>', desc: 'Définit la difficulté (peaceful, easy, normal, hard)' },
+  { cmd: 'say <message>', desc: 'Diffuse un message à tous les joueurs du serveur' },
+  { cmd: 'tell <joueur> <message>', desc: 'Envoie un message privé à un joueur' },
   { cmd: 'kick <joueur> [raison]', desc: 'Expulse un joueur du serveur' },
   { cmd: 'ban <joueur> [raison]', desc: 'Bannit un joueur du serveur' },
   { cmd: 'pardon <joueur>', desc: 'Débannit un joueur' },
-  { cmd: 'gamerule keepInventory true', desc: 'Garde l’inventaire à la mort' },
-  { cmd: 'gamerule mobGriefing false', desc: 'Empêche les dégâts des monstres' },
-  { cmd: 'clear <joueur>', desc: 'Vide l’inventaire d’un joueur' },
-  { cmd: 'kill <cible>', desc: 'Élimine une entité ou joueur' }
+  { cmd: 'gamerule <regle> [valeur]', desc: 'Modifie une règle de jeu (keepInventory, mobGriefing...)' },
+  { cmd: 'setworldspawn [x y z]', desc: 'Définit le point d’apparition global du monde' },
+  { cmd: 'spawnpoint [joueur] [x y z]', desc: 'Définit le point d’apparition individuel d’un joueur' },
+  { cmd: 'seed', desc: 'Affiche la graine de génération de ce monde' },
+  { cmd: 'locate structure <type>', desc: 'Localise la structure la plus proche' },
+  { cmd: 'locate biome <biome>', desc: 'Localise le biome le plus proche' },
+  { cmd: 'effect give <joueur> <effet>', desc: 'Applique un effet de potion à un joueur' },
+  { cmd: 'effect clear <joueur>', desc: 'Retire les effets de potion d’un joueur' },
+  { cmd: 'enchant <joueur> <enchant>', desc: 'Enchante l’objet actuellement tenu en main' },
+  { cmd: 'summon <entite> [x y z]', desc: 'Fait apparaître une entité' },
+  { cmd: 'save-all', desc: 'Sauvegarde immédiatement l’ensemble du monde sur le disque' },
+  { cmd: 'save-off', desc: 'Désactive la sauvegarde automatique' },
+  { cmd: 'save-on', desc: 'Active la sauvegarde automatique' },
+  { cmd: 'stop', desc: 'Arrête proprement le serveur' }
 ];
 
-function filterCommandList(rawQuery, serverList) {
-  const hasSlash = rawQuery.startsWith('/');
-  const q = rawQuery.replace(/^\//, '').toLowerCase().trim();
-  const pool = (serverList && serverList.length > 0) ? serverList : DEFAULT_COMMANDS;
-  if (!q) {
-    return pool.slice(0, 10);
+const MC_PRESETS = {
+  modes: ['survival', 'creative', 'spectator', 'adventure'],
+  times: ['day', 'night', 'noon', 'midnight', '1000', '6000', '13000', '18000'],
+  weathers: ['clear', 'rain', 'thunder'],
+  difficulties: ['peaceful', 'easy', 'normal', 'hard'],
+  whitelistActions: ['on', 'off', 'list', 'reload'],
+  timeQueries: ['daytime', 'gametime', 'day'],
+  gamerules: [
+    'keepInventory true', 'keepInventory false',
+    'mobGriefing true', 'mobGriefing false',
+    'doDaylightCycle true', 'doDaylightCycle false',
+    'doWeatherCycle true', 'doWeatherCycle false',
+    'doFireTick true', 'doFireTick false',
+    'showCoordinates true', 'showCoordinates false',
+    'naturalRegeneration true', 'naturalRegeneration false'
+  ],
+  structures: ['village', 'ancient_city', 'monument', 'fortress', 'bastion_remnant', 'mansion', 'pillager_outpost', 'mineshaft', 'stronghold'],
+  entities: ['zombie', 'skeleton', 'creeper', 'enderman', 'iron_golem', 'villager', 'cow', 'sheep', 'pig', 'chicken'],
+  commonItems: ['minecraft:diamond', 'minecraft:netherite_ingot', 'minecraft:golden_apple', 'minecraft:iron_ingot', 'minecraft:elytra', 'minecraft:totem_of_undying', 'minecraft:bow', 'minecraft:arrow', 'minecraft:bread', 'minecraft:torch'],
+  effects: ['speed', 'haste', 'strength', 'regeneration', 'night_vision', 'invisibility', 'water_breathing', 'jump_boost', 'absorption', 'slow_falling']
+};
+
+function getKnownPlayerNames() {
+  const players = new Set();
+  (currentPlayersList || []).forEach(p => {
+    const name = typeof p === 'string' ? p : p.name;
+    if (name) players.add(name);
+  });
+  if (players.size === 0) {
+    players.add('@a');
+    players.add('@p');
+    players.add('@s');
+    players.add('@e');
+    players.add('@r');
+  } else {
+    players.add('@a');
+    players.add('@p');
+    players.add('@s');
   }
-  return pool.filter(c => {
-    const cmdStr = c.cmd.toLowerCase();
-    const descStr = (c.desc || '').toLowerCase();
-    return cmdStr.includes(q) || descStr.includes(q);
-  }).slice(0, 10);
+  return Array.from(players);
+}
+
+function computeCommandSmartSuggestions(rawInput) {
+  const hasSlash = rawInput.startsWith('/');
+  const clean = rawInput.replace(/^\//, '');
+  const tokens = clean.split(' ');
+  const baseCmd = (tokens[0] || '').toLowerCase();
+  const currentToken = tokens[tokens.length - 1] || '';
+  const tokenIndex = tokens.length - 1; // 0 = base command, 1 = premier argument, etc.
+
+  // Si on est sur le premier mot (nom de commande)
+  if (tokenIndex === 0) {
+    const q = baseCmd.trim();
+    if (!q) {
+      return DEFAULT_COMMANDS.slice(0, 10).map(c => ({
+        insertText: (hasSlash ? '/' : '') + c.cmd.split(' ')[0] + ' ',
+        displayCmd: (hasSlash ? '/' : '') + c.cmd,
+        desc: c.desc,
+        kind: 'command'
+      }));
+    }
+    const filtered = DEFAULT_COMMANDS.filter(c => {
+      const name = c.cmd.split(' ')[0].toLowerCase();
+      return name.startsWith(q) || c.cmd.toLowerCase().includes(q) || (c.desc || '').toLowerCase().includes(q);
+    });
+    return filtered.slice(0, 10).map(c => {
+      const name = c.cmd.split(' ')[0];
+      const hasArgs = c.cmd.includes(' ');
+      return {
+        insertText: (hasSlash ? '/' : '') + name + (hasArgs ? ' ' : ''),
+        displayCmd: (hasSlash ? '/' : '') + c.cmd,
+        desc: c.desc,
+        kind: 'command'
+      };
+    });
+  }
+
+  // A partir d'ici, nous sommes dans les arguments (tokenIndex >= 1)
+  const qArg = currentToken.toLowerCase();
+  const players = getKnownPlayerNames();
+
+  // Helper pour retourner une liste filtrée de tokens d'argument
+  const makeArgSuggestions = (items, prefixDesc, kind = 'param') => {
+    return items
+      .filter(item => !qArg || item.toLowerCase().includes(qArg))
+      .slice(0, 10)
+      .map(item => {
+        const tokensCopy = [...tokens];
+        tokensCopy[tokensCopy.length - 1] = item;
+        return {
+          insertText: (hasSlash ? '/' : '') + tokensCopy.join(' ') + ' ',
+          displayCmd: item,
+          desc: prefixDesc,
+          kind: kind
+        };
+      });
+  };
+
+  // tp / teleport
+  if (baseCmd === 'tp' || baseCmd === 'teleport') {
+    if (tokenIndex === 1) {
+      return makeArgSuggestions(players, 'Joueur ou entité cible à téléporter', 'player');
+    }
+    if (tokenIndex === 2) {
+      const coordCoords = ['~ ~ ~', '~ ~1 ~', '0 64 0'];
+      const targets = [...players, ...coordCoords];
+      return makeArgSuggestions(targets, 'Destination (joueur ou x y z)', 'coord');
+    }
+    if (tokenIndex === 3 || tokenIndex === 4) {
+      return makeArgSuggestions(['~', '0'], 'Coordonnée relative ou absolue', 'coord');
+    }
+  }
+
+  // gamemode
+  if (baseCmd === 'gamemode') {
+    if (tokenIndex === 1) {
+      return makeArgSuggestions(MC_PRESETS.modes, 'Mode de jeu', 'param');
+    }
+    if (tokenIndex === 2) {
+      return makeArgSuggestions(players, 'Joueur cible', 'player');
+    }
+  }
+
+  // time
+  if (baseCmd === 'time') {
+    if (tokenIndex === 1) {
+      return makeArgSuggestions(['set', 'add', 'query'], 'Action sur le temps', 'param');
+    }
+    if (tokenIndex === 2 && tokens[1] === 'set') {
+      return makeArgSuggestions(MC_PRESETS.times, 'Heure du monde', 'param');
+    }
+    if (tokenIndex === 2 && tokens[1] === 'query') {
+      return makeArgSuggestions(MC_PRESETS.timeQueries, 'Type d’information', 'param');
+    }
+  }
+
+  // weather
+  if (baseCmd === 'weather') {
+    if (tokenIndex === 1) {
+      return makeArgSuggestions(MC_PRESETS.weathers, 'Condition météo', 'param');
+    }
+  }
+
+  // difficulty
+  if (baseCmd === 'difficulty') {
+    if (tokenIndex === 1) {
+      return makeArgSuggestions(MC_PRESETS.difficulties, 'Niveau de difficulté', 'param');
+    }
+  }
+
+  // op / deop / kick / ban / pardon
+  if (['op', 'deop', 'kick', 'ban', 'pardon'].includes(baseCmd)) {
+    if (tokenIndex === 1) {
+      return makeArgSuggestions(players, 'Joueur', 'player');
+    }
+  }
+
+  // whitelist
+  if (baseCmd === 'whitelist') {
+    if (tokenIndex === 1) {
+      const actions = ['add', 'remove', 'on', 'off', 'list', 'reload'];
+      return makeArgSuggestions(actions, 'Action liste blanche', 'param');
+    }
+    if (tokenIndex === 2 && (tokens[1] === 'add' || tokens[1] === 'remove')) {
+      return makeArgSuggestions(players, 'Joueur', 'player');
+    }
+  }
+
+  // give
+  if (baseCmd === 'give') {
+    if (tokenIndex === 1) {
+      return makeArgSuggestions(players, 'Joueur destinataire', 'player');
+    }
+    if (tokenIndex === 2) {
+      return makeArgSuggestions(MC_PRESETS.commonItems, 'Objet Minecraft', 'item');
+    }
+    if (tokenIndex === 3) {
+      return makeArgSuggestions(['1', '16', '32', '64'], 'Quantité', 'number');
+    }
+  }
+
+  // clear
+  if (baseCmd === 'clear') {
+    if (tokenIndex === 1) {
+      return makeArgSuggestions(players, 'Joueur cible', 'player');
+    }
+  }
+
+  // kill
+  if (baseCmd === 'kill') {
+    if (tokenIndex === 1) {
+      return makeArgSuggestions(players, 'Cible à éliminer', 'player');
+    }
+  }
+
+  // gamerule
+  if (baseCmd === 'gamerule') {
+    if (tokenIndex === 1) {
+      return makeArgSuggestions(MC_PRESETS.gamerules, 'Règle de jeu', 'param');
+    }
+  }
+
+  // locate
+  if (baseCmd === 'locate') {
+    if (tokenIndex === 1) {
+      return makeArgSuggestions(['structure', 'biome', 'poi'], 'Type de recherche', 'param');
+    }
+    if (tokenIndex === 2 && tokens[1] === 'structure') {
+      return makeArgSuggestions(MC_PRESETS.structures, 'Structure', 'param');
+    }
+  }
+
+  // summon
+  if (baseCmd === 'summon') {
+    if (tokenIndex === 1) {
+      return makeArgSuggestions(MC_PRESETS.entities, 'Entité à invoquer', 'param');
+    }
+    if (tokenIndex >= 2 && tokenIndex <= 4) {
+      return makeArgSuggestions(['~ ~ ~', '~'], 'Coordonnées d’apparition', 'coord');
+    }
+  }
+
+  // effect
+  if (baseCmd === 'effect') {
+    if (tokenIndex === 1) {
+      return makeArgSuggestions(['give', 'clear'], 'Action d’effet', 'param');
+    }
+    if (tokenIndex === 2) {
+      return makeArgSuggestions(players, 'Joueur', 'player');
+    }
+    if (tokenIndex === 3 && tokens[1] === 'give') {
+      return makeArgSuggestions(MC_PRESETS.effects, 'Effet de potion', 'param');
+    }
+  }
+
+  // setworldspawn / spawnpoint
+  if (baseCmd === 'setworldspawn' || baseCmd === 'spawnpoint') {
+    if (tokenIndex === 1) {
+      if (baseCmd === 'spawnpoint') {
+        return makeArgSuggestions([...players, '~ ~ ~'], 'Joueur ou coordonnées', 'coord');
+      }
+      return makeArgSuggestions(['~ ~ ~', '0 64 0'], 'Coordonnées x y z', 'coord');
+    }
+  }
+
+  return [];
+}
+
+function formatCmdWithTags(cmdStr) {
+  // Remplace <...> ou [...] par des badges soignés
+  return escapeHtml(cmdStr).replace(/(&lt;[^&]+&gt;|\[[^\]]+\])/g, '<span class="suggestion-arg-tag">$1</span>');
 }
 
 function renderSuggestions(suggestions, query) {
@@ -1869,11 +2109,10 @@ function renderSuggestions(suggestions, query) {
     return;
   }
 
-  const hasSlash = (query || '').startsWith('/');
   suggestionsList.innerHTML = suggestions.map((s, idx) => `
-    <div class="suggestion-item ${idx === _selectedSuggestionIndex ? 'active' : ''}" data-cmd="${escapeHtml(s.cmd)}" data-has-slash="${hasSlash ? 'true' : 'false'}">
-      <span class="suggestion-cmd">${hasSlash ? '/' : ''}${escapeHtml(s.cmd)}</span>
-      <span class="suggestion-desc">${escapeHtml(s.desc)}</span>
+    <div class="suggestion-item ${idx === _selectedSuggestionIndex ? 'active' : ''}" data-insert="${escapeHtml(s.insertText)}" data-index="${idx}">
+      <span class="suggestion-cmd">${formatCmdWithTags(s.displayCmd || s.insertText)}</span>
+      <span class="suggestion-desc">${escapeHtml(s.desc || '')}</span>
     </div>
   `).join('');
 
@@ -1882,7 +2121,7 @@ function renderSuggestions(suggestions, query) {
   suggestionsList.querySelectorAll('.suggestion-item').forEach((el, index) => {
     el.onmousedown = (e) => {
       e.preventDefault();
-      applySuggestion(el);
+      applySuggestionItem(suggestions[index]);
     };
     el.onmouseenter = () => {
       _selectedSuggestionIndex = index;
@@ -1904,45 +2143,52 @@ function updateActiveSuggestionHighlight() {
   });
 }
 
-function applySuggestion(itemEl) {
-  if (!itemEl || !cmdInput) return;
-  const rawCmd = itemEl.getAttribute('data-cmd');
-  const hadSlash = cmdInput.value.trim().startsWith('/');
-  let finalCmd = hadSlash ? ('/' + rawCmd) : rawCmd;
+let _currentSuggestionsList = [];
 
-  // Si la commande contient un placeholder comme <joueur>, remplacer par le curseur approprié
-  cmdInput.value = finalCmd;
-  cmdSuggestionsBox.style.display = 'none';
-  _selectedSuggestionIndex = -1;
+function applySuggestionItem(sug) {
+  if (!sug || !cmdInput) return;
+  cmdInput.value = sug.insertText;
   cmdInput.focus();
-
-  // Positionner le curseur
-  const placeholderIdx = finalCmd.indexOf('<');
-  if (placeholderIdx !== -1) {
-    cmdInput.setSelectionRange(placeholderIdx, finalCmd.indexOf('>') + 1);
-  } else {
-    cmdInput.setSelectionRange(finalCmd.length, finalCmd.length);
-  }
+  cmdInput.setSelectionRange(sug.insertText.length, sug.insertText.length);
+  _selectedSuggestionIndex = -1;
+  updateCommandSuggestions(cmdInput.value);
 }
 
 async function updateCommandSuggestions(query) {
   if (!cmdSuggestionsBox || !suggestionsList) return;
-  const clean = query.trim();
+  const clean = query;
 
-  // Rendu immédiat avec le cache local
-  const localFiltered = filterCommandList(clean, null);
-  renderSuggestions(localFiltered, query);
+  // Calcul immédiat des suggestions intelligentes contextuelles
+  const smartSuggestions = computeCommandSmartSuggestions(clean);
+  _currentSuggestionsList = smartSuggestions;
 
+  if (smartSuggestions.length > 0) {
+    renderSuggestions(smartSuggestions, query);
+    return;
+  }
+
+  // Repli sur l'API backend si disponible
   const wid = selectedTerminalWorldId || activeWorld || '';
   try {
-    const res = await fetch(`/api/worlds/command-suggestions?worldId=${encodeURIComponent(wid)}&q=${encodeURIComponent(clean)}`);
+    const res = await fetch(`/api/worlds/command-suggestions?worldId=${encodeURIComponent(wid)}&q=${encodeURIComponent(clean.trim())}`);
     const data = await res.json();
     if (data.suggestions && data.suggestions.length > 0) {
-      renderSuggestions(data.suggestions, query);
+      const formatted = data.suggestions.map(c => ({
+        insertText: (query.startsWith('/') ? '/' : '') + c.cmd + ' ',
+        displayCmd: (query.startsWith('/') ? '/' : '') + c.cmd,
+        desc: c.desc,
+        kind: 'command'
+      }));
+      _currentSuggestionsList = formatted;
+      renderSuggestions(formatted, query);
+      return;
     }
   } catch (e) {
-    // Garde le rendu local déjà effectué
+    // Échec silencieux
   }
+
+  cmdSuggestionsBox.style.display = 'none';
+  _selectedSuggestionIndex = -1;
 }
 
 if (cmdInput) {
@@ -1952,13 +2198,11 @@ if (cmdInput) {
     clearTimeout(_suggestTimeout);
     _suggestTimeout = setTimeout(() => {
       updateCommandSuggestions(val);
-    }, 40);
+    }, 20);
   });
 
   cmdInput.addEventListener('focus', () => {
-    if (cmdInput.value.trim().length > 0) {
-      updateCommandSuggestions(cmdInput.value);
-    }
+    updateCommandSuggestions(cmdInput.value);
   });
 
   cmdInput.addEventListener('blur', () => {
@@ -1972,7 +2216,7 @@ if (cmdInput) {
 
   cmdInput.addEventListener('keydown', (e) => {
     const isBoxOpen = cmdSuggestionsBox && cmdSuggestionsBox.style.display !== 'none';
-    const items = suggestionsList ? suggestionsList.querySelectorAll('.suggestion-item') : [];
+    const items = _currentSuggestionsList || [];
 
     if (e.key === 'ArrowDown') {
       if (isBoxOpen && items.length > 0) {
@@ -1980,7 +2224,6 @@ if (cmdInput) {
         _selectedSuggestionIndex = (_selectedSuggestionIndex + 1) % items.length;
         updateActiveSuggestionHighlight();
       } else if (!cmdInput.value) {
-        // Ouvre les suggestions si input vide
         e.preventDefault();
         updateCommandSuggestions('');
       }
@@ -2005,7 +2248,7 @@ if (cmdInput) {
         const target = (_selectedSuggestionIndex >= 0 && items[_selectedSuggestionIndex])
           ? items[_selectedSuggestionIndex]
           : items[0];
-        applySuggestion(target);
+        applySuggestionItem(target);
       }
     } else if (e.key === 'Escape') {
       if (isBoxOpen) {
@@ -2016,7 +2259,7 @@ if (cmdInput) {
     } else if (e.key === 'Enter') {
       if (isBoxOpen && _selectedSuggestionIndex >= 0 && items[_selectedSuggestionIndex]) {
         e.preventDefault();
-        applySuggestion(items[_selectedSuggestionIndex]);
+        applySuggestionItem(items[_selectedSuggestionIndex]);
       }
     }
   });

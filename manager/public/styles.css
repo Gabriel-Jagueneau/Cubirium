@@ -123,7 +123,7 @@ body {
 /* Main Layout */
 .main-layout {
   display: grid;
-  grid-template-columns: 380px 1fr;
+  grid-template-columns: 395px 1fr;
   flex: 1;
   overflow: hidden;
   height: 100vh;
@@ -618,7 +618,7 @@ body {
 .world-actions {
   display: flex !important;
   align-items: center !important;
-  gap: 10px;
+  gap: 8px;
   margin-top: 4px;
   width: 100% !important;
 }
@@ -644,6 +644,8 @@ body {
   flex: 1 1 0% !important;
   width: 100% !important;
   min-width: 0 !important;
+  padding: 8px 10px !important;
+  white-space: nowrap !important;
 }
 
 .world-actions .btn-card-action {
@@ -944,15 +946,17 @@ body {
 
 #btnStopActiveServer.btn-downloading-java-header,
 .console-actions .btn-downloading-java-header {
-  background: rgba(56, 189, 248, 0.18) !important;
+  background: rgba(14, 30, 48, 0.9) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
   color: #38bdf8 !important;
-  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  border: 1px solid rgba(56, 189, 248, 0.35) !important;
   cursor: not-allowed !important;
-  opacity: 0.95 !important;
+  opacity: 1 !important;
   display: inline-flex !important;
   align-items: center !important;
-  gap: 6px !important;
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.2) !important;
+  gap: 8px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
   border-radius: var(--radius-pill) !important;
 }
 
@@ -1350,7 +1354,9 @@ body {
 
 .btn-downloading-java {
   flex: 1;
-  background: rgba(56, 189, 248, 0.16);
+  background: rgba(14, 30, 48, 0.9);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
   color: #38bdf8;
   border: 1px solid rgba(56, 189, 248, 0.35);
   font-size: 0.82rem;
@@ -1362,12 +1368,12 @@ body {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  box-shadow: 0 2px 10px rgba(56, 189, 248, 0.12);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   user-select: none;
 }
 
 .btn-downloading-java:disabled {
-  opacity: 0.95;
+  opacity: 1;
   cursor: not-allowed;
 }
 
@@ -1378,15 +1384,17 @@ body {
 }
 
 .btn-downloading-java-header {
-  background: rgba(56, 189, 248, 0.18) !important;
+  background: rgba(14, 30, 48, 0.9) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
   color: #38bdf8 !important;
-  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  border: 1px solid rgba(56, 189, 248, 0.35) !important;
   cursor: not-allowed !important;
-  opacity: 0.95 !important;
+  opacity: 1 !important;
   display: inline-flex !important;
   align-items: center !important;
-  gap: 6px !important;
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.2) !important;
+  gap: 8px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
 }
 
 .btn-repair {
@@ -4498,16 +4506,16 @@ select option {
    Console - Minecraft Autocomplete Suggestions
    ========================================================================== */
 .cmd-suggestions-box {
-  background: rgba(13, 17, 23, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 8px;
-  margin-bottom: 6px;
-  padding: 6px 8px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7);
+  background: rgba(16, 21, 34, 0.94);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 12px);
+  margin-bottom: 8px;
+  padding: 6px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
   animation: fadeIn 0.12s ease;
-  max-height: 240px;
+  max-height: 280px;
   display: flex;
   flex-direction: column;
   pointer-events: auto;
@@ -4517,21 +4525,23 @@ select option {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.7rem;
-  color: #94a3b8;
-  padding: 2px 6px 6px 6px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  padding: 4px 8px 6px 8px;
+  border-bottom: 1px solid var(--border-color);
   margin-bottom: 4px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   font-weight: 600;
   flex-shrink: 0;
 }
 
 .suggestions-tip {
-  color: #64748b;
-  font-size: 0.66rem;
-  font-weight: 400;
+  color: var(--text-dim);
+  font-size: 0.64rem;
+  font-weight: 500;
+  opacity: 0.8;
+  letter-spacing: 0.02em;
 }
 
 .suggestions-list {
@@ -4539,8 +4549,8 @@ select option {
   flex-direction: column;
   gap: 2px;
   overflow-y: auto;
-  max-height: 200px;
-  padding-right: 2px;
+  max-height: 220px;
+  padding: 2px;
 }
 
 .suggestions-list::-webkit-scrollbar {
@@ -4557,34 +4567,60 @@ select option {
   align-items: center;
   justify-content: space-between;
   padding: 6px 10px;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.1s ease;
+  transition: all 0.12s ease;
   user-select: none;
-  border-left: 3px solid transparent;
+  background: transparent;
 }
 
 .suggestion-item:hover,
 .suggestion-item.active {
-  background: rgba(99, 102, 241, 0.18);
-  border-left-color: #818cf8;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .suggestion-cmd {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.82rem;
-  color: #93c5fd;
+  color: var(--text-main);
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.suggestion-item.active .suggestion-cmd {
+  color: #ffffff;
 }
 
 .suggestion-desc {
   font-size: 0.74rem;
-  color: #94a3b8;
+  color: var(--text-dim);
   margin-left: 14px;
   text-align: right;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.suggestion-item.active .suggestion-desc {
+  color: var(--text-muted);
+}
+
+.suggestion-arg-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--accent-indigo, #818cf8);
+  font-size: 0.74rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.suggestion-item.active .suggestion-arg-tag {
+  background: rgba(99, 102, 241, 0.25);
+  color: #c7d2fe;
 }
 
 /* ==========================================================================
