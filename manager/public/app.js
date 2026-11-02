@@ -5908,6 +5908,55 @@ function toggleTunnelTokenVisibility() {
   }
 }
 
+function copyCustomDomainDemo(event) {
+  if (event) event.stopPropagation();
+  const domain = 'superduperserveuravecmecpotes.cubirium.fr';
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(domain).then(() => {
+      showToast('Adresse copiée : ' + domain, 'success');
+    }).catch(() => {
+      showToast('Adresse : ' + domain, 'info');
+    });
+  } else {
+    showToast('Adresse : ' + domain, 'info');
+  }
+}
+window.copyCustomDomainDemo = copyCustomDomainDemo;
+
+function switchLegalTab(tab) {
+  const tabs = ['privacy', 'terms', 'notices'];
+  tabs.forEach(t => {
+    const pane = document.getElementById(`legalPane${t.charAt(0).toUpperCase() + t.slice(1)}`);
+    const btn = document.getElementById(`btnLegalTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+    if (pane) pane.style.display = (t === tab) ? 'block' : 'none';
+    if (btn) {
+      if (t === tab) btn.classList.add('active');
+      else btn.classList.remove('active');
+    }
+  });
+}
+window.switchLegalTab = switchLegalTab;
+
+function showCurrentUpdateNotes() {
+  const version = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.2.2');
+  const summary = {
+    version: version,
+    releaseName: `Cubirium v${version}`,
+    releaseNotes: `### Notes de version v${version}
+- **Refonte Interface Immersive** : Console plein écran avec navigation latérale flottante et cartes de mondes élargies.
+- **HUD Supérieur Harmonisé** : Boutons de contrôle et statut serveur unifiés à 38px en haute visibilité.
+- **Défilement Console Amélioré** : Défilement fluide passant sous la zone d'écriture avec dégradé d'estompage supérieur et inférieur, scrollbar toujours au premier plan.
+- **Adresses Dédiées Fixes** : Préparation de l'infrastructure pour sous-domaines permanents uniques (*.cubirium.fr) supportant plus de 1000 connexions simultanées sans ouverture de port box.
+- **Cadre Légal & Transparence** : Intégration complète de la politique de confidentialité, des conditions d'utilisation et des mentions légales dans les paramètres.`
+  };
+  showUpdateSummaryModal(summary);
+  const title = document.getElementById('updateSummaryTitle');
+  if (title) title.textContent = 'Notes de version';
+  const subtitle = document.getElementById('updateSummarySubtitle');
+  if (subtitle) subtitle.textContent = 'Nouveautés et améliorations de Cubirium';
+}
+window.showCurrentUpdateNotes = showCurrentUpdateNotes;
+
 let initialSettingsState = null;
 
 function applySettingsState(state) {

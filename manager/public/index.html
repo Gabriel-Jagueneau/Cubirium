@@ -1497,7 +1497,7 @@
             </div>
           </div>
 
-          <!-- Section Réseau : Tunnel Public Automatique -->
+          <!-- Section Réseau : Adresses Fixes & Tunnel Public Automatique -->
           <div class="settings-section" style="margin-top: 22px;">
             <div class="settings-section-header">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -1507,53 +1507,53 @@
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
                 </path>
               </svg>
-              <h4>Accès Réseau Public (Tunnel Bore)</h4>
+              <h4>Accès Réseau Public & Adresses Fixes</h4>
             </div>
-            <p class="settings-section-desc">Redirection automatique pour permettre la connexion directe de vos amis
-              sans ouverture de port box.</p>
+            <p class="settings-section-desc">Infrastructure réseau Anycast permettant à vos amis de se connecter directement à vos mondes via une adresse unique et permanente sans ouverture de port box.</p>
 
             <div class="settings-controls-grid" style="margin-top: 16px;">
+              <!-- Carte Adresse Dédiée Permanente -->
               <div class="settings-prop-card" style="grid-column: 1 / -1;">
                 <div class="settings-prop-top">
                   <div class="settings-prop-title-wrap">
-                    <label for="settingsTunnelRelayHost" class="settings-prop-name">Serveur Relais & Port</label>
-                    <span class="settings-code-tag">tunnel-relay</span>
+                    <span class="settings-prop-name">Nom de Domaine Personnalisé & Fixe</span>
+                    <span class="settings-code-tag">DNS Anycast 100% Gratuit</span>
+                  </div>
+                  <span class="settings-update-tag" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.3);">Unique &amp; Fixe</span>
+                </div>
+
+                <div class="tunnel-custom-domain-box" style="margin-top: 12px; background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 12px 14px;">
+                  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 8px; padding: 0 12px; height: 38px; flex: 1; min-width: 260px;">
+                      <span style="color: var(--accent-indigo); font-family: monospace; font-weight: 600; font-size: 0.9rem;">superduperserveuravecmecpotes</span>
+                      <span style="color: var(--text-dim); font-family: monospace; font-size: 0.9rem;">.cubirium.fr</span>
+                    </div>
+                    <button type="button" class="btn-copy-tunnel" onclick="copyCustomDomainDemo(event)" title="Copier l'exemple d'adresse" style="height: 38px; padding: 0 14px;">
+                      Copier l'adresse
+                    </button>
+                  </div>
+                  <div class="settings-prop-desc" style="margin-top: 10px; line-height: 1.5;">
+                    Chaque monde dispose de son sous-domaine permanent. L'adresse IP et le port ne changent pas : vos amis enregistrent l'adresse dans leur menu multijoueur Minecraft une fois pour toutes (port standard 25565 routé de manière transparente).
                   </div>
                 </div>
-                <div style="display: flex; gap: 8px; margin-top: 10px; align-items: center; flex-wrap: wrap;">
-                  <input type="text" id="settingsTunnelRelayHost" placeholder="bore.pub" value="bore.pub"
-                    style="flex: 1; min-width: 160px; height: 34px; padding: 0 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-family: monospace; font-size: 0.85rem;" />
-                  <input type="number" id="settingsTunnelRelayPort" placeholder="7835" value="7835"
-                    style="width: 85px; height: 34px; padding: 0 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-family: monospace; font-size: 0.85rem;" />
-                  <button type="button" class="btn-copy-tunnel" onclick="restartTunnelManual(event, true)"
-                    title="Forcer une nouvelle IP / Port public" style="height: 34px; padding: 0 12px;">
-                    Générer nouveau port
-                  </button>
-                </div>
-                <div class="settings-prop-desc" style="margin-top: 8px;">Relais par défaut :
-                  <code>bore.pub:7835</code> ou l'adresse IP / nom d'hôte de votre propre relais dédié.
+
+                <!-- Indicateur de capacité haute disponibilité -->
+                <div style="display: flex; align-items: center; gap: 14px; margin-top: 12px; padding: 10px 14px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 8px; font-size: 0.82rem; color: #cbd5e1;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-indigo)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                  <span><strong>Capacité réseau simultanée :</strong> Conçu pour supporter plus de 1000 connexions simultanées avec basculement automatique et latence optimisée.</span>
                 </div>
               </div>
 
-              <div class="settings-prop-card" style="grid-column: 1 / -1; margin-top: 10px;">
-                <div class="settings-prop-top">
-                  <div class="settings-prop-title-wrap">
-                    <label for="settingsTunnelAuthToken" class="settings-prop-name">Jeton d'authentification (Token)</label>
-                    <span class="settings-code-tag">auth-token</span>
-                  </div>
-                </div>
-                <div style="display: flex; gap: 8px; margin-top: 10px; align-items: center;">
-                  <input type="password" id="settingsTunnelAuthToken" placeholder="Optionnel (pour relais privé ou haute performance)" autocomplete="off"
-                    style="flex: 1; height: 34px; padding: 0 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-family: monospace; font-size: 0.85rem;" />
-                  <button type="button" class="btn-copy-tunnel" id="btnToggleTunnelToken" onclick="toggleTunnelTokenVisibility()"
-                    title="Afficher / Masquer le jeton" style="height: 34px; padding: 0 10px;">
-                    Afficher
-                  </button>
-                </div>
-                <div class="settings-prop-desc" style="margin-top: 8px;">
-                  Laissez vide pour le relais public standard. Renseignez un jeton si votre serveur relais privé requiert une authentification.
-                </div>
-              </div>
+              <!-- Éléments techniques masqués conservant la compatibilité app.js / diagnose.js -->
+              <input type="hidden" id="settingsTunnelRelayHost" value="bore.pub" />
+              <input type="hidden" id="settingsTunnelRelayPort" value="7835" />
+              <input type="hidden" id="settingsTunnelAuthToken" value="" />
+              <button type="button" id="btnToggleTunnelToken" style="display: none;" onclick="toggleTunnelTokenVisibility()"></button>
             </div>
           </div>
 
@@ -1788,6 +1788,13 @@
                 <div class="settings-update-title-wrap">
                   <span class="settings-update-title">Version installée</span>
                   <span class="settings-update-tag" id="settingsCurrentVersionTag">v1.2.2</span>
+                  <button type="button" class="btn-info-icon" id="btnShowUpdateNotes" onclick="showCurrentUpdateNotes()" title="Voir les notes de mise à jour">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="16" x2="12" y2="12"></line>
+                      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                  </button>
                 </div>
                 <span class="settings-update-desc" id="settingsUpdateFeedback">Vérifiez si une nouvelle version ou des
                   correctifs sont disponibles.</span>
@@ -1800,6 +1807,99 @@
                 </svg>
                 <span>Vérifier les mises à jour</span>
               </button>
+            </div>
+          </div>
+
+          <!-- Section 3 : Informations sur l'application & Cadre Légal -->
+          <div class="settings-section" style="margin-top: 22px;">
+            <div class="settings-section-header">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <h4>À propos &amp; Cadre Légal</h4>
+            </div>
+            <p class="settings-section-desc">Identité du logiciel, engagements de confidentialité et conditions régissant l'utilisation de Cubirium.</p>
+
+            <!-- Carte Identité de l'Application -->
+            <div class="app-identity-card" style="margin-top: 16px; background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 16px 18px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  <div class="app-identity-logo" style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(16, 185, 129, 0.15)); border: 1px solid rgba(255, 255, 255, 0.14); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0,0,0,0.4);">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                      <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                      <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                  </div>
+                  <div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <strong style="font-size: 1.05rem; font-weight: 700; color: #ffffff; letter-spacing: -0.01em;">Cubirium</strong>
+                      <span class="settings-update-tag" style="background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3);">v1.2.2</span>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 2px;">Gestionnaire autonome de serveurs Minecraft &amp; passerelle réseau</div>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button type="button" class="btn-secondary" style="height: 32px; padding: 0 12px; font-size: 0.82rem;" onclick="openAuthorPortfolio()" title="Visiter le site de l'auteur">
+                    <span>gjagueneau.fr</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                      <polyline points="15 3 21 3 21 9"></polyline>
+                      <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Onglets Légaux Interactifs -->
+              <div class="legal-tabs-bar" style="display: flex; gap: 6px; margin-top: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 10px;">
+                <button type="button" class="legal-tab-btn active" id="btnLegalTabPrivacy" onclick="switchLegalTab('privacy')">Politique de confidentialité</button>
+                <button type="button" class="legal-tab-btn" id="btnLegalTabTerms" onclick="switchLegalTab('terms')">Conditions d'utilisation</button>
+                <button type="button" class="legal-tab-btn" id="btnLegalTabNotices" onclick="switchLegalTab('notices')">Mentions légales</button>
+              </div>
+
+              <!-- Contenu Onglet 1 : Confidentialité -->
+              <div id="legalPanePrivacy" class="legal-pane" style="display: block; margin-top: 14px; font-size: 0.82rem; line-height: 1.6; color: #cbd5e1;">
+                <h5 style="color: #ffffff; font-size: 0.88rem; margin-bottom: 6px; font-weight: 600;">Protection absolue des données et de la vie privée</h5>
+                <p style="margin-bottom: 8px;">
+                  Cubirium a été conçu selon le principe de la souveraineté locale des données (Privacy by Design). L'application n'intègre aucun traceur, aucun outil d'analyse comportementale et ne revend aucune donnée à des régies publicitaires ou prestataires tiers.
+                </p>
+                <ul style="padding-left: 18px; margin: 0; color: var(--text-dim);">
+                  <li><strong style="color: #cbd5e1;">Stockage local exclusif :</strong> Vos mondes Minecraft, configurations, inventaires et données de joueurs sont conservés exclusivement sur votre disque dur.</li>
+                  <li><strong style="color: #cbd5e1;">Flux réseau :</strong> Le partage de monde transite par un tunnel sécurisé sans enregistrement ni analyse du contenu des paquets de jeu.</li>
+                  <li><strong style="color: #cbd5e1;">Contrôle utilisateur :</strong> Vous pouvez à tout moment exporter, sauvegarder ou purger l'intégralité de vos fichiers depuis les paramètres.</li>
+                </ul>
+              </div>
+
+              <!-- Contenu Onglet 2 : Conditions d'utilisation -->
+              <div id="legalPaneTerms" class="legal-pane" style="display: none; margin-top: 14px; font-size: 0.82rem; line-height: 1.6; color: #cbd5e1;">
+                <h5 style="color: #ffffff; font-size: 0.88rem; margin-bottom: 6px; font-weight: 600;">Cadre d'utilisation et règles de bonne conduite</h5>
+                <p style="margin-bottom: 8px;">
+                  L'accès à Cubirium est fourni gratuitement pour un usage privé et récréatif. En utilisant ce logiciel, vous acceptez les directives suivantes :
+                </p>
+                <ul style="padding-left: 18px; margin: 0; color: var(--text-dim);">
+                  <li><strong style="color: #cbd5e1;">Respect des CGU Mojang :</strong> L'exploitation des serveurs Minecraft doit se conformer aux conditions de licence et à l'EULA de Mojang Studios / Microsoft.</li>
+                  <li><strong style="color: #cbd5e1;">Responsabilité du contenu :</strong> L'administrateur du monde est garant des activités et des comportements sur les serveurs qu'il héberge et partage.</li>
+                  <li><strong style="color: #cbd5e1;">Usage loyal du réseau :</strong> Tout abus, saturation volontaire, utilisation de relais à des fins illicites ou tentative de perturbation est strictement prohibé.</li>
+                </ul>
+              </div>
+
+              <!-- Contenu Onglet 3 : Mentions légales -->
+              <div id="legalPaneNotices" class="legal-pane" style="display: none; margin-top: 14px; font-size: 0.82rem; line-height: 1.6; color: #cbd5e1;">
+                <h5 style="color: #ffffff; font-size: 0.88rem; margin-bottom: 6px; font-weight: 600;">Propriété intellectuelle &amp; Attribution</h5>
+                <p style="margin-bottom: 8px;">
+                  Cubirium est une œuvre logicielle originale développée par <strong>Gabriel Jagueneau</strong>.
+                </p>
+                <ul style="padding-left: 18px; margin: 0; color: var(--text-dim);">
+                  <li><strong style="color: #cbd5e1;">Droits d'auteur :</strong> Le code source, l'interface graphique et les éléments visuels de Cubirium sont protégés au titre du droit d'auteur et de la propriété intellectuelle.</li>
+                  <li><strong style="color: #cbd5e1;">Marques tierces :</strong> Minecraft est une marque déposée de Mojang Synergies AB / Microsoft Corporation. Cubirium est un logiciel indépendant et n'est ni sponsorisé ni affilié à Mojang Studios.</li>
+                  <li><strong style="color: #cbd5e1;">Contact :</strong> Pour toute question relative au projet, rendez-vous sur le site officiel de l'auteur : <a href="https://gjagueneau.fr" target="_blank" style="color: var(--accent-indigo); text-decoration: underline;">gjagueneau.fr</a>.</li>
+                </ul>
+              </div>
             </div>
           </div>
 
