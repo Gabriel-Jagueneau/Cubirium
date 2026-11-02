@@ -325,21 +325,21 @@ class MinecraftService {
       return 25;
     }
 
-    // Minecraft 1.20.5 et 1.21.x (requiert strictement Java 21)
+    // Minecraft 1.20.5 et 1.21.x (requiert Java 21)
     if (/^1\.(?:20\.[5-9]|2[1-9])/.test(target) ||
-        /(?:mc|minecraft)\s*1\.(?:20\.[5-9]|2[1-9])/i.test(target)) {
+        /(?:mc|minecraft|vanilla|crossplay|paper|purpur|fabric|forge|neoforge)?\s*1\.(?:20\.[5-9]|2[1-9])/i.test(target)) {
       return 21;
     }
 
-    // Minecraft 1.17 à 1.20.4 (requiert Java 17 pour Forge / NeoForge / Fabric)
+    // Minecraft 1.17 à 1.20.4 (requiert Java 17)
     if (/^1\.(?:1[7-9]|20(?:\.[0-4])?)(?:[^\d]|$)/.test(target) ||
-        /(?:mc|minecraft)\s*1\.(?:1[7-9]|20(?:\.[0-4])?)/i.test(target)) {
+        /(?:mc|minecraft|vanilla|crossplay|paper|purpur|fabric|forge|neoforge)?\s*1\.(?:1[7-9]|20(?:\.[0-4])?)/i.test(target)) {
       return 17;
     }
 
     // Minecraft 1.0 à 1.16.5 (requiert Java 8)
     if (/^1\.(?:[0-9]|1[0-6])(?:\.|$)/.test(target) ||
-        /(?:mc|minecraft)\s*1\.(?:[0-9]|1[0-6])(?:\.|$)/i.test(target)) {
+        /(?:mc|minecraft|vanilla|crossplay|paper|purpur|fabric|forge|neoforge)?\s*1\.(?:[0-9]|1[0-6])(?:\.|$)/i.test(target)) {
       return 8;
     }
 
@@ -358,29 +358,35 @@ class MinecraftService {
   }
 
   /**
-   * Vérifie la stricte compatibilité entre la version Java installée et la version Java requise
+   * Vérifie la compatibilité entre la version Java installée et la version Java requise.
+   * Règle absolue : si une version plus récente est disponible et compatible, ne jamais
+   * forcer l'installation d'une version antérieure.
    */
   isJavaCompatible(installedMajor, requiredMajor, isModded = false) {
     if (!installedMajor || installedMajor <= 0) return false;
     if (requiredMajor === 8) {
-      return installedMajor === 8;
+      // Les vieux mods 1.12 nécessitent Java 8 strict ; Vanilla 1.0-1.16 tourne aussi sur plus récent si disponible
+      return isModded ? installedMajor === 8 : (installedMajor === 8 || installedMajor >= 17);
     }
     if (requiredMajor === 17) {
-      // Les mods Forge / NeoForge / Fabric sur 1.17 - 1.20.4 utilisent de l'introspection profonde
-      // et crashent irrémédiablement sous Java 21 ou Java 25.
-      return isModded ? installedMajor === 17 : (installedMajor === 17 || installedMajor === 21);
+      // Mods Forge 1.17-1.20.2 nécessitent Java 17 strict à cause de la réflexion interne JVM
+      // Tout monde Vanilla ou Fabric tourne parfaitement sur Java >= 17 (17, 21, 25+)
+      return isModded ? installedMajor === 17 : (installedMajor >= 17);
     }
     if (requiredMajor === 21) {
-      return isModded ? (installedMajor === 21 || installedMajor === 22) : (installedMajor >= 21);
+      // Tout monde 1.20.5+ et 1.21+ tourne sur Java >= 21 (21, 22, 23, 24, 25+)
+      return installedMajor >= 21;
     }
     if (requiredMajor >= 25) {
       return installedMajor >= 25;
     }
-    return installedMajor === requiredMajor;
+    return installedMajor >= requiredMajor;
   }
 
   /**
-   * Détection robuste et multi-plateforme du binaire Java et de JAVA_HOME adaptés au monde
+   * Détection exhaustive et multi-plateforme du binaire Java et de JAVA_HOME adaptés au monde.
+   * Scanne tous les runtimes locaux installés (java-25, java-21, etc.) et les JDKs système.
+   * Privilégie toujours les versions récentes compatibles sans retélécharger de version antérieure.
    */
   findJavaExecutable(worldId = null, checkContent = '') {
     const isWin = process.platform === 'win32';
@@ -413,40 +419,46 @@ class MinecraftService {
       ? path.join(process.env.LOCALAPPDATA || os.homedir(), 'MinecraftServerManager')
       : path.join(os.homedir(), 'Library/Application Support/MinecraftServerManager');
 
-    // 1. Priorité absolue : runtime Cubirium local correspondant exactement à la version requise
-    const localRuntimeDirs = [
-      path.join(appSupportDir, 'runtime', `java-${requiredMajor}`),
-      roamingAppSupportDir ? path.join(roamingAppSupportDir, 'runtime', `java-${requiredMajor}`) : null,
-      path.join(this.gamesDir, '..', 'runtime', `java-${requiredMajor}`),
-      path.join(legacyAppSupportDir, 'runtime', `java-${requiredMajor}`),
+    const runtimeBaseDirs = [
+      path.join(appSupportDir, 'runtime'),
+      roamingAppSupportDir ? path.join(roamingAppSupportDir, 'runtime') : null,
+      path.join(this.gamesDir, '..', 'runtime'),
+      path.join(legacyAppSupportDir, 'runtime'),
     ].filter(Boolean);
 
-    for (const rDir of localRuntimeDirs) {
-      if (fs.existsSync(rDir)) {
-        const jBin = isWin ? path.join(rDir, 'bin', 'java.exe') : path.join(rDir, 'bin', 'java');
-        const macJBin = path.join(rDir, 'Contents', 'Home', 'bin', 'java');
-        for (const cand of [jBin, macJBin]) {
-          if (fs.existsSync(cand)) {
-            const info = this.getJavaInfo(cand);
-            if (info.isWorking && this.isJavaCompatible(info.major, requiredMajor, isModded)) {
-              const binDir = path.dirname(cand);
-              const jHome = path.basename(binDir).toLowerCase() === 'bin' ? path.dirname(binDir) : rDir;
-              return {
-                execFile: cand,
-                javaHome: jHome,
-                isWorking: true,
-                major: info.major,
-                requiredMajor
-              };
+    const candidates = [];
+
+    // 1. Découverte de TOUS les runtimes locaux installés dans le dossier runtime de Cubirium
+    for (const rBase of runtimeBaseDirs) {
+      if (fs.existsSync(rBase)) {
+        try {
+          const entries = fs.readdirSync(rBase, { withFileTypes: true });
+          for (const ent of entries) {
+            if (!ent.isDirectory() || ent.name.startsWith('.')) continue;
+            const rDir = path.join(rBase, ent.name);
+            const jBin = isWin ? path.join(rDir, 'bin', 'java.exe') : path.join(rDir, 'bin', 'java');
+            const macJBin = path.join(rDir, 'Contents', 'Home', 'bin', 'java');
+            for (const cand of [jBin, macJBin]) {
+              if (fs.existsSync(cand)) {
+                const info = this.getJavaInfo(cand);
+                if (info.isWorking) {
+                  const binDir = path.dirname(cand);
+                  const jHome = path.basename(binDir).toLowerCase() === 'bin' ? path.dirname(binDir) : rDir;
+                  candidates.push({
+                    execFile: cand,
+                    javaHome: jHome,
+                    major: info.major,
+                    isLocal: true
+                  });
+                }
+              }
             }
           }
-        }
+        } catch (_) {}
       }
     }
 
-    // 2. Recherche parmi les JDKs/JREs du système adaptés
-    const candidates = [];
-
+    // 2. Recherche parmi les JDKs/JREs du système
     if (isWin) {
       const programFiles = [
         process.env['ProgramFiles'],
@@ -456,7 +468,7 @@ class MinecraftService {
       ].filter(Boolean);
 
       for (const pf of programFiles) {
-        for (const vendor of ['Eclipse Adoptium', 'Microsoft', 'Java', 'BellSoft', 'Zulu', 'Semeru', 'Amazon Corretto']) {
+        for (const vendor of ['Eclipse Adoptium', 'Microsoft', 'Java', 'BellSoft', 'Zulu', 'Semeru', 'Amazon Corretto', 'Oracle']) {
           const vDir = path.join(pf, vendor);
           if (fs.existsSync(vDir)) {
             try {
@@ -464,10 +476,14 @@ class MinecraftService {
               for (const e of entries) {
                 const jExe = path.join(vDir, e, 'bin', 'java.exe');
                 if (fs.existsSync(jExe)) {
-                  if (e.includes(String(requiredMajor)) || (requiredMajor === 8 && /1\.8|jre8|jdk8/i.test(e))) {
-                    candidates.unshift(jExe);
-                  } else {
-                    candidates.push(jExe);
+                  const info = this.getJavaInfo(jExe);
+                  if (info.isWorking) {
+                    candidates.push({
+                      execFile: jExe,
+                      javaHome: path.dirname(path.dirname(jExe)),
+                      major: info.major,
+                      isLocal: false
+                    });
                   }
                 }
               }
@@ -477,10 +493,19 @@ class MinecraftService {
       }
 
       if (process.env.JAVA_HOME) {
-        candidates.push(path.join(process.env.JAVA_HOME, 'bin', 'java.exe'));
+        const jExe = path.join(process.env.JAVA_HOME, 'bin', 'java.exe');
+        if (fs.existsSync(jExe)) {
+          const info = this.getJavaInfo(jExe);
+          if (info.isWorking) {
+            candidates.push({ execFile: jExe, javaHome: process.env.JAVA_HOME, major: info.major, isLocal: false });
+          }
+        }
       }
-      candidates.push('java.exe');
-      candidates.push('java');
+
+      const pInfo = this.getJavaInfo('java.exe');
+      if (pInfo.isWorking) {
+        candidates.push({ execFile: 'java.exe', javaHome: process.env.JAVA_HOME || '', major: pInfo.major, isLocal: false });
+      }
     } else {
       // macOS / Linux
       const macJdkRoot = '/Library/Java/JavaVirtualMachines';
@@ -490,65 +515,127 @@ class MinecraftService {
           for (const jvm of jvms) {
             const jBin = path.join(macJdkRoot, jvm, 'Contents/Home/bin/java');
             if (fs.existsSync(jBin)) {
-              if (jvm.includes(String(requiredMajor)) || (requiredMajor === 8 && /1\.8|zulu-8|temurin-8/i.test(jvm))) {
-                candidates.unshift(jBin);
-              } else {
-                candidates.push(jBin);
+              const info = this.getJavaInfo(jBin);
+              if (info.isWorking) {
+                candidates.push({
+                  execFile: jBin,
+                  javaHome: path.join(macJdkRoot, jvm, 'Contents/Home'),
+                  major: info.major,
+                  isLocal: false
+                });
               }
             }
           }
         } catch (_) {}
       }
 
-      candidates.push(`/opt/homebrew/opt/openjdk@${requiredMajor}/bin/java`);
-      candidates.push(`/usr/local/opt/openjdk@${requiredMajor}/bin/java`);
-
+      const standardMacBins = [
+        `/opt/homebrew/opt/openjdk@${requiredMajor}/bin/java`,
+        '/opt/homebrew/opt/openjdk@25/bin/java',
+        '/opt/homebrew/opt/openjdk@21/bin/java',
+        '/opt/homebrew/opt/openjdk@17/bin/java',
+        '/opt/homebrew/opt/openjdk/bin/java',
+        `/usr/local/opt/openjdk@${requiredMajor}/bin/java`,
+        '/usr/local/opt/openjdk@25/bin/java',
+        '/usr/local/opt/openjdk@21/bin/java',
+        '/usr/local/opt/openjdk@17/bin/java',
+        '/usr/local/opt/openjdk/bin/java',
+      ];
       if (requiredMajor === 8) {
-        candidates.push('/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java');
+        standardMacBins.push('/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java');
+      }
+
+      for (const bp of standardMacBins) {
+        if (fs.existsSync(bp)) {
+          const info = this.getJavaInfo(bp);
+          if (info.isWorking) {
+            const binDir = path.dirname(bp);
+            candidates.push({
+              execFile: bp,
+              javaHome: path.basename(binDir).toLowerCase() === 'bin' ? path.dirname(binDir) : '',
+              major: info.major,
+              isLocal: false
+            });
+          }
+        }
       }
 
       if (process.env.JAVA_HOME) {
-        candidates.push(path.join(process.env.JAVA_HOME, 'bin', 'java'));
+        const jBin = path.join(process.env.JAVA_HOME, 'bin', 'java');
+        if (fs.existsSync(jBin)) {
+          const info = this.getJavaInfo(jBin);
+          if (info.isWorking) {
+            candidates.push({ execFile: jBin, javaHome: process.env.JAVA_HOME, major: info.major, isLocal: false });
+          }
+        }
       }
 
-      candidates.push('/usr/bin/java');
-      candidates.push('java');
+      const sysJava = this.getJavaInfo('/usr/bin/java');
+      if (sysJava.isWorking) {
+        candidates.push({ execFile: '/usr/bin/java', javaHome: process.env.JAVA_HOME || '', major: sysJava.major, isLocal: false });
+      }
+      const envJava = this.getJavaInfo('java');
+      if (envJava.isWorking) {
+        candidates.push({ execFile: 'java', javaHome: process.env.JAVA_HOME || '', major: envJava.major, isLocal: false });
+      }
     }
 
-    let foundExec = null;
-    let foundJavaHome = '';
-    let foundMajor = 0;
+    // 3. Déduplication par chemin d'exécutable
+    const uniqueCandidates = [];
+    const seenPaths = new Set();
+    for (const c of candidates) {
+      if (!c.execFile || seenPaths.has(c.execFile)) continue;
+      seenPaths.add(c.execFile);
+      uniqueCandidates.push(c);
+    }
 
-    for (const cand of candidates) {
-      if (cand === 'java' || cand === 'java.exe') {
-        const info = this.getJavaInfo(cand);
-        if (info.isWorking && this.isJavaCompatible(info.major, requiredMajor, isModded)) {
-          foundExec = cand;
-          foundMajor = info.major;
-          break;
-        }
-        continue;
-      }
+    // 4. Filtrage des exécutables compatibles avec la version requise
+    const compatible = uniqueCandidates.filter(c => this.isJavaCompatible(c.major, requiredMajor, isModded));
 
-      if (fs.existsSync(cand)) {
-        const info = this.getJavaInfo(cand);
-        if (info.isWorking && this.isJavaCompatible(info.major, requiredMajor, isModded)) {
-          foundExec = cand;
-          foundMajor = info.major;
-          const binDir = path.dirname(cand);
-          if (path.basename(binDir).toLowerCase() === 'bin') {
-            foundJavaHome = path.dirname(binDir);
-          }
-          break;
-        }
+    if (compatible.length > 0) {
+      // Tri de sélection :
+      // 1. Runtimes locaux Cubirium en premier
+      // 2. Version exacte (major === requiredMajor) si disponible
+      // 3. Sinon, version compatible la plus haute (major descendant)
+      compatible.sort((a, b) => {
+        if (a.isLocal !== b.isLocal) return a.isLocal ? -1 : 1;
+        const aExact = a.major === requiredMajor ? 1 : 0;
+        const bExact = b.major === requiredMajor ? 1 : 0;
+        if (aExact !== bExact) return bExact - aExact;
+        return b.major - a.major;
+      });
+
+      const selected = compatible[0];
+      return {
+        execFile: selected.execFile,
+        javaHome: selected.javaHome,
+        isWorking: true,
+        major: selected.major,
+        requiredMajor
+      };
+    }
+
+    // Si aucun n'est compatible mais qu'un runtime plus récent existe pour un monde non moddé
+    if (!isModded) {
+      const newer = uniqueCandidates.filter(c => c.major >= requiredMajor);
+      if (newer.length > 0) {
+        newer.sort((a, b) => (a.isLocal === b.isLocal ? b.major - a.major : (a.isLocal ? -1 : 1)));
+        const sel = newer[0];
+        return {
+          execFile: sel.execFile,
+          javaHome: sel.javaHome,
+          isWorking: true,
+          major: sel.major,
+          requiredMajor
+        };
       }
     }
 
     return {
-      execFile: foundExec,
-      javaHome: foundJavaHome || (foundExec ? process.env.JAVA_HOME || '' : ''),
-      isWorking: Boolean(foundExec),
-      major: foundMajor,
+      execFile: null,
+      javaHome: '',
+      isWorking: false,
+      major: 0,
       requiredMajor
     };
   }
@@ -556,6 +643,8 @@ class MinecraftService {
   /**
    * S'assure que le bon runtime Java est opérationnel avant de démarrer un monde.
    * Si la version adéquate est absente, la télécharge et l'installe automatiquement.
+   * Règle absolue : si une version plus récente est disponible et compatible, ne jamais
+   * forcer l'installation d'une version antérieure.
    */
   async ensureJavaReady(worldId = null, checkContent = '') {
     let javaInfo = this.findJavaExecutable(worldId, checkContent);
@@ -563,7 +652,28 @@ class MinecraftService {
       return javaInfo;
     }
 
-    const reqMajor = javaInfo.requiredMajor || 21;
+    let isModded = false;
+    if (worldId) {
+      const worldPath = path.join(this.gamesDir, worldId);
+      if (fs.existsSync(path.join(worldPath, 'mods')) ||
+          fs.existsSync(path.join(worldPath, 'type.txt')) ||
+          fs.existsSync(path.join(worldPath, 'libraries', 'net', 'minecraftforge')) ||
+          fs.existsSync(path.join(worldPath, 'libraries', 'net', 'neoforged'))) {
+        isModded = true;
+      }
+    }
+    if (/forge|neoforge|fabric|quilt|modded/i.test(checkContent)) {
+      isModded = true;
+    }
+
+    let reqMajor = javaInfo.requiredMajor || 21;
+    // Si le monde n'est pas un monde moddé exigeant strictement Java 8 ou Java 17,
+    // on installe directement Java 25 (version moderne de référence rétrocompatible)
+    // plutôt qu'une version antérieure inutile.
+    if (!isModded && reqMajor >= 17) {
+      reqMajor = 25;
+    }
+
     this.isDownloadingJava = true;
     this.javaDownloadStep = `Téléchargement du runtime Java ${reqMajor}...`;
     this.broadcast('status', this.getState());
@@ -628,31 +738,32 @@ class MinecraftService {
   checkJavaInBackground() {
     setTimeout(async () => {
       try {
-        // 1. S'assurer que Java 25 est prêt pour Vanilla 26.3 et futurs nouveaux mondes
-        const java25Info = this.findJavaExecutable(null, 'Vanilla 26.3');
-        if (!java25Info.isWorking) {
-          console.log('[Cubirium] Pré-installation de Java 25 en tâche de fond...');
+        // 1. S'assurer qu'au moins un runtime Java moderne (Java 25) est prêt sur le système
+        const javaModern = this.findJavaExecutable(null, 'Vanilla 26.3');
+        if (!javaModern.isWorking) {
+          console.log('[Cubirium] Pré-installation d\'OpenJDK 25 en tâche de fond...');
           await this.downloadAndSetupJavaLatest(25);
-          console.log('[Cubirium] Java 25 pré-installé avec succès dans le runtime.');
+          console.log('[Cubirium] OpenJDK 25 configuré avec succès.');
         }
 
-        // 2. Parcourir tous les mondes existants dans games/ et pré-installer les runtimes requis manquants
+        // 2. Parcourir tous les mondes existants dans games/ et pré-installer uniquement si aucun runtime compatible n'existe
         if (fs.existsSync(this.gamesDir)) {
           const entries = fs.readdirSync(this.gamesDir, { withFileTypes: true });
           for (const ent of entries) {
             if (!ent.isDirectory() || ent.name.startsWith('.')) continue;
             const check = this.findJavaExecutable(ent.name);
             if (!check.isWorking && check.requiredMajor) {
-              console.log(`[Cubirium] Pré-installation de Java ${check.requiredMajor} pour le monde ${ent.name}...`);
-              await this.downloadAndSetupJavaLatest(check.requiredMajor);
-              console.log(`[Cubirium] Java ${check.requiredMajor} pré-installé avec succès.`);
+              const targetVer = check.requiredMajor < 21 ? check.requiredMajor : 25;
+              console.log(`[Cubirium] Pré-installation d'OpenJDK ${targetVer} pour le monde ${ent.name}...`);
+              await this.downloadAndSetupJavaLatest(targetVer);
+              console.log(`[Cubirium] OpenJDK ${targetVer} pré-installé avec succès.`);
             }
           }
         }
       } catch (e) {
         console.warn('[Cubirium] Note: Pré-téléchargement Java en arrière-plan:', e.message);
       }
-    }, 2000);
+    }, 4000);
   }
 
   /**
@@ -832,7 +943,7 @@ class MinecraftService {
     if (!fs.existsSync(worldPath)) return;
 
     const version = (this.getWorldVersion(worldId) || '').trim();
-    const reqMajor = javaInfo?.requiredMajor || this.getRequiredJavaVersion(version);
+    const reqMajor = javaInfo?.major || javaInfo?.requiredMajor || this.getRequiredJavaVersion(version);
     const runShPath = path.join(worldPath, 'run.sh');
     const runBatPath = path.join(worldPath, 'run.bat');
 
@@ -840,12 +951,18 @@ class MinecraftService {
     if (fs.existsSync(runShPath)) {
       try {
         let content = fs.readFileSync(runShPath, 'utf8');
-        const newHeader = `JAVA_CUBIRIUM="$HOME/Library/Application Support/Cubirium/runtime/java-${reqMajor}/bin/java"
+        const newHeader = `JAVA_CUBIRIUM_25="$HOME/Library/Application Support/Cubirium/runtime/java-25/bin/java"
+JAVA_CUBIRIUM_21="$HOME/Library/Application Support/Cubirium/runtime/java-21/bin/java"
+JAVA_CUBIRIUM="$HOME/Library/Application Support/Cubirium/runtime/java-${reqMajor}/bin/java"
 JAVA_BIN=""
 if [ -n "$JAVA_EXEC" ] && [ -x "$JAVA_EXEC" ]; then
     JAVA_BIN="$JAVA_EXEC"
 elif [ -n "$JAVA_BIN" ] && [ -x "$JAVA_BIN" ]; then
     JAVA_BIN="$JAVA_BIN"
+elif [ -x "$JAVA_CUBIRIUM_25" ]; then
+    JAVA_BIN="$JAVA_CUBIRIUM_25"
+elif [ -x "$JAVA_CUBIRIUM_21" ]; then
+    JAVA_BIN="$JAVA_CUBIRIUM_21"
 elif [ -x "$JAVA_CUBIRIUM" ]; then
     JAVA_BIN="$JAVA_CUBIRIUM"
 elif [ -n "$JAVA_HOME" ] && [ -x "$JAVA_HOME/bin/java" ]; then
@@ -866,7 +983,11 @@ fi`;
         let content = fs.readFileSync(runBatPath, 'utf8');
         const newBatBlock = `set "JAVA_EXEC="
 if defined JAVA_BIN if exist "%JAVA_BIN%" set "JAVA_EXEC=%JAVA_BIN%"
+if not defined JAVA_EXEC if exist "%LOCALAPPDATA%\\Cubirium\\runtime\\java-25\\bin\\java.exe" set "JAVA_EXEC=%LOCALAPPDATA%\\Cubirium\\runtime\\java-25\\bin\\java.exe"
+if not defined JAVA_EXEC if exist "%LOCALAPPDATA%\\Cubirium\\runtime\\java-21\\bin\\java.exe" set "JAVA_EXEC=%LOCALAPPDATA%\\Cubirium\\runtime\\java-21\\bin\\java.exe"
 if not defined JAVA_EXEC if exist "%LOCALAPPDATA%\\Cubirium\\runtime\\java-${reqMajor}\\bin\\java.exe" set "JAVA_EXEC=%LOCALAPPDATA%\\Cubirium\\runtime\\java-${reqMajor}\\bin\\java.exe"
+if not defined JAVA_EXEC if exist "%APPDATA%\\Cubirium\\runtime\\java-25\\bin\\java.exe" set "JAVA_EXEC=%APPDATA%\\Cubirium\\runtime\\java-25\\bin\\java.exe"
+if not defined JAVA_EXEC if exist "%APPDATA%\\Cubirium\\runtime\\java-21\\bin\\java.exe" set "JAVA_EXEC=%APPDATA%\\Cubirium\\runtime\\java-21\\bin\\java.exe"
 if not defined JAVA_EXEC if exist "%APPDATA%\\Cubirium\\runtime\\java-${reqMajor}\\bin\\java.exe" set "JAVA_EXEC=%APPDATA%\\Cubirium\\runtime\\java-${reqMajor}\\bin\\java.exe"
 if not defined JAVA_EXEC if defined JAVA_HOME if exist "%JAVA_HOME%\\bin\\java.exe" set "JAVA_EXEC=%JAVA_HOME%\\bin\\java.exe"
 if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
@@ -2487,8 +2608,9 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
     const isOffline = !!offline;
     const customSeed = (seed && seed.trim()) ? seed.trim() : '';
 
-    // Vérification secondaire de Java au lancement de l'installation d'un monde
-    await this.ensureJavaReady(cleanId);
+    // Vérification de Java avec la version cible exacte
+    const targetVer = version || '26.3';
+    await this.ensureJavaReady(null, `${loader || ''} ${type || ''} ${targetVer}`);
 
     if (type === 'crossplay') {
       try {
@@ -3874,9 +3996,6 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"
     if (fs.existsSync(targetDir)) {
       throw new Error(`Un monde nommé '${cleanId}' existe déjà.`);
     }
-
-    // Vérification secondaire de Java lors de l'import
-    await this.ensureJavaReady(cleanId);
 
     const isDir = fs.existsSync(sourcePath) && fs.statSync(sourcePath).isDirectory();
     const tempExtract = path.join(this.gamesDir, `_temp_import_${Date.now()}`);

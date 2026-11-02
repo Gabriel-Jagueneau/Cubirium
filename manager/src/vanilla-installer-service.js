@@ -349,6 +349,8 @@ white-list=false
     const runScript = `#!/usr/bin/env sh
 # Script de lancement automatique Vanilla ${version}
 
+JAVA_CUBIRIUM_25="$HOME/Library/Application Support/Cubirium/runtime/java-25/bin/java"
+JAVA_CUBIRIUM_21="$HOME/Library/Application Support/Cubirium/runtime/java-21/bin/java"
 JAVA_CUBIRIUM="$HOME/Library/Application Support/Cubirium/runtime/java-${reqMajor}/bin/java"
 
 JAVA_BIN=""
@@ -356,6 +358,10 @@ if [ -n "$JAVA_EXEC" ] && [ -x "$JAVA_EXEC" ]; then
     JAVA_BIN="$JAVA_EXEC"
 elif [ -n "$JAVA_BIN" ] && [ -x "$JAVA_BIN" ]; then
     JAVA_BIN="$JAVA_BIN"
+elif [ -x "$JAVA_CUBIRIUM_25" ]; then
+    JAVA_BIN="$JAVA_CUBIRIUM_25"
+elif [ -x "$JAVA_CUBIRIUM_21" ]; then
+    JAVA_BIN="$JAVA_CUBIRIUM_21"
 elif [ -x "$JAVA_CUBIRIUM" ]; then
     JAVA_BIN="$JAVA_CUBIRIUM"
 elif [ -n "$JAVA_HOME" ] && [ -x "$JAVA_HOME/bin/java" ]; then
@@ -392,7 +398,11 @@ rem Script de démarrage Vanilla ${version}
 cd /d "%~dp0"
 set "JAVA_EXEC="
 if defined JAVA_BIN if exist "%JAVA_BIN%" set "JAVA_EXEC=%JAVA_BIN%"
+if not defined JAVA_EXEC if exist "%LOCALAPPDATA%\\Cubirium\\runtime\\java-25\\bin\\java.exe" set "JAVA_EXEC=%LOCALAPPDATA%\\Cubirium\\runtime\\java-25\\bin\\java.exe"
+if not defined JAVA_EXEC if exist "%LOCALAPPDATA%\\Cubirium\\runtime\\java-21\\bin\\java.exe" set "JAVA_EXEC=%LOCALAPPDATA%\\Cubirium\\runtime\\java-21\\bin\\java.exe"
 if not defined JAVA_EXEC if exist "%LOCALAPPDATA%\\Cubirium\\runtime\\java-${reqMajor}\\bin\\java.exe" set "JAVA_EXEC=%LOCALAPPDATA%\\Cubirium\\runtime\\java-${reqMajor}\\bin\\java.exe"
+if not defined JAVA_EXEC if exist "%APPDATA%\\Cubirium\\runtime\\java-25\\bin\\java.exe" set "JAVA_EXEC=%APPDATA%\\Cubirium\\runtime\\java-25\\bin\\java.exe"
+if not defined JAVA_EXEC if exist "%APPDATA%\\Cubirium\\runtime\\java-21\\bin\\java.exe" set "JAVA_EXEC=%APPDATA%\\Cubirium\\runtime\\java-21\\bin\\java.exe"
 if not defined JAVA_EXEC if exist "%APPDATA%\\Cubirium\\runtime\\java-${reqMajor}\\bin\\java.exe" set "JAVA_EXEC=%APPDATA%\\Cubirium\\runtime\\java-${reqMajor}\\bin\\java.exe"
 if not defined JAVA_EXEC if defined JAVA_HOME if exist "%JAVA_HOME%\\bin\\java.exe" set "JAVA_EXEC=%JAVA_HOME%\\bin\\java.exe"
 if not defined JAVA_EXEC set "JAVA_EXEC=java"
