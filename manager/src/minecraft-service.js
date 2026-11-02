@@ -321,10 +321,10 @@ class MinecraftService {
     // 2. Détection par motif de version Minecraft du monde
     const target = (ver || content).toLowerCase();
 
-    // Versions modernes 25.x / 26.x et snapshots 25w / 26w
+    // Versions modernes 25.x / 26.x et snapshots 25w / 26w (fonctionnent sous Java 21 LTS de référence)
     if (/^(?:25|26|27)\./.test(target) || /^(?:24|25|26|27)w/.test(target) ||
         /(?:mc|minecraft|vanilla)\s*(?:25|26|27)\./i.test(target)) {
-      return 25;
+      return 21;
     }
 
     // Minecraft 1.20.5 et 1.21.x (requiert Java 21)
@@ -677,11 +677,10 @@ class MinecraftService {
     }
 
     this.isDownloadingJava = true;
-    this.javaDownloadStep = `Téléchargement du runtime Java ${reqMajor}...`;
+    this.javaDownloadStep = `Configuration du runtime Java ${reqMajor}...`;
     this.broadcast('status', this.getState());
 
-    this.appendLog(`[Système] Aucun runtime Java ${reqMajor} adéquat détecté sur cet ordinateur.`, worldId);
-    this.appendLog(`[Système] Téléchargement automatique d'OpenJDK ${reqMajor} (Adoptium Temurin) en cours...`, worldId);
+    this.appendLog(`[Système] Configuration automatique d'OpenJDK ${reqMajor} en cours...`, worldId);
 
     try {
       const installed = await this.downloadAndSetupJavaLatest(reqMajor, (step) => {
@@ -692,7 +691,7 @@ class MinecraftService {
       this.isDownloadingJava = false;
       this.javaDownloadStep = '';
       this.broadcast('status', this.getState());
-      this.appendLog(`[Système] Java ${reqMajor} a été installé et configuré avec succès !`, worldId);
+      this.appendLog(`[Système] Runtime Java ${reqMajor} configuré avec succès.`, worldId);
       return {
         execFile: installed.execFile,
         javaHome: installed.javaHome,

@@ -130,9 +130,7 @@ class VanillaInstallerService {
 
         const list = rawList.map((v, index) => {
           let reqJava = 21;
-          if (v.id.startsWith('26.') || v.id.startsWith('25.') || v.id.startsWith('24w') || v.id.startsWith('25w') || v.id.startsWith('26w')) {
-            reqJava = 25;
-          } else if (v.id.startsWith('1.17')) {
+          if (v.id.startsWith('1.17')) {
             reqJava = 16;
           } else if (
             v.id.startsWith('1.16') || v.id.startsWith('1.15') || v.id.startsWith('1.14') ||
