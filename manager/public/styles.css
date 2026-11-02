@@ -33,7 +33,6 @@ body {
   color-scheme: dark;
   scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
   scrollbar-width: thin;
-  scrollbar-gutter: stable;
 }
 
 * {
@@ -127,10 +126,9 @@ body {
   grid-template-columns: 360px 1fr;
   flex: 1;
   overflow: hidden;
-  padding: 12px;
-  gap: 12px;
-  box-sizing: border-box;
   height: 100vh;
+  box-sizing: border-box;
+  background-color: var(--bg-main);
 }
 
 /* Status Pulse Dot */
@@ -203,6 +201,7 @@ body {
 
 /* Worlds Panel (Floating Left Sidebar) */
 .worlds-panel {
+  margin: 12px 12px 12px 12px;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg, 18px);
@@ -210,6 +209,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  height: calc(100vh - 24px);
 }
 
 .panel-header {
@@ -644,20 +644,24 @@ body {
   flex-shrink: 0 !important;
 }
 
-/* Console Panel (Floating Right Card) */
+/* Console Panel (Right Full-Screen Canvas - Non Flottant) */
 .console-panel {
   display: flex;
   flex-direction: column;
   background-color: var(--bg-main);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg, 18px);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  border: none;
+  border-left: 1px solid var(--border-color);
+  border-radius: 0;
+  box-shadow: none;
   overflow: hidden;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
 }
 
 .console-header {
   height: 56px;
-  padding: 0 20px;
+  padding: 0 24px;
   border-bottom: 1px solid var(--border-color);
   background-color: var(--bg-surface);
   display: flex;
