@@ -1511,33 +1511,37 @@
             </div>
             <p class="settings-section-desc">Adresse personnalisée utilisée par vos invités pour rejoindre vos mondes.</p>
 
-            <div class="settings-controls-grid" style="margin-top: 14px;">
-              <div class="settings-prop-card" style="grid-column: 1 / -1;">
-                <div class="settings-prop-top">
-                  <div class="settings-prop-title-wrap">
-                    <label for="settingsCustomDomainPrefix" class="settings-prop-name">Adresse du serveur</label>
-                  </div>
+            <div class="settings-path-group" style="margin-top: 14px;">
+              <label for="settingsCustomDomainPrefix" class="settings-field-label">Adresse du serveur :</label>
+              <div class="settings-input-with-action">
+                <div class="custom-domain-field-wrap">
+                  <svg class="settings-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z">
+                    </path>
+                  </svg>
+                  <input type="text" id="settingsCustomDomainPrefix" class="custom-domain-prefix-input"
+                    placeholder="lesMondesAvecMesPotes" value="lesMondesAvecMesPotes" spellcheck="false" autocomplete="off" />
+                  <span class="custom-domain-suffix">.cubirium.fr</span>
                 </div>
-
-                <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px;">
-                  <div class="custom-domain-field-wrap">
-                    <input type="text" id="settingsCustomDomainPrefix" class="custom-domain-prefix-input"
-                      placeholder="lesMondesAvecMesPotes" value="lesMondesAvecMesPotes" spellcheck="false" autocomplete="off" />
-                    <span class="custom-domain-suffix">.cubirium.fr</span>
-                  </div>
-                  <button type="button" class="btn-copy-tunnel" onclick="copyCustomDomainDemo(event)"
-                    title="Copier l'adresse" style="height: 38px; padding: 0 14px;">
-                    Copier
-                  </button>
-                </div>
+                <button type="button" class="btn-secondary" onclick="copyCustomDomainDemo(event)"
+                  title="Copier l'adresse">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  <span>Copier</span>
+                </button>
               </div>
-
-              <!-- Éléments techniques masqués conservant la compatibilité app.js / diagnose.js -->
-              <input type="hidden" id="settingsTunnelRelayHost" value="bore.pub" />
-              <input type="hidden" id="settingsTunnelRelayPort" value="7835" />
-              <input type="hidden" id="settingsTunnelAuthToken" value="" />
-              <button type="button" id="btnToggleTunnelToken" style="display: none;" onclick="toggleTunnelTokenVisibility()"></button>
             </div>
+
+            <!-- Éléments techniques masqués conservant la compatibilité app.js / diagnose.js -->
+            <input type="hidden" id="settingsTunnelRelayHost" value="bore.pub" />
+            <input type="hidden" id="settingsTunnelRelayPort" value="7835" />
+            <input type="hidden" id="settingsTunnelAuthToken" value="" />
+            <button type="button" id="btnToggleTunnelToken" style="display: none;" onclick="toggleTunnelTokenVisibility()"></button>
           </div>
 
           <!-- Section 2 : Propriétés par défaut à la création de mondes -->
@@ -1809,7 +1813,7 @@
             <!-- En-tête Identité & Liens -->
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 14px; flex-wrap: wrap;">
               <div style="display: flex; align-items: center; gap: 12px;">
-                <img src="assets/logo.png" alt="Logo Cubirium" style="width: 36px; height: 36px; object-fit: contain; border-radius: 8px;" />
+                <img src="/assets/logo.png?v=5" alt="Logo Cubirium" style="width: 36px; height: 36px; object-fit: contain; border-radius: 8px;" />
                 <div>
                   <strong style="font-size: 1.02rem; font-weight: 700; color: #ffffff; letter-spacing: -0.01em;">Cubirium</strong>
                   <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 1px;">Gestionnaire autonome de serveurs Minecraft</div>
@@ -1817,10 +1821,10 @@
               </div>
 
               <div style="display: flex; align-items: center; gap: 12px;">
-                <button type="button" class="btn-primary-small" style="height: 30px; padding: 0 14px; font-size: 0.8rem;" onclick="openOfficialWebsite()">
+                <button type="button" class="btn-official-site" onclick="openOfficialWebsite()" title="Site officiel Cubirium">
                   <span>cubirium.fr</span>
                 </button>
-                <button type="button" style="background: none; border: none; color: var(--text-dim); font-size: 0.78rem; text-decoration: underline; cursor: pointer; padding: 0 4px;" onclick="openAuthorPortfolio()" title="Portfolio de Gabriel Jagueneau">
+                <button type="button" class="legal-link-author" onclick="openAuthorPortfolio()" title="Portfolio de Gabriel Jagueneau">
                   gjagueneau.fr
                 </button>
               </div>
