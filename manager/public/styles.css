@@ -943,6 +943,7 @@ body {
 /* Terminal Body */
 .terminal-body {
   flex: 1;
+  min-height: 0;
   background-color: var(--bg-terminal);
   padding: 56px 14px 16px 10px;
   overflow-y: auto;
@@ -992,16 +993,18 @@ body {
   margin-top: 10px;
 }
 
-/* Console Footer & Input Bar (Pleine Largeur du Terminal & Sans Trait de Séparation) */
+/* Console Footer & Input Bar (Pleine Largeur du Terminal & Parfaitement Aligné) */
 .console-footer {
   background-color: var(--bg-terminal);
   border-top: none;
-  padding: 0 16px 14px 16px;
+  padding: 0 14px 12px 10px;
   display: flex;
   flex-direction: column;
   gap: 8px;
   position: relative;
   width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .btn-clear-console {
@@ -1040,18 +1043,21 @@ body {
   display: flex;
   align-items: center;
   width: 100%;
+  min-width: 0;
 }
 
 .cmd-input-wrap {
   flex: 1;
   width: 100%;
+  min-width: 0;
   display: flex;
   align-items: center;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md, 12px);
   padding: 0 8px 0 14px;
   height: 42px;
+  box-sizing: border-box;
   transition: all 0.2s ease;
 }
 
@@ -1071,6 +1077,8 @@ body {
 
 #cmdInput {
   flex: 1;
+  min-width: 0;
+  width: 100%;
   background: transparent;
   border: none;
   outline: none;
