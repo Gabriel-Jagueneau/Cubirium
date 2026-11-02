@@ -251,7 +251,7 @@ function renderError(container, message, isRateLimit = false) {
  */
 function updateHeaderVersions(latestRelease) {
   if (!latestRelease) return;
-  const version = latestRelease.tag_name || "v1.2.2";
+  const version = latestRelease.tag_name || "v1.3.0";
 
   const navBadge = document.getElementById("nav-version-badge");
   const heroBadge = document.getElementById("hero-badge-text");

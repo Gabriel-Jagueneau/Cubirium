@@ -1064,7 +1064,7 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
         if (depth > 10) return reject(new Error('Trop de redirections'));
         const client = currentUrl.startsWith('https://') ? https : http;
         const req = client.get(currentUrl, {
-          headers: { 'User-Agent': 'Cubirium/1.2.2' }
+          headers: { 'User-Agent': 'Cubirium/1.3.0' }
         }, (res) => {
           if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
             return getUrl(res.headers.location, depth + 1);

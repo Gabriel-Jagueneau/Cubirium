@@ -61,7 +61,7 @@ fi
 echo -n "APPL????" > "$PROJECT_ROOT/Cubirium.app/Contents/PkgInfo"
 
 # Mise à jour automatique de Info.plist avec la version de package.json
-APP_VERSION=$(node -e "try{console.log(require('$PROJECT_ROOT/manager/package.json').version)}catch(_){console.log('1.2.2')}")
+APP_VERSION=$(node -e "try{console.log(require('$PROJECT_ROOT/manager/package.json').version)}catch(_){console.log('1.3.0')}")
 PLIST_FILE="$PROJECT_ROOT/Cubirium.app/Contents/Info.plist"
 if [ -f "$PROJECT_ROOT/manager/src/native-app/Info.plist" ]; then
   cp "$PROJECT_ROOT/manager/src/native-app/Info.plist" "$PLIST_FILE"

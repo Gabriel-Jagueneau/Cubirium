@@ -56,7 +56,7 @@ function downloadFileWithRedirects(url, destPath, maxRedirects = 5) {
     const client = url.startsWith('https:') ? https : http;
     const req = client.get(url, {
       headers: {
-        'User-Agent': `Cubirium/${packageJson.version || '1.2.2'}`
+        'User-Agent': `Cubirium/${packageJson.version || '1.3.0'}`
       }
     }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
@@ -579,7 +579,7 @@ const server = http.createServer(async (req, res) => {
 
     // 2c. API Check Update
     if (pathname === '/api/app/check-update' && method === 'GET') {
-      const currentVersion = packageJson.version || '1.2.2';
+      const currentVersion = packageJson.version || '1.3.0';
       try {
         const options = {
           hostname: 'api.github.com',

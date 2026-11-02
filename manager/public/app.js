@@ -6633,7 +6633,7 @@ function switchLegalTab(tab, btn) {
 window.switchLegalTab = switchLegalTab;
 
 function showCurrentUpdateNotes() {
-  const version = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.2.2');
+  const version = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.3.0');
   const summary = {
     version: version,
     releaseName: `Cubirium v${version}`,
