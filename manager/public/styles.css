@@ -964,15 +964,19 @@ body {
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent 0px,
-    #000 26px,
-    #000 calc(100% - 26px),
+    rgba(0, 0, 0, 0.4) 18px,
+    #000 50px,
+    #000 calc(100% - 50px),
+    rgba(0, 0, 0, 0.4) calc(100% - 18px),
     transparent 100%
   );
   mask-image: linear-gradient(
     to bottom,
     transparent 0px,
-    #000 26px,
-    #000 calc(100% - 26px),
+    rgba(0, 0, 0, 0.4) 18px,
+    #000 50px,
+    #000 calc(100% - 50px),
+    rgba(0, 0, 0, 0.4) calc(100% - 18px),
     transparent 100%
   );
 }
