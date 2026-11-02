@@ -255,6 +255,7 @@ body {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -700,12 +701,10 @@ body {
   left: 0;
   right: 10px;
   height: 52px;
-  background: linear-gradient(
-    to bottom,
-    var(--bg-terminal) 0%,
-    rgba(7, 9, 14, 0.6) 24px,
-    transparent 100%
-  );
+  background: linear-gradient(to bottom,
+      var(--bg-terminal) 0%,
+      rgba(7, 9, 14, 0.6) 24px,
+      transparent 100%);
   pointer-events: none;
   z-index: 6;
 }
@@ -717,12 +716,10 @@ body {
   left: 0;
   right: 10px;
   height: 64px;
-  background: linear-gradient(
-    to top,
-    var(--bg-terminal) 0%,
-    rgba(7, 9, 14, 0.85) 24px,
-    transparent 100%
-  );
+  background: linear-gradient(to top,
+      var(--bg-terminal) 0%,
+      rgba(7, 9, 14, 0.85) 24px,
+      transparent 100%);
   pointer-events: none;
   z-index: 6;
 }
@@ -793,7 +790,7 @@ body {
   gap: 10px;
   height: 38px;
   box-sizing: border-box;
-  background: rgba(22, 29, 47, 0.88);
+  background: rgba(16, 21, 34, 0.94);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--border-color);
@@ -2818,33 +2815,36 @@ select option {
   font-size: 0.75rem;
 }
 
-/* Toast */
+/* Toast Notification (Positionnement stratégique haut-centre style Dynamic Island / macOS HUD) */
 .toast {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  top: 24px;
+  left: 50%;
+  transform: translate(-50%, -36px);
+  opacity: 0;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  background: rgba(16, 21, 34, 0.96);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  padding: 10px 18px;
+  gap: 12px;
+  background: rgba(14, 19, 32, 0.94);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+  padding: 10px 22px;
   border-radius: var(--radius-pill);
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 500;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  transform: translateY(100px);
-  opacity: 0;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 1000;
+  letter-spacing: -0.01em;
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  z-index: 9999;
   pointer-events: none;
+  max-width: 90vw;
+  white-space: nowrap;
 }
 
 .toast.show {
-  transform: translateY(0);
+  transform: translate(-50%, 0);
   opacity: 1;
 }
 
@@ -2853,34 +2853,40 @@ select option {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  width: 20px;
+  height: 20px;
 }
 
 .toast.success {
-  border-color: rgba(16, 185, 129, 0.4);
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.65), 0 0 24px rgba(16, 185, 129, 0.18);
 }
 
 .toast.success .toast-icon {
-  color: #10b981;
+  color: #34d399;
 }
 
 .toast.error {
-  border-color: rgba(239, 68, 68, 0.4);
+  border-color: rgba(239, 68, 68, 0.55);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.65), 0 0 24px rgba(239, 68, 68, 0.22);
 }
 
 .toast.error .toast-icon {
-  color: #ef4444;
+  color: #f87171;
 }
 
 .toast.warning {
-  border-color: rgba(245, 158, 11, 0.4);
+  border-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.65), 0 0 24px rgba(245, 158, 11, 0.18);
 }
 
 .toast.warning .toast-icon {
-  color: #f59e0b;
+  color: #fbbf24;
 }
 
 .toast.info {
-  border-color: rgba(99, 102, 241, 0.4);
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.65), 0 0 24px rgba(99, 102, 241, 0.18);
 }
 
 .toast.info .toast-icon {
@@ -4609,6 +4615,7 @@ select option {
   overflow-x: auto;
   scrollbar-width: none;
 }
+
 .cmd-syntax-bar::-webkit-scrollbar {
   display: none;
 }
