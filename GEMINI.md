@@ -25,3 +25,23 @@ Ce document recense les règles d'architecture technique, d'ergonomie et de conc
 * **Réseau & Tunnels** :
   * Prise en charge universelle du protocole de tunnel (relais public ou serveur dédié haute performance avec authentification optionnelle et ping/pong keepalive).
 
+---
+
+## 3. Ergonomie, Rédaction & Sobriété d'Interface
+
+* **Aller à l'essentiel (Zéro blabla technique ou marketing)** :
+  * Ne pas exposer les mécanismes d'infrastructure internes (Anycast, capacité de charge théorique, etc.).
+  * Les champs doivent être directement modifiables et l'information concise, professionnelle et sans verbiage.
+* **Assets authentiques et structure épurée** :
+  * Utiliser systématiquement les assets graphiques réels du projet (`assets/logo.png`) et bannir les flat icons génériques.
+  * Pas d'empilement de boîtes secondaires ou de cartes imbriquées superflues.
+  * Pas de répétition d'informations déjà visibles ailleurs (comme le numéro de version).
+* **Hiérarchie des liens externes** :
+  * Le site officiel du produit (`cubirium.fr`) est le lien principal mis en avant.
+  * Le portfolio de l'auteur (`gjagueneau.fr`) reste secondaire et discret.
+* **Navigation par onglets (Sliding Pill)** :
+  * Privilégier les contrôles segmentés avec pilule glissante fluide (`sliding pill`) pour les sélecteurs d'onglets.
+* **Intégrité de la passerelle réseau** :
+  * Toute refonte cosmétique d'adresse doit préserver intacte la logique et les paramètres du relais actif (`bore.pub`).
+
+
