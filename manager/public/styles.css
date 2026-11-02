@@ -123,7 +123,7 @@ body {
 /* Main Layout */
 .main-layout {
   display: grid;
-  grid-template-columns: 350px 1fr;
+  grid-template-columns: 342px 1fr;
   flex: 1;
   overflow: hidden;
   height: 100vh;
@@ -201,7 +201,7 @@ body {
 
 /* Worlds Panel (Floating Elevated Sidebar) */
 .worlds-panel {
-  margin: 12px 6px 12px 12px;
+  margin: 12px 2px 12px 12px;
   background: rgba(16, 21, 34, 0.92);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -673,7 +673,7 @@ body {
   top: 14px;
   left: 0;
   right: 0;
-  padding: 0 16px 0 14px;
+  padding: 0 14px 0 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -692,19 +692,21 @@ body {
 .hud-pill-title {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  height: 32px;
+  box-sizing: border-box;
   background: rgba(16, 21, 34, 0.75);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-pill);
-  padding: 5px 12px;
+  padding: 0 14px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
 .hud-pill-title #activeWorldTitle {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   font-weight: 600;
   color: var(--text-main);
   letter-spacing: -0.01em;
@@ -729,13 +731,13 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 30px;
+  height: 32px;
   background: rgba(16, 21, 34, 0.75);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-pill);
-  padding: 0 4px 0 12px;
+  padding: 0 4px 0 14px;
   box-sizing: border-box;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
@@ -942,7 +944,7 @@ body {
 .terminal-body {
   flex: 1;
   background-color: var(--bg-terminal);
-  padding: 56px 14px 16px 14px;
+  padding: 56px 14px 16px 10px;
   overflow-y: auto;
   overflow-y: overlay;
   scrollbar-gutter: stable;
@@ -1003,14 +1005,19 @@ body {
 }
 
 .btn-clear-console {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  box-sizing: border-box;
   background: rgba(16, 21, 34, 0.75);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-dim);
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  padding: 5px 12px;
+  padding: 0 14px;
   border-radius: var(--radius-pill);
   transition: all 0.2s ease;
   cursor: pointer;
