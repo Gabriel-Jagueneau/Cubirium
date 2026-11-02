@@ -121,59 +121,19 @@ body {
   height: 100vh;
 }
 
-/* Header */
-.app-header {
-  height: 70px;
-  background-color: var(--bg-surface);
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 28px;
-  z-index: 10;
+/* Main Layout */
+.main-layout {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  flex: 1;
+  overflow: hidden;
+  padding: 12px;
+  gap: 12px;
+  box-sizing: border-box;
+  height: 100vh;
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.logo-box {
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-}
-
-.app-logo-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.brand-text h1 {
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.sub-brand {
-  font-size: 0.78rem;
-  color: var(--text-dim);
-  font-weight: 500;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
+/* Status Pulse Dot */
 .pulse-dot {
   width: 9px;
   height: 9px;
@@ -241,32 +201,57 @@ body {
   }
 }
 
-/* Main Layout */
-.main-layout {
-  display: grid;
-  grid-template-columns: 380px 1fr;
-  flex: 1;
-  overflow: hidden;
-}
-
-/* Worlds Panel (Left) */
+/* Worlds Panel (Floating Left Sidebar) */
 .worlds-panel {
   background-color: var(--bg-surface);
-  border-right: 1px solid var(--border-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 18px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
 .panel-header {
-  height: 62px;
+  height: 56px;
   box-sizing: border-box;
-  padding: 0 24px;
+  padding: 0 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border-color);
-  background-color: var(--bg-surface);
+  background-color: transparent;
+  flex-shrink: 0;
+}
+
+.panel-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.panel-create-bar {
+  padding: 12px 14px 4px 14px;
+  flex-shrink: 0;
+}
+
+.btn-create-world {
+  width: 100%;
+  height: 38px;
+  border-radius: var(--radius-pill);
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+  transition: all 0.2s ease;
+}
+
+.btn-create-world:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.45);
 }
 
 .panel-title-wrap {
@@ -659,23 +644,27 @@ body {
   flex-shrink: 0 !important;
 }
 
-/* Console Panel (Right) */
+/* Console Panel (Floating Right Card) */
 .console-panel {
   display: flex;
   flex-direction: column;
   background-color: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 18px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
   overflow: hidden;
 }
 
 .console-header {
-  height: 62px;
-  padding: 0 24px;
+  height: 56px;
+  padding: 0 20px;
   border-bottom: 1px solid var(--border-color);
   background-color: var(--bg-surface);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
+  flex-shrink: 0;
 }
 
 .console-title {

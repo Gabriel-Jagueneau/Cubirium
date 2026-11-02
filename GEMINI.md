@@ -24,3 +24,4 @@ Ce document recense les règles d'architecture technique, d'ergonomie et de conc
   * Aucun terminal ou invite de commande `cmd.exe` intempestive ne doit s'afficher lors du lancement ou de l'exécution sur Windows.
 * **Réseau & Tunnels** :
   * Prise en charge universelle du protocole de tunnel (relais public ou serveur dédié haute performance avec authentification optionnelle et ping/pong keepalive).
+

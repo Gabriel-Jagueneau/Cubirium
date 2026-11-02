@@ -50,3 +50,6 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# AI stuff
+GEMINI.md
