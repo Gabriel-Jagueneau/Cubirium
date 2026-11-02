@@ -711,7 +711,20 @@ body {
 }
 
 .console-panel::after {
-  display: none !important;
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 10px;
+  height: 64px;
+  background: linear-gradient(
+    to top,
+    var(--bg-terminal) 0%,
+    rgba(7, 9, 14, 0.85) 24px,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 6;
 }
 
 /* Floating HUD Top Overlay (Infos & contrôles au sommet du terminal sans bandeau lourd) */
@@ -998,12 +1011,12 @@ body {
   font-weight: 600;
 }
 
-/* Terminal Body */
+/* Terminal Body (Plein écran, le texte passe sous le HUD en haut et sous la saisie en bas) */
 .terminal-body {
   flex: 1;
   min-height: 0;
   background-color: var(--bg-terminal);
-  padding: 56px 14px 12px 14px;
+  padding: 56px 14px 64px 10px;
   overflow-y: auto;
   overflow-y: overlay;
   scrollbar-gutter: stable;
@@ -1051,21 +1064,22 @@ body {
   margin-top: 10px;
 }
 
-/* Console Footer & Input Bar (Intégré proprement au bas du panneau) */
+/* Console Footer & Input Bar (Flottant par-dessus le terminal - Le texte passe en dessous) */
 .console-footer {
-  position: relative;
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  padding: 0 14px 0 10px;
   display: flex;
   flex-direction: column;
   gap: 8px;
   width: 100%;
   box-sizing: border-box;
-  padding: 8px 14px 12px 14px;
-  background: rgba(10, 14, 23, 0.88);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  pointer-events: none;
   z-index: 15;
-  flex-shrink: 0;
+  background: transparent;
+  border: none;
 }
 
 .btn-clear-console {
@@ -4559,15 +4573,12 @@ select option {
    Console - Minecraft Autocomplete Suggestions
    ========================================================================== */
 .cmd-suggestions-box {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 14px;
-  right: 14px;
   background: rgba(13, 17, 28, 0.96);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
+  margin-bottom: 8px;
   padding: 8px 10px;
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.75);
   animation: fadeIn 0.12s ease;
@@ -4576,6 +4587,8 @@ select option {
   flex-direction: column;
   pointer-events: auto;
   z-index: 50;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .suggestions-header {
