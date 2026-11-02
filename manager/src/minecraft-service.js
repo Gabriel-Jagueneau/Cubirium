@@ -145,6 +145,8 @@ class MinecraftService {
     this.runtimeSaveInterval = null;
     this.logsBuffer = [];
     this.worldLogs = {}; // Map of worldId -> array of log strings
+    this.worldSessionBases = {}; // Map of worldId -> base runtime seconds at session start
+    this.worldStartTimes = {}; // Map of worldId -> timestamp when session started
     this.listeners = new Set();
     this.players = [];
     this.pendingExportDownloads = new Map();
@@ -1673,12 +1675,19 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       throw new Error(`Monde introuvable: ${worldId}`);
     }
 
-    // Si un autre monde est déjà en cours d'exécution
-    if (this.activeWorld && this.activeWorld !== worldId && this.status !== 'STOPPED') {
-      if (force) {
+    // Si un serveur est déjà en cours d'exécution
+    if (this.status !== 'STOPPED') {
+      if (this.activeWorld === worldId) {
+        if (!force) {
+          return this.getState();
+        }
         try { await this.stopWorld(true); } catch (_) {}
       } else {
-        throw new Error(`Le monde '${this.activeWorld}' est déjà en cours d'exécution. Veuillez l'arrêter d'abord.`);
+        if (force) {
+          try { await this.stopWorld(true); } catch (_) {}
+        } else {
+          throw new Error(`Le monde '${this.activeWorld}' est déjà en cours d'exécution. Veuillez l'arrêter d'abord.`);
+        }
       }
     }
 
@@ -1752,16 +1761,22 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
 
     this.activeWorld = worldId;
     this.status = 'STARTING';
-    this.sessionStartRuntime = this.getWorldRuntime(worldId);
-    this.startTime = Date.now();
-    this.saveWorldRuntime(this.activeWorld, this.sessionStartRuntime, this.startTime);
+    const initialBase = this.getWorldRuntime(worldId);
+    this.worldSessionBases[worldId] = initialBase;
+    this.worldStartTimes[worldId] = Date.now();
+    this.sessionStartRuntime = initialBase;
+    this.startTime = this.worldStartTimes[worldId];
+    this.saveWorldRuntime(this.activeWorld, initialBase, this.startTime);
     if (this.runtimeSaveInterval) clearInterval(this.runtimeSaveInterval);
     this.runtimeSaveInterval = setInterval(() => {
-      if (this.activeWorld && this.status !== 'STOPPED' && this.startTime) {
-        const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
-        this.saveWorldRuntime(this.activeWorld, this.sessionStartRuntime + elapsed);
+      const curWorld = this.activeWorld;
+      if (curWorld && this.status !== 'STOPPED') {
+        const curBase = (typeof this.worldSessionBases[curWorld] === 'number') ? this.worldSessionBases[curWorld] : this.sessionStartRuntime;
+        const curStart = this.worldStartTimes[curWorld] || this.startTime;
+        const elapsed = curStart ? Math.max(0, Math.floor((Date.now() - curStart) / 1000)) : 0;
+        this.saveWorldRuntime(curWorld, curBase + elapsed, curStart);
       }
-    }, 3000);
+    }, 2000);
 
     // Synchronisation périodique discrète des joueurs connectés (sans forcer de sauvegarde en boucle)
     if (this.serverSyncInterval) clearInterval(this.serverSyncInterval);
@@ -1979,10 +1994,16 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
         clearInterval(this.serverSyncInterval);
         this.serverSyncInterval = null;
       }
-      if (stoppedWorld && this.startTime) {
-        const elapsed = Math.max(0, Math.floor((Date.now() - this.startTime) / 1000));
-        const finalRuntime = (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : 0) + elapsed;
-        this.saveWorldRuntime(stoppedWorld, finalRuntime, this.startTime);
+      const stoppingStart = (stoppedWorld && this.worldStartTimes[stoppedWorld]) || this.startTime;
+      const stoppingBase = (stoppedWorld && typeof this.worldSessionBases[stoppedWorld] === 'number')
+        ? this.worldSessionBases[stoppedWorld]
+        : (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : (stoppedWorld ? this.getWorldRuntime(stoppedWorld) : 0));
+
+      if (stoppedWorld && stoppingStart) {
+        const elapsed = Math.max(0, Math.floor((Date.now() - stoppingStart) / 1000));
+        const finalRuntime = stoppingBase + elapsed;
+        this.saveWorldRuntime(stoppedWorld, finalRuntime, stoppingStart);
+        this.worldSessionBases[stoppedWorld] = finalRuntime;
       }
       this.status = 'STOPPED';
       this.activeWorld = null;
@@ -2018,10 +2039,16 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
         clearInterval(this.serverSyncInterval);
         this.serverSyncInterval = null;
       }
-      if (stoppedWorld && this.startTime) {
-        const elapsed = Math.max(0, Math.floor((Date.now() - this.startTime) / 1000));
-        const finalRuntime = (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : 0) + elapsed;
-        this.saveWorldRuntime(stoppedWorld, finalRuntime, this.startTime);
+      const stoppingStart = (stoppedWorld && this.worldStartTimes[stoppedWorld]) || this.startTime;
+      const stoppingBase = (stoppedWorld && typeof this.worldSessionBases[stoppedWorld] === 'number')
+        ? this.worldSessionBases[stoppedWorld]
+        : (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : (stoppedWorld ? this.getWorldRuntime(stoppedWorld) : 0));
+
+      if (stoppedWorld && stoppingStart) {
+        const elapsed = Math.max(0, Math.floor((Date.now() - stoppingStart) / 1000));
+        const finalRuntime = stoppingBase + elapsed;
+        this.saveWorldRuntime(stoppedWorld, finalRuntime, stoppingStart);
+        this.worldSessionBases[stoppedWorld] = finalRuntime;
       }
       this.status = 'STOPPED';
       this.activeWorld = null;
@@ -2093,8 +2120,10 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
     }
 
     const stoppingWorld = this.activeWorld;
-    const stoppingStartTime = this.startTime;
-    const stoppingSessionBase = typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : 0;
+    const stoppingStartTime = (stoppingWorld && this.worldStartTimes[stoppingWorld]) || this.startTime;
+    const stoppingSessionBase = (stoppingWorld && typeof this.worldSessionBases[stoppingWorld] === 'number')
+      ? this.worldSessionBases[stoppingWorld]
+      : (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : (stoppingWorld ? this.getWorldRuntime(stoppingWorld) : 0));
 
     this.status = 'STOPPING';
     this.appendLog(`[Manager] Arrêt gracieux du serveur en cours...`);
@@ -2138,8 +2167,10 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       this.serverSyncInterval = null;
     }
     const targetWorld = stoppingWorld || this.activeWorld;
-    const targetStart = stoppingStartTime || this.startTime;
-    const targetBase = stoppingSessionBase || (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : 0);
+    const targetStart = stoppingStartTime || (targetWorld && this.worldStartTimes[targetWorld]) || this.startTime;
+    const targetBase = (targetWorld && typeof this.worldSessionBases[targetWorld] === 'number')
+      ? this.worldSessionBases[targetWorld]
+      : stoppingSessionBase;
     if (targetWorld) {
       let finalRuntime = targetBase;
       if (targetStart) {
@@ -2150,6 +2181,7 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
         finalRuntime = Math.floor(clientRuntime);
       }
       this.saveWorldRuntime(targetWorld, finalRuntime, targetStart);
+      this.worldSessionBases[targetWorld] = finalRuntime;
     }
 
     this.status = 'STOPPED';

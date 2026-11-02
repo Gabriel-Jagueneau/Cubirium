@@ -1141,7 +1141,7 @@ function renderWorlds(worlds) {
       const runtimeEl = card.querySelector('.runtime-val');
       if (runtimeEl) {
         const prevSecs = parseInt(runtimeEl.getAttribute('data-current-runtime') || '0', 10);
-        const safeRuntimeSecs = Math.max(prevSecs, runtimeSecs);
+        const safeRuntimeSecs = Math.max(prevSecs, runtimeSecs, (typeof w.runtime === 'number' ? w.runtime : 0));
         const safeDisplay = formatSeconds(safeRuntimeSecs);
         if (runtimeEl.textContent !== safeDisplay) runtimeEl.textContent = safeDisplay;
         runtimeEl.setAttribute('data-base-runtime', String(isRunning ? baseRuntimeSecs : safeRuntimeSecs));

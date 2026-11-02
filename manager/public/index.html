@@ -129,8 +129,13 @@
         <div class="console-footer">
           <div class="cmd-suggestions-box" id="cmdSuggestionsBox" style="display: none;">
             <div class="suggestions-header">
-              <span>Suggestions de commandes :</span>
-              <span class="suggestions-tip">[↑ / ↓] Parcourir • [Tab] / [Clic] Compléter • [Échap] Fermer</span>
+              <span class="suggestions-title">Suggestions</span>
+              <div class="suggestions-shortcuts">
+                <span class="shortcut-pill"><kbd>↑</kbd><kbd>↓</kbd> Naviguer</span>
+                <span class="shortcut-pill"><kbd>Tab</kbd> Compléter</span>
+                <span class="shortcut-pill"><kbd>↵</kbd> Valider</span>
+                <span class="shortcut-pill"><kbd>Échap</kbd></span>
+              </div>
             </div>
             <div class="suggestions-list" id="suggestionsList"></div>
           </div>
@@ -1511,7 +1516,7 @@
             </div>
             <p class="settings-section-desc">Adresse personnalisée utilisée par vos invités pour rejoindre vos mondes.</p>
 
-            <div class="settings-path-group" style="margin-top: 14px;">
+            <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 14px;">
               <label for="settingsCustomDomainPrefix" class="settings-field-label">Adresse du serveur :</label>
               <div class="settings-input-with-action">
                 <div class="custom-domain-field-wrap">
@@ -1813,7 +1818,13 @@
             <!-- En-tête Identité & Liens -->
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 14px; flex-wrap: wrap;">
               <div style="display: flex; align-items: center; gap: 12px;">
-                <img src="/assets/logo.png?v=5" alt="Logo Cubirium" style="width: 36px; height: 36px; object-fit: contain; border-radius: 8px;" />
+                <div class="about-flat-cube-icon" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 10px; flex-shrink: 0;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="color: #818cf8;">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                  </svg>
+                </div>
                 <div>
                   <strong style="font-size: 1.02rem; font-weight: 700; color: #ffffff; letter-spacing: -0.01em;">Cubirium</strong>
                   <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 1px;">Gestionnaire autonome de serveurs Minecraft</div>
