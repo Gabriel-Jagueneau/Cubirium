@@ -41,7 +41,21 @@ Ce document recense les règles d'architecture technique, d'ergonomie et de conc
   * Le portfolio de l'auteur (`gjagueneau.fr`) reste secondaire et discret.
 * **Navigation par onglets (Sliding Pill)** :
   * Privilégier les contrôles segmentés avec pilule glissante fluide (`sliding pill`) pour les sélecteurs d'onglets.
-* **Intégrité de la passerelle réseau** :
-  * Toute refonte cosmétique d'adresse doit préserver intacte la logique et les paramètres du relais actif (`bore.pub`).
+* **Jamais d'emojis** :
+  * Toujours privilégier l'usage de flat icons plutôt que d'emojis.
+* **Ton sobre et professionnel des journaux système** :
+  * Tous les messages préfixés par le système (`[Système]`, `[Serveur]`, `[Tunnel]`, etc.) doivent adopter un style sobre, direct et d'entreprise. Bannir les formulations familières ou théâtrales.
+* **Intégrité absolue du chat et du feedback de jeu** :
+  * Ne jamais désactiver ou masquer le retour visuel des commandes exécutées en jeu par les joueurs (`sendCommandFeedback`, `/locate`, etc.). Seuls les messages d'enregistrement périodique du monde (*"Saved the game"*, *"Saving chunks"*) doivent être filtrés du terminal.
+
+---
+
+## 4. Diagnostic & Réparation Résiliente de Mondes
+
+* **Sauvegarde préalable obligatoire** :
+  * Toute procédure de réparation ou de diagnostic de corruption doit proposer en premier lieu une sauvegarde complète (export) du monde avant toute altération.
+* **Diagnostic méthodique en timeline** :
+  * Structurer l'analyse selon les pannes types (ports occupés, mémoire vive, version Java, fichiers NBT/régions `level.dat`, dépendances mods/plugins).
+  * Afficher la progression par étapes avec retour visuel clair et passer le monde en état corrompu sécurisé (avec accès direct au dossier du monde) en cas d'échec définitif.
 
 

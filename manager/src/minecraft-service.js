@@ -806,6 +806,41 @@ class MinecraftService {
         }
       }
 
+      // Si une version plus récente existe déjà dans runtimeBase, ne jamais retélécharger une version antérieure
+      if (fs.existsSync(runtimeBase)) {
+        try {
+          const installedRuntimes = fs.readdirSync(runtimeBase, { withFileTypes: true });
+          const higherCandidates = [];
+          for (const ent of installedRuntimes) {
+            if (!ent.isDirectory() || ent.name.startsWith('.')) continue;
+            const match = ent.name.match(/^java-(\d+)$/);
+            if (match) {
+              const installedV = parseInt(match[1], 10);
+              if (installedV >= version) {
+                const rDir = path.join(runtimeBase, ent.name);
+                const candBin = isWin ? path.join(rDir, 'bin', 'java.exe') : path.join(rDir, 'bin', 'java');
+                const candMac = path.join(rDir, 'Contents', 'Home', 'bin', 'java');
+                for (const c of [candBin, candMac]) {
+                  if (fs.existsSync(c)) {
+                    const check = this.getJavaInfo(c);
+                    if (check.isWorking) {
+                      higherCandidates.push({ execFile: c, javaHome: path.dirname(path.dirname(c)), major: installedV });
+                    }
+                  }
+                }
+              }
+            }
+          }
+          if (higherCandidates.length > 0) {
+            higherCandidates.sort((a, b) => b.major - a.major);
+            return {
+              execFile: higherCandidates[0].execFile,
+              javaHome: higherCandidates[0].javaHome
+            };
+          }
+        } catch (_) {}
+      }
+
       if (!fs.existsSync(runtimeBase)) {
         fs.mkdirSync(runtimeBase, { recursive: true });
       }
@@ -1223,7 +1258,8 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
     const isStopping = this.status === 'STOPPING';
     const isSaveLine = cleanLine.includes('Saved the game') ||
                        cleanLine.includes('Saved the world') ||
-                       cleanLine.includes('Saving the game');
+                       cleanLine.includes('Saving the game') ||
+                       cleanLine.includes('Saving chunks for level');
 
     if (isSaveLine && !isStopping) {
       return;
@@ -1269,23 +1305,13 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       if (!this.startTime) this.startTime = Date.now();
       this.broadcast('status', this.getState());
       this.broadcast('tunnel', tunnelService.getState());
-    }
-
-    // Désactiver le broadcast des retours de commande administrative dans le chat
-    try {
+      // Rétablir systématiquement le retour visuel in-game des commandes (/locate, etc.)
       if (this.activeProcess && this.activeProcess.stdin) {
-        const ver = this.detectedVersion || this.getWorldVersion(wid) || '26.3';
-        const isModern = this.isModernGamerules(ver);
-        if (isModern) {
-          this.activeProcess.stdin.write('gamerule send_command_feedback false\n');
-          this.activeProcess.stdin.write('gamerule log_admin_commands false\n');
-        } else {
-          this.activeProcess.stdin.write('gamerule sendCommandFeedback false\n');
-          this.activeProcess.stdin.write('gamerule logAdminCommands false\n');
-        }
+        try {
+          this.activeProcess.stdin.write('gamerule sendCommandFeedback true\n');
+        } catch (e) {}
       }
-    } catch (_) {}
-
+    }
   }
 
   async getWorldLogs(worldId) {
@@ -1630,13 +1656,14 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
 
       const isThisRunning = this.activeWorld === entry.name && this.status !== 'STOPPED';
       const runtimeInfo = this.getWorldRuntimeInfo(entry.name);
-      const baseRuntime = isThisRunning
-        ? Math.max(typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : 0, runtimeInfo.totalRuntime)
-        : runtimeInfo.totalRuntime;
+      const sessionBase = (this.worldSessionBases && typeof this.worldSessionBases[entry.name] === 'number')
+        ? this.worldSessionBases[entry.name]
+        : (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : runtimeInfo.totalRuntime);
+      const baseRuntime = isThisRunning ? sessionBase : runtimeInfo.totalRuntime;
       const elapsed = (isThisRunning && this.startTime)
         ? Math.max(0, Math.floor((Date.now() - this.startTime) / 1000))
         : 0;
-      const currentRuntime = isThisRunning ? Math.max(runtimeInfo.totalRuntime, baseRuntime + elapsed) : runtimeInfo.totalRuntime;
+      const currentRuntime = isThisRunning ? (baseRuntime + elapsed) : runtimeInfo.totalRuntime;
 
       worlds.push({
         id: entry.name,
@@ -1957,8 +1984,8 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
           if (line.includes('UnsupportedClassVersionError')) {
             const classMatch = line.match(/class\s+(?:file\s+)?version\s+(\d+(?:\.\d+)?)/i);
             const neededMajor = classMatch ? Math.max(8, Math.round(parseFloat(classMatch[1]) - 44)) : 25;
-            this.appendLog(`[Java] Incompatibilité Java détectée : cette version de Minecraft requiert Java ${neededMajor}.`, worldId);
-            this.appendLog(`[Java] Lancement automatique de l'installation d'OpenJDK ${neededMajor} en arrière-plan...`, worldId);
+            this.appendLog(`[Système] Version Java requise : Java ${neededMajor}.`, worldId);
+            this.appendLog(`[Système] Configuration d'OpenJDK ${neededMajor}...`, worldId);
             this.ensureJavaVersionBackground(neededMajor, worldId);
           }
         }
@@ -1966,7 +1993,7 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
     });
 
     child.on('close', (code) => {
-      this.appendLog(`[Serveur] Le serveur s'est arrêté avec le code ${code}.`);
+      this.appendLog(`[Système] Serveur arrêté (code ${code}).`);
       const stoppedWorld = this.activeWorld;
       const wasStarting = (this.status === 'STARTING');
       const wasStopping = (this.status === 'STOPPING');
@@ -2019,7 +2046,7 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
     });
 
     child.on('error', (err) => {
-      this.appendLog(`[Serveur] Erreur de processus: ${err.message}`);
+      this.appendLog(`[Système] Erreur d'exécution du serveur : ${err.message}`);
       if (this.portCheckInterval) {
         clearInterval(this.portCheckInterval);
         this.portCheckInterval = null;
@@ -2125,8 +2152,16 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       ? this.worldSessionBases[stoppingWorld]
       : (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : (stoppingWorld ? this.getWorldRuntime(stoppingWorld) : 0));
 
+    if (stoppingWorld && typeof clientRuntime === 'number' && clientRuntime > 0) {
+      const prev = this.getWorldRuntime(stoppingWorld);
+      if (clientRuntime > prev) {
+        this.saveWorldRuntime(stoppingWorld, clientRuntime, stoppingStartTime);
+        this.worldSessionBases[stoppingWorld] = clientRuntime;
+      }
+    }
+
     this.status = 'STOPPING';
-    this.appendLog(`[Manager] Arrêt gracieux du serveur en cours...`);
+    this.appendLog(`[Système] Arrêt du serveur en cours...`);
     this.broadcast('status', this.getState());
 
     if (this.activeProcess) {
@@ -2144,7 +2179,7 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       }
 
       if (this.activeProcess && force) {
-        this.appendLog(`[Manager] Force kill du serveur Minecraft...`);
+        this.appendLog(`[Système] Arrêt forcé du processus Minecraft...`);
         try {
           if (process.platform === 'win32' && this.activeProcess.pid) {
             spawn('taskkill', ['/pid', String(this.activeProcess.pid), '/T', '/F'], {
@@ -2442,6 +2477,59 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
     if (cleanedZeroFilesCount > 0) {
       fixes.push(`Suppression de ${cleanedZeroFilesCount} fichier(s) de chunk/entités corrompus (0 octet)`);
       report.push(`${cleanedZeroFilesCount} fichier(s) de données corrompus de 0 octet supprimés.`);
+    }
+
+    // 3-bis. Contrôle et restauration de l'intégrité de level.dat
+    try {
+      const zlib = require('zlib');
+      const levelDatCandidates = [
+        { main: path.join(worldPath, 'world', 'level.dat'), old: path.join(worldPath, 'world', 'level.dat_old') },
+        { main: path.join(worldPath, 'level.dat'), old: path.join(worldPath, 'level.dat_old') }
+      ];
+
+      for (const { main, old } of levelDatCandidates) {
+        let isMainCorrupt = false;
+        if (fs.existsSync(main)) {
+          try {
+            const stat = fs.statSync(main);
+            if (stat.size === 0) {
+              isMainCorrupt = true;
+            } else {
+              zlib.gunzipSync(fs.readFileSync(main));
+            }
+          } catch (_) {
+            isMainCorrupt = true;
+          }
+        } else if (fs.existsSync(old)) {
+          isMainCorrupt = true;
+        }
+
+        if (isMainCorrupt && fs.existsSync(old)) {
+          try {
+            const oldStat = fs.statSync(old);
+            if (oldStat.size > 0) {
+              zlib.gunzipSync(fs.readFileSync(old));
+              fs.copyFileSync(old, main);
+              fixes.push("Restauration du fichier level.dat à partir de la sauvegarde saine (level.dat_old)");
+              report.push("Fichier level.dat corrompu restauré avec succès depuis level.dat_old.");
+              break;
+            }
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+
+    // 3-ter. Libération des ports réseau bloqués (FAILED TO BIND TO PORT)
+    if (diagnosis.isPortBusy) {
+      try {
+        if (process.platform === 'win32') {
+          execSync('taskkill /f /im java.exe', { stdio: 'ignore', windowsHide: true });
+        } else {
+          execSync('killall -9 java', { stdio: 'ignore' });
+        }
+        fixes.push("Fermeture des instances Java orphelines bloquant le port réseau");
+        report.push("Port réseau 25565 libéré.");
+      } catch (_) {}
     }
 
     // 4. Réparation et optimisation de server.properties (désactivation Watchdog & synchro disque)

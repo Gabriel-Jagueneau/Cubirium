@@ -129,12 +129,11 @@
         <div class="console-footer">
           <div class="cmd-suggestions-box" id="cmdSuggestionsBox" style="display: none;">
             <div class="suggestions-header">
-              <span class="suggestions-title">Suggestions</span>
+              <div class="cmd-syntax-bar" id="cmdSyntaxBar"></div>
               <div class="suggestions-shortcuts">
-                <span class="shortcut-pill"><kbd>↑</kbd><kbd>↓</kbd> Naviguer</span>
+                <span class="shortcut-pill"><kbd>↑</kbd><kbd>↓</kbd></span>
                 <span class="shortcut-pill"><kbd>Tab</kbd> Compléter</span>
                 <span class="shortcut-pill"><kbd>↵</kbd> Valider</span>
-                <span class="shortcut-pill"><kbd>Échap</kbd></span>
               </div>
             </div>
             <div class="suggestions-list" id="suggestionsList"></div>
@@ -1410,11 +1409,11 @@
 
     <!-- Repair Report Modal -->
     <div class="modal-backdrop" id="repairReportModal" style="display: none;">
-      <div class="modal-card">
+      <div class="modal-card modal-card-large">
         <div class="modal-header">
           <div class="modal-title-wrap">
-            <h3 id="repairReportTitle">Rapport de Réparation</h3>
-            <span class="sub-brand" id="repairReportSub">Diagnostic et opérations effectuées</span>
+            <h3 id="repairReportTitle">Diagnostic &amp; Réparation de Monde</h3>
+            <span class="sub-brand" id="repairReportSub">Analyse méthodique et rétablissement du serveur</span>
           </div>
           <button class="btn-close" id="btnCloseRepairReportModal" title="Fermer">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -1424,20 +1423,118 @@
             </svg>
           </button>
         </div>
+
         <div class="modal-content" style="display: flex; flex-direction: column; gap: 14px;">
-          <div id="repairDiagnosisBox" class="repair-diagnosis-box" style="display: none;">
-            <div class="repair-diag-label">Analyse de l'incident</div>
-            <div id="repairDiagnosisText" class="repair-diag-text"></div>
+          <!-- Étape 1 : Préparation & Sauvegarde obligatoire recommandée -->
+          <div id="repairStepIntro" class="repair-step-screen" style="display: flex; flex-direction: column; gap: 14px;">
+            <div class="repair-warning-box">
+              <div class="repair-warning-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                  <line x1="12" y1="9" x2="12" y2="13"></line>
+                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+              </div>
+              <div class="repair-warning-text">
+                <strong>Sauvegarde préalable recommandée</strong>
+                <p>La procédure de diagnostic méthodique analyse en profondeur vos journaux, mémoires, versions et fichiers NBT. Si les données de votre monde sont sévèrement endommagées, la réparation n'est pas garantie et le monde peut être déclaré corrompu. Nous vous recommandons vivement d'exporter une sauvegarde complète avant de continuer.</p>
+              </div>
+            </div>
+
+            <div class="repair-backup-row">
+              <div class="repair-backup-info">
+                <span>Sécuriser une copie complète de vos fichiers de monde :</span>
+              </div>
+              <button type="button" class="btn-secondary" id="btnBackupBeforeRepair" onclick="backupWorldBeforeRepair()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Sauvegarder le monde (Exporter)</span>
+              </button>
+            </div>
           </div>
-          <div class="repair-fixes-box">
-            <div class="repair-fixes-label">Actions correctives appliquées</div>
-            <ul id="repairFixesList" class="repair-fixes-list"></ul>
+
+          <!-- Étape 2 : Timeline & Diagnostic interactif en direct -->
+          <div id="repairStepProgress" class="repair-step-screen" style="display: none; flex-direction: column; gap: 14px;">
+            <div class="repair-timeline-header">
+              <span class="timeline-title">Progression de l'analyse méthodique</span>
+              <span class="timeline-eta" id="repairTimelineEta">Estimation : ~10s</span>
+            </div>
+
+            <div class="repair-progress-track">
+              <div class="repair-progress-bar" id="repairProgressBar" style="width: 0%;"></div>
+            </div>
+
+            <div class="repair-timeline-steps" id="repairTimelineSteps">
+              <div class="timeline-step" data-step="1">
+                <div class="timeline-step-badge">1</div>
+                <div class="timeline-step-content">
+                  <strong>Analyse des Journaux &amp; Crash Reports</strong>
+                  <span>Inspection de latest.log et détection des exceptions JVM</span>
+                </div>
+              </div>
+              <div class="timeline-step" data-step="2">
+                <div class="timeline-step-badge">2</div>
+                <div class="timeline-step-content">
+                  <strong>Réseau &amp; Ports de Socket</strong>
+                  <span>Détection des conflits de port 25565 et fermeture des sockets orphelins</span>
+                </div>
+              </div>
+              <div class="timeline-step" data-step="3">
+                <div class="timeline-step-badge">3</div>
+                <div class="timeline-step-content">
+                  <strong>Mémoire Vive &amp; Environnement Java</strong>
+                  <span>Contrôle de la RAM allouée (-Xmx) et alignement du runtime JRE</span>
+                </div>
+              </div>
+              <div class="timeline-step" data-step="4">
+                <div class="timeline-step-badge">4</div>
+                <div class="timeline-step-content">
+                  <strong>Intégrité du Monde &amp; Fichiers NBT</strong>
+                  <span>Contrôle level.dat / level.dat_old et purge des fichiers corrompus</span>
+                </div>
+              </div>
+              <div class="timeline-step" data-step="5">
+                <div class="timeline-step-badge">5</div>
+                <div class="timeline-step-content">
+                  <strong>Dépendances, Mods &amp; Exécutables</strong>
+                  <span>Vérification des mixins, permissions d'exécution et server.properties</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Minibloc d'action en temps réel -->
+            <div class="repair-action-minibloc" id="repairActionMinibloc">
+              <span class="minibloc-spinner"></span>
+              <span class="minibloc-text" id="repairMiniblocText">Initialisation du diagnostic...</span>
+            </div>
+          </div>
+
+          <!-- Étape 3 : Résultat et Synthèse -->
+          <div id="repairStepResult" class="repair-step-screen" style="display: none; flex-direction: column; gap: 14px;">
+            <div id="repairDiagnosisBox" class="repair-diagnosis-box" style="display: none;">
+              <div class="repair-diag-label">Analyse de l'incident</div>
+              <div id="repairDiagnosisText" class="repair-diag-text"></div>
+            </div>
+            <div class="repair-fixes-box" id="repairFixesBox">
+              <div class="repair-fixes-label" id="repairFixesTitle">Actions correctives appliquées</div>
+              <ul id="repairFixesList" class="repair-fixes-list"></ul>
+            </div>
           </div>
         </div>
-        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+
+        <div class="modal-footer" id="repairModalFooter" style="display: flex; justify-content: flex-end; gap: 10px;">
           <button type="button" class="btn-secondary" id="btnDismissRepairReport">Fermer</button>
+          <button type="button" class="btn-primary" id="btnStartInteractiveRepair" onclick="startInteractiveWorldRepair()">
+            Commencer la réparation
+          </button>
+          <button type="button" class="btn-secondary" id="btnOpenFolderAfterCorrupted" style="display: none;" onclick="openWorldFolderFromRepair()">
+            Ouvrir le dossier du monde
+          </button>
           <button type="button" class="btn-primary" id="btnLaunchAfterRepair"
-            style="display: flex; align-items: center; gap: 8px;">
+            style="display: none; align-items: center; gap: 8px;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
             </svg>
@@ -1516,10 +1613,10 @@
             </div>
             <p class="settings-section-desc">Adresse personnalisée utilisée par vos invités pour rejoindre vos mondes.</p>
 
-            <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 14px;">
+            <div class="settings-path-group" style="margin-top: 14px;">
               <label for="settingsCustomDomainPrefix" class="settings-field-label">Adresse du serveur :</label>
               <div class="settings-input-with-action">
-                <div class="custom-domain-field-wrap">
+                <div class="settings-input-wrapper custom-domain-field-wrap">
                   <svg class="settings-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
@@ -1527,7 +1624,7 @@
                     <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z">
                     </path>
                   </svg>
-                  <input type="text" id="settingsCustomDomainPrefix" class="custom-domain-prefix-input"
+                  <input type="text" id="settingsCustomDomainPrefix" class="settings-text-input custom-domain-prefix-input"
                     placeholder="lesMondesAvecMesPotes" value="lesMondesAvecMesPotes" spellcheck="false" autocomplete="off" />
                   <span class="custom-domain-suffix">.cubirium.fr</span>
                 </div>
@@ -1540,6 +1637,7 @@
                   <span>Copier</span>
                 </button>
               </div>
+              <span class="settings-hint">Partagez cette adresse directe avec vos amis pour leur permettre de se connecter facilement à votre serveur.</span>
             </div>
 
             <!-- Éléments techniques masqués conservant la compatibilité app.js / diagnose.js -->
@@ -1818,13 +1916,7 @@
             <!-- En-tête Identité & Liens -->
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 14px; flex-wrap: wrap;">
               <div style="display: flex; align-items: center; gap: 12px;">
-                <div class="about-flat-cube-icon" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 10px; flex-shrink: 0;">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="color: #818cf8;">
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                  </svg>
-                </div>
+                <img src="/assets/logo.png?v=5" alt="Logo Cubirium" style="width: 36px; height: 36px; object-fit: contain; border-radius: 8px;" />
                 <div>
                   <strong style="font-size: 1.02rem; font-weight: 700; color: #ffffff; letter-spacing: -0.01em;">Cubirium</strong>
                   <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 1px;">Gestionnaire autonome de serveurs Minecraft</div>

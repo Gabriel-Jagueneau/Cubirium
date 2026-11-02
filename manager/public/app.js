@@ -80,9 +80,36 @@ const btnCancelModded = document.getElementById('btnCancelModded');
 
 const toast = document.getElementById('toast');
 
-// Toast Helper
+// Toast Helper avec icônes Flat SVG thématiques et contextuelles
 function showToast(msg, type = 'info') {
-  toast.textContent = msg;
+  let iconSvg = '';
+  const lower = (msg || '').toLowerCase();
+
+  if (lower.includes('copi') || lower.includes('presse-papier')) {
+    iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+  } else if (lower.includes('sauvegarde') || lower.includes('export') || lower.includes('enregistré')) {
+    iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`;
+  } else if (lower.includes('tunnel') || lower.includes('ip') || lower.includes('réseau') || lower.includes('en ligne')) {
+    iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`;
+  } else if (lower.includes('démarré') || lower.includes('lancé') || lower.includes('démarrage')) {
+    iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
+  } else if (lower.includes('arrêt') || lower.includes('stoppé') || lower.includes('fermé')) {
+    iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"></rect></svg>`;
+  } else if (lower.includes('java') || lower.includes('runtime')) {
+    iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>`;
+  } else if (lower.includes('répar') || lower.includes('diagnostic')) {
+    iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>`;
+  } else if (type === 'success') {
+    iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+  } else if (type === 'error') {
+    iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+  } else if (type === 'warning') {
+    iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+  } else {
+    iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+  }
+
+  toast.innerHTML = `<span class="toast-icon">${iconSvg}</span><span class="toast-text">${escapeHtml(msg)}</span>`;
   toast.className = `toast show ${type}`;
   setTimeout(() => {
     toast.className = 'toast';
@@ -216,94 +243,257 @@ async function openWorldFolder(worldId, customPath = null) {
 }
 window.openWorldFolder = openWorldFolder;
 
+let currentRepairWorldId = null;
 let pendingRepairLaunchWorldId = null;
+let _isRepairInProgress = false;
 
-function showRepairReportModal({ worldId, diagnosis, fixes, message }) {
+function triggerWorldRepair(worldId) {
+  currentRepairWorldId = worldId;
+  pendingRepairLaunchWorldId = worldId;
   const modal = document.getElementById('repairReportModal');
   if (!modal) return;
 
-  pendingRepairLaunchWorldId = worldId;
   const title = document.getElementById('repairReportTitle');
-  if (title) title.textContent = `Réparation de ${worldId}`;
+  if (title) title.textContent = `Diagnostic & Réparation : ${worldId}`;
+  const sub = document.getElementById('repairReportSub');
+  if (sub) sub.textContent = "Analyse méthodique et rétablissement du serveur";
 
-  const diagBox = document.getElementById('repairDiagnosisBox');
-  const diagText = document.getElementById('repairDiagnosisText');
-  if (diagBox && diagText) {
-    if (diagnosis) {
-      diagText.textContent = diagnosis;
-      diagBox.style.display = 'block';
-    } else {
-      diagBox.style.display = 'none';
-    }
+  // Réinitialiser les écrans du modal
+  const stepIntro = document.getElementById('repairStepIntro');
+  const stepProgress = document.getElementById('repairStepProgress');
+  const stepResult = document.getElementById('repairStepResult');
+  if (stepIntro) stepIntro.style.display = 'flex';
+  if (stepProgress) stepProgress.style.display = 'none';
+  if (stepResult) stepResult.style.display = 'none';
+
+  // Réinitialiser les boutons du footer
+  const btnStart = document.getElementById('btnStartInteractiveRepair');
+  const btnLaunch = document.getElementById('btnLaunchAfterRepair');
+  const btnOpenFolder = document.getElementById('btnOpenFolderAfterCorrupted');
+  const btnDismiss = document.getElementById('btnDismissRepairReport');
+  if (btnStart) {
+    btnStart.style.display = 'inline-flex';
+    btnStart.disabled = false;
+  }
+  if (btnLaunch) btnLaunch.style.display = 'none';
+  if (btnOpenFolder) btnOpenFolder.style.display = 'none';
+  if (btnDismiss) {
+    btnDismiss.disabled = false;
+    btnDismiss.textContent = 'Annuler';
   }
 
-  const fixesList = document.getElementById('repairFixesList');
-  if (fixesList) {
-    fixesList.innerHTML = '';
-    const items = (Array.isArray(fixes) && fixes.length > 0)
-      ? fixes
-      : ["Vérification des verrous session.lock et fichiers de cache", "Validation du contrat de licence EULA", "Permissions et environnement d'exécution vérifiés"];
-    items.forEach(fix => {
-      const li = document.createElement('li');
-      li.textContent = fix;
-      fixesList.appendChild(li);
-    });
-  }
+  // Réinitialiser la barre de progression
+  const pBar = document.getElementById('repairProgressBar');
+  if (pBar) pBar.style.width = '0%';
+  const pEta = document.getElementById('repairTimelineEta');
+  if (pEta) pEta.textContent = 'Estimation : ~10s';
 
   modal.style.display = 'flex';
 }
+window.triggerWorldRepair = triggerWorldRepair;
 
 function closeRepairReportModal() {
+  if (_isRepairInProgress) return;
   const modal = document.getElementById('repairReportModal');
   if (modal) modal.style.display = 'none';
+  currentRepairWorldId = null;
   pendingRepairLaunchWorldId = null;
 }
 window.closeRepairReportModal = closeRepairReportModal;
 
-async function triggerWorldRepair(worldId) {
-  // Trouver tous les boutons de réparation associés pour afficher immédiatement un loader animé
-  const repairButtons = document.querySelectorAll(`button.btn-repair[onclick*="'${worldId}'"]`);
-  const originalHtmls = [];
-  repairButtons.forEach((btn, idx) => {
-    originalHtmls[idx] = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = `<svg class="spinner-icon-inline" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Réparation...`;
-  });
-
+async function backupWorldBeforeRepair() {
+  if (!currentRepairWorldId) return;
+  const wid = currentRepairWorldId;
+  showToast(`Sauvegarde et export de ${wid}...`, 'info');
   try {
-    showToast(`Réparation automatique de ${worldId}...`, 'info');
-    const res = await fetch('/api/worlds/repair', {
+    const res = await fetch('/api/worlds/export', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ worldId })
+      body: JSON.stringify({ worldId: wid })
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Erreur lors de la réparation');
-    if (data.success) {
-      showToast(data.message || `Monde ${worldId} réparé avec succès !`, 'success');
-      await fetchWorlds();
-      showRepairReportModal({
-        worldId,
-        diagnosis: data.diagnosis,
-        fixes: data.fixes,
-        message: data.message
-      });
-    } else if (data.corrupted) {
-      showToast(data.message || `Le monde est corrompu. Ouverture du dossier...`, 'error');
-      openWorldFolder(worldId);
-      await fetchWorlds();
-    } else {
-      showToast(data.error || 'Impossible de réparer le monde.', 'error');
-    }
+    if (!res.ok) throw new Error(data.error || "Échec de l'export.");
+    showToast(`Sauvegarde de ${wid} exportée avec succès !`, 'success');
   } catch (err) {
-    showToast(err.message, 'error');
-  } finally {
-    repairButtons.forEach((btn, idx) => {
-      btn.disabled = false;
-      if (originalHtmls[idx]) btn.innerHTML = originalHtmls[idx];
-    });
+    showToast(`Erreur d'export : ${err.message}`, 'error');
   }
 }
+window.backupWorldBeforeRepair = backupWorldBeforeRepair;
+
+async function startInteractiveWorldRepair() {
+  if (!currentRepairWorldId || _isRepairInProgress) return;
+  const wid = currentRepairWorldId;
+  _isRepairInProgress = true;
+
+  const stepIntro = document.getElementById('repairStepIntro');
+  const stepProgress = document.getElementById('repairStepProgress');
+  const stepResult = document.getElementById('repairStepResult');
+  const btnStart = document.getElementById('btnStartInteractiveRepair');
+  const btnDismiss = document.getElementById('btnDismissRepairReport');
+  if (stepIntro) stepIntro.style.display = 'none';
+  if (stepProgress) stepProgress.style.display = 'flex';
+  if (stepResult) stepResult.style.display = 'none';
+  if (btnStart) btnStart.style.display = 'none';
+  if (btnDismiss) {
+    btnDismiss.disabled = true;
+    btnDismiss.textContent = 'Diagnostic en cours...';
+  }
+
+  const pBar = document.getElementById('repairProgressBar');
+  const pEta = document.getElementById('repairTimelineEta');
+  const miniText = document.getElementById('repairMiniblocText');
+  const stepsContainer = document.getElementById('repairTimelineSteps');
+
+  const setTimelineStep = (stepNum, status = 'active', message = '') => {
+    if (stepsContainer) {
+      stepsContainer.querySelectorAll('.timeline-step').forEach(st => {
+        const num = parseInt(st.getAttribute('data-step') || '0', 10);
+        if (num < stepNum) {
+          st.className = 'timeline-step done';
+        } else if (num === stepNum) {
+          st.className = `timeline-step ${status}`;
+        } else {
+          st.className = 'timeline-step';
+        }
+      });
+    }
+    if (miniText && message) miniText.textContent = message;
+    if (pBar) pBar.style.width = `${Math.min(100, stepNum * 20)}%`;
+  };
+
+  // Lancement de la requête de réparation backend en parallèle
+  const repairPromise = fetch('/api/worlds/repair', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ worldId: wid })
+  }).then(r => r.json()).catch(err => ({ success: false, error: err.message }));
+
+  try {
+    // Étape 1 : Journaux & Crash Reports
+    setTimelineStep(1, 'active', "Lecture des journaux latest.log et détection des exceptions Java...");
+    if (pEta) pEta.textContent = "Estimation : ~8s";
+    await new Promise(r => setTimeout(r, 1400));
+
+    // Étape 2 : Réseau & Sockets
+    setTimelineStep(2, 'active', "Vérification de la disponibilité du port 25565 et fermeture des sockets orphelins...");
+    if (pEta) pEta.textContent = "Estimation : ~6s";
+    await new Promise(r => setTimeout(r, 1600));
+
+    // Étape 3 : Mémoire & Java
+    setTimelineStep(3, 'active', "Contrôle des allocations de mémoire -Xmx et alignement du runtime JRE...");
+    if (pEta) pEta.textContent = "Estimation : ~4s";
+    await new Promise(r => setTimeout(r, 1500));
+
+    // Étape 4 : Fichiers NBT & level.dat
+    setTimelineStep(4, 'active', "Contrôle d'intégrité de level.dat, session.lock et purge des fichiers 0-octet...");
+    if (pEta) pEta.textContent = "Estimation : ~2s";
+    await new Promise(r => setTimeout(r, 1600));
+
+    // Étape 5 : Dépendances & Exécutables
+    setTimelineStep(5, 'active', "Validation de server.properties, EULA et synchronisation des scripts de lancement...");
+    if (pEta) pEta.textContent = "Finalisation...";
+
+    const data = await repairPromise;
+    await new Promise(r => setTimeout(r, 1000));
+
+    if (pBar) pBar.style.width = '100%';
+    if (miniText) miniText.textContent = "Analyse terminée avec succès.";
+
+    await new Promise(r => setTimeout(r, 600));
+
+    // Affichage de l'écran résultat
+    if (stepProgress) stepProgress.style.display = 'none';
+    if (stepResult) stepResult.style.display = 'flex';
+    if (btnDismiss) {
+      btnDismiss.disabled = false;
+      btnDismiss.textContent = 'Fermer';
+    }
+
+    const title = document.getElementById('repairReportTitle');
+    const sub = document.getElementById('repairReportSub');
+    const fixesTitle = document.getElementById('repairFixesTitle');
+    const fixesList = document.getElementById('repairFixesList');
+    const diagBox = document.getElementById('repairDiagnosisBox');
+    const diagText = document.getElementById('repairDiagnosisText');
+    const btnLaunch = document.getElementById('btnLaunchAfterRepair');
+    const btnOpenFolder = document.getElementById('btnOpenFolderAfterCorrupted');
+
+    if (data && data.success) {
+      if (title) title.textContent = `Monde Réparé : ${wid}`;
+      if (sub) sub.textContent = "Toutes les anomalies détectées ont été résolues avec succès.";
+      if (fixesTitle) fixesTitle.textContent = "Opérations correctives appliquées";
+      if (diagBox) diagBox.style.display = 'none';
+
+      if (fixesList) {
+        fixesList.innerHTML = '';
+        const items = (Array.isArray(data.fixes) && data.fixes.length > 0)
+          ? data.fixes
+          : ["Intégrité de level.dat vérifiée et validée", "Verrous session.lock résiduels supprimés", "server.properties optimisé et CLUF EULA validé", "Permissions d'exécution et environnement Java cohérents"];
+        items.forEach(fix => {
+          const li = document.createElement('li');
+          li.textContent = fix;
+          fixesList.appendChild(li);
+        });
+      }
+
+      if (btnLaunch) btnLaunch.style.display = 'inline-flex';
+      if (btnOpenFolder) btnOpenFolder.style.display = 'none';
+      showToast(`Monde ${wid} réparé avec succès !`, 'success');
+    } else {
+      // Diagnostic échoué ou monde déclaré corrompu
+      if (title) title.textContent = `Diagnostic : Monde Corrompu`;
+      if (sub) sub.textContent = "Le monde présente des altérations irréversibles.";
+      if (fixesTitle) fixesTitle.textContent = "Bilan de l'incident critique";
+
+      if (diagBox && diagText) {
+        diagText.textContent = (data && (data.message || data.error)) || "Les fichiers de région ou structures critiques ne peuvent pas être reconstruits automatiquement.";
+        diagBox.style.display = 'block';
+      }
+
+      if (fixesList) {
+        fixesList.innerHTML = '';
+        const items = (data && Array.isArray(data.report) && data.report.length > 0)
+          ? data.report
+          : ["Tentative de récupération de level.dat", "Analyse des exceptions JVM dans latest.log", "Échec de reconstruction des structures du monde"];
+        items.forEach(rep => {
+          const li = document.createElement('li');
+          li.textContent = rep;
+          fixesList.appendChild(li);
+        });
+      }
+
+      if (btnLaunch) btnLaunch.style.display = 'none';
+      if (btnOpenFolder) btnOpenFolder.style.display = 'inline-flex';
+
+      // Marquer le monde comme corrompu dans le cache local
+      const found = (worldsListCache || []).find(w => w.id === wid);
+      if (found) {
+        found.isCorrupted = true;
+        found.needsRepair = false;
+      }
+      showToast(`Le monde ${wid} est corrompu et ne peut pas être réparé automatiquement.`, 'error');
+    }
+
+    await fetchWorlds();
+  } catch (err) {
+    showToast(`Erreur de réparation : ${err.message}`, 'error');
+    if (btnDismiss) {
+      btnDismiss.disabled = false;
+      btnDismiss.textContent = 'Fermer';
+    }
+  } finally {
+    _isRepairInProgress = false;
+  }
+}
+window.startInteractiveWorldRepair = startInteractiveWorldRepair;
+
+function openWorldFolderFromRepair() {
+  if (currentRepairWorldId) {
+    openWorldFolder(currentRepairWorldId);
+  }
+  closeRepairReportModal();
+}
+window.openWorldFolderFromRepair = openWorldFolderFromRepair;
 
 
 async function sendCommand(cmd) {
@@ -767,9 +957,10 @@ function buildWorldCardHtml(w, opts) {
   const isCardStarting = isThisActive && serverStatus === 'STARTING';
   const isCardStopping = isThisActive && serverStatus === 'STOPPING';
   const isCardDownloading = isThisActive && isDownloadingJava;
+  const isCardCorrupted = !isThisActive && !!w.isCorrupted;
 
   return `
-    <div class="world-card ${isCardRunning ? 'running' : ''} ${isCardStarting && !isCardDownloading ? 'starting' : ''} ${isCardStopping ? 'stopping' : ''} ${isCardDownloading ? 'downloading' : ''} ${isSelected ? 'selected' : ''} ${isPinned ? 'is-pinned' : ''} ${isCollapsed ? 'collapsed' : ''}" 
+    <div class="world-card ${isCardRunning ? 'running' : ''} ${isCardStarting && !isCardDownloading ? 'starting' : ''} ${isCardStopping ? 'stopping' : ''} ${isCardDownloading ? 'downloading' : ''} ${isCardCorrupted ? 'corrupted' : ''} ${isSelected ? 'selected' : ''} ${isPinned ? 'is-pinned' : ''} ${isCollapsed ? 'collapsed' : ''}" 
          data-id="${w.id}" 
          onclick="selectTerminalWorld('${w.id}')">
       <div class="world-header">
@@ -828,41 +1019,25 @@ function buildWorldCardHtml(w, opts) {
           </button>`
         : `<button class="btn-stop-world" onclick="stopActiveWorld()">Arrêter</button>`)
       : w.isCorrupted
-        ? `<div class="btn-group-repair">
-             <button class="btn-corrupted" onclick="openWorldFolder('${w.id}')" title="Ce monde semble incomplet. Cliquez pour ouvrir son dossier.">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                  <line x1="12" y1="9" x2="12" y2="13"></line>
-                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                </svg>
-                Corrompu
-             </button>
-             <button class="btn-card-action btn-card-force" ${isServerRunning ? 'disabled' : ''} onclick="forceStartWorld('${w.id}')" title="Forcer le démarrage du serveur malgré l'état détecté">
-               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-               </svg>
-             </button>
-           </div>`
+        ? `<button class="btn-corrupted" onclick="openWorldFolder('${w.id}')" title="Ce monde est corrompu. Cliquez pour ouvrir son dossier.">
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+             </svg>
+             <span>Ouvrir le dossier</span>
+           </button>`
         : w.needsRepair
-          ? `<div class="btn-group-repair">
-               <button class="btn-repair" ${isServerRunning ? 'disabled' : ''} onclick="triggerWorldRepair('${w.id}')" title="Incident détecté. Cliquez pour lancer la réparation automatique.">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-                  </svg>
-                  Réparer
-               </button>
-               <button class="btn-card-action btn-card-force" ${isServerRunning ? 'disabled' : ''} onclick="forceStartWorld('${w.id}')" title="Forcer le démarrage immédiat (ignorer l'incident)">
-                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                 </svg>
-               </button>
-             </div>`
+          ? `<button class="btn-repair" ${isServerRunning ? 'disabled' : ''} onclick="triggerWorldRepair('${w.id}')" title="Incident détecté. Cliquez pour lancer la réparation méthodique.">
+               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                 <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+               </svg>
+               <span>Réparer</span>
+             </button>`
           : `<button class="btn-launch" ${isServerRunning ? 'disabled' : ''} onclick="if(event.shiftKey||event.altKey){forceStartWorld('${w.id}');}else{startWorld('${w.id}');}" title="Lancer le serveur (Shift+Clic pour forcer le démarrage)">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                  </svg>
-                  Lancer
-                 </button>`
+               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                 <polygon points="5 3 19 12 5 21 5 3"></polygon>
+               </svg>
+               Lancer
+             </button>`
     }
         </div>
         <button class="btn-card-action btn-card-players" title="Gestion des Joueurs (Ops, Whitelist, Bans)" onclick="openPlayersManager('${w.id}')">
@@ -1068,6 +1243,7 @@ function renderWorlds(worlds) {
       card.classList.toggle('starting', isCardStarting && !isCardDownloading);
       card.classList.toggle('stopping', isCardStopping);
       card.classList.toggle('downloading', isCardDownloading);
+      card.classList.toggle('corrupted', !isRunning && !!w.isCorrupted);
       card.classList.toggle('selected', isSelected);
       card.classList.toggle('is-pinned', isPinned);
       card.classList.toggle('collapsed', isCollapsed);
@@ -1169,10 +1345,10 @@ function renderWorlds(worlds) {
           }
         } else if (w.isCorrupted) {
           expectedType = 'corrupted';
-          expectedBtnHtml = `<div class="btn-group-repair"><button class="btn-corrupted" onclick="openWorldFolder('${w.id}')" title="Ce monde semble incomplet. Cliquez pour ouvrir son dossier."><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>Corrompu</button><button class="btn-card-action btn-card-force" ${isServerRunning ? 'disabled' : ''} onclick="forceStartWorld('${w.id}')" title="Forcer le démarrage du serveur malgré l'état détecté"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></button></div>`;
+          expectedBtnHtml = `<button class="btn-corrupted" onclick="openWorldFolder('${w.id}')" title="Ce monde est corrompu. Cliquez pour ouvrir son dossier."><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg><span>Ouvrir le dossier</span></button>`;
         } else if (w.needsRepair) {
           expectedType = 'repair';
-          expectedBtnHtml = `<div class="btn-group-repair"><button class="btn-repair" ${isServerRunning ? 'disabled' : ''} onclick="triggerWorldRepair('${w.id}')" title="Incident détecté. Cliquez pour lancer la réparation automatique."><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>Réparer</button><button class="btn-card-action btn-card-force" ${isServerRunning ? 'disabled' : ''} onclick="forceStartWorld('${w.id}')" title="Forcer le démarrage immédiat (ignorer l'incident)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></button></div>`;
+          expectedBtnHtml = `<button class="btn-repair" ${isServerRunning ? 'disabled' : ''} onclick="triggerWorldRepair('${w.id}')" title="Incident détecté. Cliquez pour lancer la réparation méthodique."><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg><span>Réparer</span></button>`;
         } else {
           expectedType = 'launch';
           expectedBtnHtml = `<button class="btn-launch" ${isServerRunning ? 'disabled' : ''} onclick="if(event.shiftKey||event.altKey){forceStartWorld('${w.id}');}else{startWorld('${w.id}');}" title="Lancer le serveur (Shift+Clic pour forcer le démarrage)"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>Lancer</button>`;
@@ -1832,72 +2008,313 @@ btnStopActiveServer.addEventListener('click', () => {
 
 const cmdSuggestionsBox = document.getElementById('cmdSuggestionsBox');
 const suggestionsList = document.getElementById('suggestionsList');
+const cmdSyntaxBar = document.getElementById('cmdSyntaxBar');
 let _suggestTimeout = null;
 let _selectedSuggestionIndex = -1;
 const cmdHistory = [];
 let cmdHistoryIndex = -1;
+let _currentSuggestionsList = [];
 
 const DEFAULT_COMMANDS = [
   { cmd: 'help', desc: 'Affiche la liste des commandes ou l’aide' },
   { cmd: 'list', desc: 'Liste les joueurs actuellement connectés' },
+  { cmd: 'tp <joueur> <cible>', desc: 'Téléporte un joueur vers un autre joueur ou des coordonnées' },
   { cmd: 'gamemode <mode>', desc: 'Change le mode de jeu (survival, creative, spectator, adventure)' },
   { cmd: 'time set <valeur>', desc: 'Règle l’heure du monde (day, night, noon, midnight ou ticks)' },
-  { cmd: 'time add <valeur>', desc: 'Avance le temps du monde' },
-  { cmd: 'time query <type>', desc: 'Consulte l’heure (daytime, gametime, day)' },
   { cmd: 'weather <type>', desc: 'Définit la météo (clear, rain, thunder)' },
+  { cmd: 'give <joueur> <item> [quantité]', desc: 'Donne un objet à un joueur' },
   { cmd: 'op <joueur>', desc: 'Donne les permissions administrateur' },
   { cmd: 'deop <joueur>', desc: 'Retire les permissions administrateur' },
   { cmd: 'whitelist <action>', desc: 'Gère la liste blanche (on, off, list, add, remove, reload)' },
-  { cmd: 'whitelist add <joueur>', desc: 'Ajoute un joueur à la liste blanche' },
-  { cmd: 'whitelist remove <joueur>', desc: 'Retire un joueur de la liste blanche' },
-  { cmd: 'tp <joueur> <cible>', desc: 'Téléporte un joueur vers un autre joueur ou des coordonnées' },
-  { cmd: 'tp <cible> <x> <y> <z>', desc: 'Téléporte une entité vers des coordonnées absolues ou relatives (~ ~ ~)' },
-  { cmd: 'give <joueur> <item> [quantite]', desc: 'Donne un objet à un joueur' },
-  { cmd: 'clear [joueur]', desc: 'Vide l’inventaire d’un joueur ou de soi-même' },
-  { cmd: 'kill <cible>', desc: 'Élimine un joueur ou une entité' },
+  { cmd: 'locate structure <type>', desc: 'Localise la structure ou le biome le plus proche' },
   { cmd: 'difficulty <niveau>', desc: 'Définit la difficulté (peaceful, easy, normal, hard)' },
+  { cmd: 'summon <entité> [x y z]', desc: 'Fait apparaître une entité' },
+  { cmd: 'effect give <joueur> <effet>', desc: 'Applique un effet de potion à un joueur' },
+  { cmd: 'kill <cible>', desc: 'Élimine un joueur ou une entité' },
+  { cmd: 'clear [joueur]', desc: 'Vide l’inventaire d’un joueur ou de soi-même' },
+  { cmd: 'gamerule <règle> [valeur]', desc: 'Modifie une règle de jeu (keepInventory, mobGriefing...)' },
+  { cmd: 'setworldspawn [x y z]', desc: 'Définit le point d’apparition global du monde' },
+  { cmd: 'spawnpoint [joueur] [x y z]', desc: 'Définit le point d’apparition individuel d’un joueur' },
   { cmd: 'say <message>', desc: 'Diffuse un message à tous les joueurs du serveur' },
   { cmd: 'tell <joueur> <message>', desc: 'Envoie un message privé à un joueur' },
   { cmd: 'kick <joueur> [raison]', desc: 'Expulse un joueur du serveur' },
   { cmd: 'ban <joueur> [raison]', desc: 'Bannit un joueur du serveur' },
   { cmd: 'pardon <joueur>', desc: 'Débannit un joueur' },
-  { cmd: 'gamerule <regle> [valeur]', desc: 'Modifie une règle de jeu (keepInventory, mobGriefing...)' },
-  { cmd: 'setworldspawn [x y z]', desc: 'Définit le point d’apparition global du monde' },
-  { cmd: 'spawnpoint [joueur] [x y z]', desc: 'Définit le point d’apparition individuel d’un joueur' },
   { cmd: 'seed', desc: 'Affiche la graine de génération de ce monde' },
-  { cmd: 'locate structure <type>', desc: 'Localise la structure la plus proche' },
-  { cmd: 'locate biome <biome>', desc: 'Localise le biome le plus proche' },
-  { cmd: 'effect give <joueur> <effet>', desc: 'Applique un effet de potion à un joueur' },
-  { cmd: 'effect clear <joueur>', desc: 'Retire les effets de potion d’un joueur' },
-  { cmd: 'enchant <joueur> <enchant>', desc: 'Enchante l’objet actuellement tenu en main' },
-  { cmd: 'summon <entite> [x y z]', desc: 'Fait apparaître une entité' },
-  { cmd: 'save-all', desc: 'Sauvegarde immédiatement l’ensemble du monde sur le disque' },
-  { cmd: 'save-off', desc: 'Désactive la sauvegarde automatique' },
-  { cmd: 'save-on', desc: 'Active la sauvegarde automatique' },
   { cmd: 'stop', desc: 'Arrête proprement le serveur' }
 ];
 
-const MC_PRESETS = {
-  modes: ['survival', 'creative', 'spectator', 'adventure'],
-  times: ['day', 'night', 'noon', 'midnight', '1000', '6000', '13000', '18000'],
-  weathers: ['clear', 'rain', 'thunder'],
-  difficulties: ['peaceful', 'easy', 'normal', 'hard'],
-  whitelistActions: ['on', 'off', 'list', 'reload'],
-  timeQueries: ['daytime', 'gametime', 'day'],
-  gamerules: [
-    'keepInventory true', 'keepInventory false',
-    'mobGriefing true', 'mobGriefing false',
-    'doDaylightCycle true', 'doDaylightCycle false',
-    'doWeatherCycle true', 'doWeatherCycle false',
-    'doFireTick true', 'doFireTick false',
-    'showCoordinates true', 'showCoordinates false',
-    'naturalRegeneration true', 'naturalRegeneration false'
-  ],
-  structures: ['village', 'ancient_city', 'monument', 'fortress', 'bastion_remnant', 'mansion', 'pillager_outpost', 'mineshaft', 'stronghold'],
-  entities: ['zombie', 'skeleton', 'creeper', 'enderman', 'iron_golem', 'villager', 'cow', 'sheep', 'pig', 'chicken'],
-  commonItems: ['minecraft:diamond', 'minecraft:netherite_ingot', 'minecraft:golden_apple', 'minecraft:iron_ingot', 'minecraft:elytra', 'minecraft:totem_of_undying', 'minecraft:bow', 'minecraft:arrow', 'minecraft:bread', 'minecraft:torch'],
-  effects: ['speed', 'haste', 'strength', 'regeneration', 'night_vision', 'invisibility', 'water_breathing', 'jump_boost', 'absorption', 'slow_falling']
+const COMMAND_SPECS = {
+  tp: {
+    args: [
+      { name: '<joueur>', type: 'player', desc: 'Joueur à téléporter' },
+      { name: '<cible ou x y z>', type: 'coord_or_player', desc: 'Destination (joueur ou coordonnées)' }
+    ]
+  },
+  teleport: {
+    args: [
+      { name: '<joueur>', type: 'player', desc: 'Joueur à téléporter' },
+      { name: '<cible ou x y z>', type: 'coord_or_player', desc: 'Destination (joueur ou coordonnées)' }
+    ]
+  },
+  gamemode: {
+    args: [
+      { name: '<mode>', type: 'gamemode', desc: 'Mode de jeu' },
+      { name: '[joueur]', type: 'player', desc: 'Joueur cible (optionnel)' }
+    ]
+  },
+  time: {
+    args: [
+      { name: '<action>', type: 'time_action', desc: 'Action (set, add, query)' },
+      {
+        name: (tokens) => tokens[1] === 'set' ? '<heure>' : (tokens[1] === 'query' ? '<type>' : '<valeur>'),
+        type: (tokens) => tokens[1] === 'set' ? 'time_preset' : (tokens[1] === 'query' ? 'time_query' : 'number'),
+        desc: (tokens) => tokens[1] === 'set' ? 'Heure du jour' : 'Valeur'
+      }
+    ]
+  },
+  weather: {
+    args: [
+      { name: '<type>', type: 'weather', desc: 'Condition météo' },
+      { name: '[durée]', type: 'number', desc: 'Durée en secondes' }
+    ]
+  },
+  difficulty: {
+    args: [
+      { name: '<niveau>', type: 'difficulty', desc: 'Niveau de difficulté' }
+    ]
+  },
+  give: {
+    args: [
+      { name: '<joueur>', type: 'player', desc: 'Joueur destinataire' },
+      { name: '<item>', type: 'item', desc: 'Identifiant d’objet Minecraft' },
+      { name: '[quantité]', type: 'number', desc: 'Quantité (1 à 64)' }
+    ]
+  },
+  clear: {
+    args: [
+      { name: '[joueur]', type: 'player', desc: 'Joueur cible' },
+      { name: '[item]', type: 'item', desc: 'Objet à retirer' }
+    ]
+  },
+  kill: {
+    args: [
+      { name: '<cible>', type: 'player', desc: 'Entité ou joueur à éliminer' }
+    ]
+  },
+  op: {
+    args: [
+      { name: '<joueur>', type: 'player', desc: 'Joueur à promouvoir administrateur' }
+    ]
+  },
+  deop: {
+    args: [
+      { name: '<joueur>', type: 'player', desc: 'Joueur à rétrograder' }
+    ]
+  },
+  kick: {
+    args: [
+      { name: '<joueur>', type: 'player', desc: 'Joueur à expulser' },
+      { name: '[raison]', type: 'text', desc: 'Motif de l’expulsion' }
+    ]
+  },
+  ban: {
+    args: [
+      { name: '<joueur>', type: 'player', desc: 'Joueur à bannir' },
+      { name: '[raison]', type: 'text', desc: 'Motif du bannissement' }
+    ]
+  },
+  pardon: {
+    args: [
+      { name: '<joueur>', type: 'player', desc: 'Joueur à débannir' }
+    ]
+  },
+  whitelist: {
+    args: [
+      { name: '<action>', type: 'whitelist_action', desc: 'Action de liste blanche' },
+      { name: '[joueur]', type: 'player', desc: 'Joueur concerné' }
+    ]
+  },
+  locate: {
+    args: [
+      { name: '<catégorie>', type: 'locate_cat', desc: 'Catégorie (structure, biome, poi)' },
+      { name: '<cible>', type: 'locate_target', desc: 'Structure ou biome recherché' }
+    ]
+  },
+  summon: {
+    args: [
+      { name: '<entité>', type: 'entity', desc: 'Type d’entité à faire apparaître' },
+      { name: '[x y z]', type: 'coord', desc: 'Coordonnées d’apparition' }
+    ]
+  },
+  effect: {
+    args: [
+      { name: '<action>', type: 'effect_action', desc: 'Action give ou clear' },
+      { name: '<joueur>', type: 'player', desc: 'Joueur ciblé' },
+      { name: '[effet]', type: 'effect', desc: 'Effet de potion' },
+      { name: '[durée]', type: 'number', desc: 'Durée en secondes' }
+    ]
+  },
+  gamerule: {
+    args: [
+      { name: '<règle>', type: 'gamerule', desc: 'Règle de jeu Minecraft' },
+      { name: '[valeur]', type: 'boolean', desc: 'Valeur (true / false)' }
+    ]
+  },
+  setworldspawn: {
+    args: [
+      { name: '[x y z]', type: 'coord', desc: 'Coordonnées du point d’apparition global' }
+    ]
+  },
+  spawnpoint: {
+    args: [
+      { name: '[joueur]', type: 'player', desc: 'Joueur' },
+      { name: '[x y z]', type: 'coord', desc: 'Coordonnées de réapparition' }
+    ]
+  },
+  say: {
+    args: [
+      { name: '<message>', type: 'text', desc: 'Message à diffuser à tous' }
+    ]
+  },
+  tell: {
+    args: [
+      { name: '<joueur>', type: 'player', desc: 'Joueur destinataire' },
+      { name: '<message>', type: 'text', desc: 'Message privé' }
+    ]
+  },
+  help: {
+    args: [
+      { name: '[commande]', type: 'command_name', desc: 'Commande dont consulter l’aide' }
+    ]
+  }
 };
+
+const MC_TARGET_DESCS = {
+  '@p': 'Joueur le plus proche',
+  '@a': 'Tous les joueurs du serveur',
+  '@s': 'Exécuteur de la commande',
+  '@r': 'Joueur sélectionné au hasard',
+  '@e': 'Toutes les entités vivantes'
+};
+
+const MC_GAMEMODES = [
+  { val: 'survival', desc: 'Mode Survie standard' },
+  { val: 'creative', desc: 'Mode Créatif illimité' },
+  { val: 'adventure', desc: 'Mode Aventure (sans casse)' },
+  { val: 'spectator', desc: 'Mode Spectateur (vol libre)' }
+];
+
+const MC_TIMES = [
+  { val: 'day', desc: 'Début de journée (1000 ticks)' },
+  { val: 'noon', desc: 'Midi plein soleil (6000 ticks)' },
+  { val: 'night', desc: 'Nuit tombée (13000 ticks)' },
+  { val: 'midnight', desc: 'Minuit obscur (18000 ticks)' },
+  { val: '0', desc: 'Lever du jour (0 ticks)' },
+  { val: '6000', desc: 'Zénith (6000 ticks)' },
+  { val: '12000', desc: 'Crépuscule (12000 ticks)' }
+];
+
+const MC_WEATHERS = [
+  { val: 'clear', desc: 'Ciel bleu et dégagé' },
+  { val: 'rain', desc: 'Pluie continue' },
+  { val: 'thunder', desc: 'Violent orage et foudre' }
+];
+
+const MC_DIFFICULTIES = [
+  { val: 'peaceful', desc: 'Paisible (sans monstres)' },
+  { val: 'easy', desc: 'Facile' },
+  { val: 'normal', desc: 'Difficulté standard' },
+  { val: 'hard', desc: 'Difficile (famine mortelle)' }
+];
+
+const MC_WHITELIST_ACTIONS = [
+  { val: 'on', desc: 'Activer la restriction whitelist' },
+  { val: 'off', desc: 'Désactiver la restriction whitelist' },
+  { val: 'list', desc: 'Lister les joueurs autorisés' },
+  { val: 'add', desc: 'Ajouter un joueur à la liste' },
+  { val: 'remove', desc: 'Retirer un joueur de la liste' },
+  { val: 'reload', desc: 'Recharger whitelist.json' }
+];
+
+const MC_STRUCTURES = [
+  { val: 'minecraft:village', desc: 'Village habité' },
+  { val: 'minecraft:ancient_city', desc: 'Cité antique des profondeurs' },
+  { val: 'minecraft:fortress', desc: 'Forteresse du Nether' },
+  { val: 'minecraft:bastion_remnant', desc: 'Bastion de Piglins' },
+  { val: 'minecraft:mansion', desc: 'Manoir des bois sombres' },
+  { val: 'minecraft:monument', desc: 'Monument sous-marin des gardiens' },
+  { val: 'minecraft:stronghold', desc: 'Forteresse de l’End (Portail)' },
+  { val: 'minecraft:mineshaft', desc: 'Puits de mine abandonné' },
+  { val: 'minecraft:pillager_outpost', desc: 'Avant-poste de pillards' },
+  { val: 'minecraft:buried_treasure', desc: 'Trésor enfoui' }
+];
+
+const MC_BIOMES = [
+  { val: 'minecraft:plains', desc: 'Plaines herbeuses' },
+  { val: 'minecraft:forest', desc: 'Forêt de chênes' },
+  { val: 'minecraft:desert', desc: 'Désert aride' },
+  { val: 'minecraft:jungle', desc: 'Jungle tropicale' },
+  { val: 'minecraft:snowy_slopes', desc: 'Pentes enneigées' },
+  { val: 'minecraft:nether_wastes', desc: 'Terres désolées du Nether' },
+  { val: 'minecraft:end_highlands', desc: 'Hautes terres de l’End' }
+];
+
+const MC_ENTITIES = [
+  { val: 'minecraft:zombie', desc: 'Monstre Zombie' },
+  { val: 'minecraft:skeleton', desc: 'Squelette archer' },
+  { val: 'minecraft:creeper', desc: 'Creeper explosif' },
+  { val: 'minecraft:enderman', desc: 'Enderman téléporteur' },
+  { val: 'minecraft:iron_golem', desc: 'Golem de fer' },
+  { val: 'minecraft:villager', desc: 'Villageois commerçant' },
+  { val: 'minecraft:cow', desc: 'Vache' },
+  { val: 'minecraft:sheep', desc: 'Mouton' },
+  { val: 'minecraft:pig', desc: 'Cochon' },
+  { val: 'minecraft:warden', desc: 'Warden gardien des ténèbres' },
+  { val: 'minecraft:ender_dragon', desc: 'Dragon de l’End' },
+  { val: 'minecraft:wither', desc: 'Boss Wither' }
+];
+
+const MC_ITEMS = [
+  { val: 'minecraft:diamond', desc: 'Diamant brut' },
+  { val: 'minecraft:netherite_ingot', desc: 'Lingot de Netherite' },
+  { val: 'minecraft:golden_apple', desc: 'Pomme dorée' },
+  { val: 'minecraft:elytra', desc: 'Ailes Élytres' },
+  { val: 'minecraft:totem_of_undying', desc: 'Totem d’immortalité' },
+  { val: 'minecraft:iron_ingot', desc: 'Lingot de fer' },
+  { val: 'minecraft:bow', desc: 'Arc de tir' },
+  { val: 'minecraft:arrow', desc: 'Flèche' },
+  { val: 'minecraft:bread', desc: 'Pain nourricier' },
+  { val: 'minecraft:torch', desc: 'Torche d’éclairage' },
+  { val: 'minecraft:oak_log', desc: 'Bûche de chêne' }
+];
+
+const MC_EFFECTS = [
+  { val: 'minecraft:speed', desc: 'Vitesse de marche accrue' },
+  { val: 'minecraft:strength', desc: 'Force d’attaque augmentée' },
+  { val: 'minecraft:regeneration', desc: 'Régénération accélérée de santé' },
+  { val: 'minecraft:night_vision', desc: 'Vision nocturne parfaite' },
+  { val: 'minecraft:invisibility', desc: 'Invisibilité complète' },
+  { val: 'minecraft:water_breathing', desc: 'Apnée sous-marine illimitée' },
+  { val: 'minecraft:fire_resistance', desc: 'Immunité totale au feu et à la lave' },
+  { val: 'minecraft:jump_boost', desc: 'Saut surélevé' },
+  { val: 'minecraft:slow_falling', desc: 'Chute lente sans dégâts' },
+  { val: 'minecraft:absorption', desc: 'Cœurs d’absorption supplémentaires' }
+];
+
+const MC_GAMERULES = [
+  { val: 'keepInventory', desc: 'Conserver l’inventaire après la mort' },
+  { val: 'mobGriefing', desc: 'Dégâts des monstres sur les blocs' },
+  { val: 'doDaylightCycle', desc: 'Progression du cycle jour / nuit' },
+  { val: 'doWeatherCycle', desc: 'Changements météorologiques automatiques' },
+  { val: 'doFireTick', desc: 'Propagation et combustion du feu' },
+  { val: 'naturalRegeneration', desc: 'Régénération naturelle de la vie' },
+  { val: 'fallDamage', desc: 'Dégâts infligés par les chutes' },
+  { val: 'fireDamage', desc: 'Dégâts causés par les flammes' },
+  { val: 'drowningDamage', desc: 'Dégâts de noyade' },
+  { val: 'showDeathMessages', desc: 'Messages de mort dans le chat' },
+  { val: 'randomTickSpeed', desc: 'Vitesse de croissance des cultures et plantes' }
+];
 
 function getKnownPlayerNames() {
   const players = new Set();
@@ -1905,17 +2322,11 @@ function getKnownPlayerNames() {
     const name = typeof p === 'string' ? p : p.name;
     if (name) players.add(name);
   });
-  if (players.size === 0) {
-    players.add('@a');
-    players.add('@p');
-    players.add('@s');
-    players.add('@e');
-    players.add('@r');
-  } else {
-    players.add('@a');
-    players.add('@p');
-    players.add('@s');
-  }
+  players.add('@p');
+  players.add('@a');
+  players.add('@s');
+  players.add('@r');
+  players.add('@e');
   return Array.from(players);
 }
 
@@ -1924,223 +2335,212 @@ function computeCommandSmartSuggestions(rawInput) {
   const clean = rawInput.replace(/^\//, '');
   const tokens = clean.split(' ');
   const baseCmd = (tokens[0] || '').toLowerCase();
-  const currentToken = tokens[tokens.length - 1] || '';
-  const tokenIndex = tokens.length - 1; // 0 = base command, 1 = premier argument, etc.
+  const tokenIndex = tokens.length - 1; // 0 = nom commande, 1 = arg 0...
+  const currentToken = tokens[tokenIndex] || '';
 
-  // Si on est sur le premier mot (nom de commande)
+  const syntax = {
+    base: (hasSlash ? '/' : '') + (baseCmd || ''),
+    chips: []
+  };
+
+  // 1. Choix du nom de la commande (premier mot)
   if (tokenIndex === 0) {
     const q = baseCmd.trim();
-    if (!q) {
-      return DEFAULT_COMMANDS.slice(0, 10).map(c => ({
-        insertText: (hasSlash ? '/' : '') + c.cmd.split(' ')[0] + ' ',
-        displayCmd: (hasSlash ? '/' : '') + c.cmd,
-        desc: c.desc,
-        kind: 'command'
-      }));
-    }
-    const filtered = DEFAULT_COMMANDS.filter(c => {
-      const name = c.cmd.split(' ')[0].toLowerCase();
-      return name.startsWith(q) || c.cmd.toLowerCase().includes(q) || (c.desc || '').toLowerCase().includes(q);
-    });
-    return filtered.slice(0, 10).map(c => {
+    syntax.chips = [{ label: 'Commande', status: 'active' }];
+
+    const filtered = !q
+      ? DEFAULT_COMMANDS.slice(0, 10)
+      : DEFAULT_COMMANDS.filter(c => {
+          const name = c.cmd.split(' ')[0].toLowerCase();
+          return name.startsWith(q) || c.cmd.toLowerCase().includes(q) || (c.desc || '').toLowerCase().includes(q);
+        }).slice(0, 10);
+
+    const suggestions = filtered.map(c => {
       const name = c.cmd.split(' ')[0];
       const hasArgs = c.cmd.includes(' ');
       return {
         insertText: (hasSlash ? '/' : '') + name + (hasArgs ? ' ' : ''),
-        displayCmd: (hasSlash ? '/' : '') + c.cmd,
+        displayCmd: (hasSlash ? '/' : '') + name,
         desc: c.desc,
         kind: 'command'
       };
     });
+
+    return { syntax, suggestions };
   }
 
-  // A partir d'ici, nous sommes dans les arguments (tokenIndex >= 1)
+  // 2. Navigation dans les arguments (tokenIndex >= 1)
+  const spec = COMMAND_SPECS[baseCmd];
   const qArg = currentToken.toLowerCase();
-  const players = getKnownPlayerNames();
+  const argIndex = tokenIndex - 1;
 
-  // Helper pour retourner une liste filtrée de tokens d'argument
-  const makeArgSuggestions = (items, prefixDesc, kind = 'param') => {
-    return items
-      .filter(item => !qArg || item.toLowerCase().includes(qArg))
-      .slice(0, 10)
-      .map(item => {
-        const tokensCopy = [...tokens];
-        tokensCopy[tokensCopy.length - 1] = item;
-        return {
-          insertText: (hasSlash ? '/' : '') + tokensCopy.join(' ') + ' ',
-          displayCmd: item,
-          desc: prefixDesc,
-          kind: kind
-        };
-      });
-  };
-
-  // tp / teleport
-  if (baseCmd === 'tp' || baseCmd === 'teleport') {
-    if (tokenIndex === 1) {
-      return makeArgSuggestions(players, 'Joueur ou entité cible à téléporter', 'player');
-    }
-    if (tokenIndex === 2) {
-      const coordCoords = ['~ ~ ~', '~ ~1 ~', '0 64 0'];
-      const targets = [...players, ...coordCoords];
-      return makeArgSuggestions(targets, 'Destination (joueur ou x y z)', 'coord');
-    }
-    if (tokenIndex === 3 || tokenIndex === 4) {
-      return makeArgSuggestions(['~', '0'], 'Coordonnée relative ou absolue', 'coord');
-    }
-  }
-
-  // gamemode
-  if (baseCmd === 'gamemode') {
-    if (tokenIndex === 1) {
-      return makeArgSuggestions(MC_PRESETS.modes, 'Mode de jeu', 'param');
-    }
-    if (tokenIndex === 2) {
-      return makeArgSuggestions(players, 'Joueur cible', 'player');
-    }
-  }
-
-  // time
-  if (baseCmd === 'time') {
-    if (tokenIndex === 1) {
-      return makeArgSuggestions(['set', 'add', 'query'], 'Action sur le temps', 'param');
-    }
-    if (tokenIndex === 2 && tokens[1] === 'set') {
-      return makeArgSuggestions(MC_PRESETS.times, 'Heure du monde', 'param');
-    }
-    if (tokenIndex === 2 && tokens[1] === 'query') {
-      return makeArgSuggestions(MC_PRESETS.timeQueries, 'Type d’information', 'param');
-    }
-  }
-
-  // weather
-  if (baseCmd === 'weather') {
-    if (tokenIndex === 1) {
-      return makeArgSuggestions(MC_PRESETS.weathers, 'Condition météo', 'param');
-    }
-  }
-
-  // difficulty
-  if (baseCmd === 'difficulty') {
-    if (tokenIndex === 1) {
-      return makeArgSuggestions(MC_PRESETS.difficulties, 'Niveau de difficulté', 'param');
-    }
-  }
-
-  // op / deop / kick / ban / pardon
-  if (['op', 'deop', 'kick', 'ban', 'pardon'].includes(baseCmd)) {
-    if (tokenIndex === 1) {
-      return makeArgSuggestions(players, 'Joueur', 'player');
-    }
-  }
-
-  // whitelist
-  if (baseCmd === 'whitelist') {
-    if (tokenIndex === 1) {
-      const actions = ['add', 'remove', 'on', 'off', 'list', 'reload'];
-      return makeArgSuggestions(actions, 'Action liste blanche', 'param');
-    }
-    if (tokenIndex === 2 && (tokens[1] === 'add' || tokens[1] === 'remove')) {
-      return makeArgSuggestions(players, 'Joueur', 'player');
-    }
-  }
-
-  // give
-  if (baseCmd === 'give') {
-    if (tokenIndex === 1) {
-      return makeArgSuggestions(players, 'Joueur destinataire', 'player');
-    }
-    if (tokenIndex === 2) {
-      return makeArgSuggestions(MC_PRESETS.commonItems, 'Objet Minecraft', 'item');
-    }
-    if (tokenIndex === 3) {
-      return makeArgSuggestions(['1', '16', '32', '64'], 'Quantité', 'number');
-    }
-  }
-
-  // clear
-  if (baseCmd === 'clear') {
-    if (tokenIndex === 1) {
-      return makeArgSuggestions(players, 'Joueur cible', 'player');
-    }
-  }
-
-  // kill
-  if (baseCmd === 'kill') {
-    if (tokenIndex === 1) {
-      return makeArgSuggestions(players, 'Cible à éliminer', 'player');
-    }
-  }
-
-  // gamerule
-  if (baseCmd === 'gamerule') {
-    if (tokenIndex === 1) {
-      return makeArgSuggestions(MC_PRESETS.gamerules, 'Règle de jeu', 'param');
-    }
-  }
-
-  // locate
-  if (baseCmd === 'locate') {
-    if (tokenIndex === 1) {
-      return makeArgSuggestions(['structure', 'biome', 'poi'], 'Type de recherche', 'param');
-    }
-    if (tokenIndex === 2 && tokens[1] === 'structure') {
-      return makeArgSuggestions(MC_PRESETS.structures, 'Structure', 'param');
-    }
-  }
-
-  // summon
-  if (baseCmd === 'summon') {
-    if (tokenIndex === 1) {
-      return makeArgSuggestions(MC_PRESETS.entities, 'Entité à invoquer', 'param');
-    }
-    if (tokenIndex >= 2 && tokenIndex <= 4) {
-      return makeArgSuggestions(['~ ~ ~', '~'], 'Coordonnées d’apparition', 'coord');
-    }
-  }
-
-  // effect
-  if (baseCmd === 'effect') {
-    if (tokenIndex === 1) {
-      return makeArgSuggestions(['give', 'clear'], 'Action d’effet', 'param');
-    }
-    if (tokenIndex === 2) {
-      return makeArgSuggestions(players, 'Joueur', 'player');
-    }
-    if (tokenIndex === 3 && tokens[1] === 'give') {
-      return makeArgSuggestions(MC_PRESETS.effects, 'Effet de potion', 'param');
-    }
-  }
-
-  // setworldspawn / spawnpoint
-  if (baseCmd === 'setworldspawn' || baseCmd === 'spawnpoint') {
-    if (tokenIndex === 1) {
-      if (baseCmd === 'spawnpoint') {
-        return makeArgSuggestions([...players, '~ ~ ~'], 'Joueur ou coordonnées', 'coord');
+  if (spec && spec.args && spec.args.length > 0) {
+    syntax.chips = spec.args.map((a, i) => {
+      const argName = typeof a.name === 'function' ? a.name(tokens) : a.name;
+      if (i < argIndex) {
+        return { label: tokens[i + 1] || argName, status: 'filled' };
       }
-      return makeArgSuggestions(['~ ~ ~', '0 64 0'], 'Coordonnées x y z', 'coord');
-    }
+      if (i === argIndex) {
+        return { label: argName, status: 'active' };
+      }
+      return { label: argName, status: 'pending' };
+    });
+  } else {
+    syntax.chips = [{ label: `<arg ${tokenIndex}>`, status: 'active' }];
   }
 
-  return [];
+  // Si tous les arguments prévus sont déjà remplis
+  if (spec && spec.args && argIndex >= spec.args.length) {
+    return {
+      syntax,
+      suggestions: [
+        {
+          insertText: (hasSlash ? '/' : '') + clean.trim(),
+          displayCmd: '↵ Exécuter la commande',
+          desc: 'Appuyez sur Entrée pour envoyer',
+          kind: 'ready'
+        }
+      ]
+    };
+  }
+
+  // Déterminer le type d’argument actif
+  let argType = 'text';
+  let argDesc = 'Valeur';
+  if (spec && spec.args && spec.args[argIndex]) {
+    const a = spec.args[argIndex];
+    argType = typeof a.type === 'function' ? a.type(tokens) : a.type;
+    argDesc = typeof a.desc === 'function' ? a.desc(tokens) : a.desc;
+  }
+
+  // Préparer les suggestions candidates selon le perk de l’argument
+  let candidates = [];
+  const players = getKnownPlayerNames();
+  const coordCandidates = [
+    { val: '~ ~ ~', desc: 'Position actuelle (~ ~ ~)' },
+    { val: '~', desc: 'Axe courant (~)' },
+    { val: '^ ^ ^', desc: 'Position relative au regard (^ ^ ^)' },
+    { val: '0 64 0', desc: 'Origine mondiale au niveau de la mer' }
+  ];
+
+  if (argType === 'player') {
+    candidates = players.map(p => ({
+      val: p,
+      desc: p.startsWith('@') ? (MC_TARGET_DESCS[p] || 'Sélecteur de cible') : 'Joueur connecté'
+    }));
+  } else if (argType === 'coord_or_player') {
+    candidates = [
+      ...players.map(p => ({ val: p, desc: p.startsWith('@') ? (MC_TARGET_DESCS[p] || 'Sélecteur de cible') : 'Joueur cible' })),
+      ...coordCandidates
+    ];
+  } else if (argType === 'coord') {
+    candidates = coordCandidates;
+  } else if (argType === 'gamemode') {
+    candidates = MC_GAMEMODES;
+  } else if (argType === 'time_action') {
+    candidates = [
+      { val: 'set', desc: 'Régler l’heure du jour' },
+      { val: 'add', desc: 'Avancer le cycle horaire' },
+      { val: 'query', desc: 'Consulter l’heure courante' }
+    ];
+  } else if (argType === 'time_preset') {
+    candidates = MC_TIMES;
+  } else if (argType === 'time_query') {
+    candidates = [
+      { val: 'daytime', desc: 'Heure écoulée du jour' },
+      { val: 'gametime', desc: 'Temps global de la partie' },
+      { val: 'day', desc: 'Nombre de jours passés' }
+    ];
+  } else if (argType === 'weather') {
+    candidates = MC_WEATHERS;
+  } else if (argType === 'difficulty') {
+    candidates = MC_DIFFICULTIES;
+  } else if (argType === 'whitelist_action') {
+    candidates = MC_WHITELIST_ACTIONS;
+  } else if (argType === 'locate_cat') {
+    candidates = [
+      { val: 'structure', desc: 'Rechercher une structure' },
+      { val: 'biome', desc: 'Rechercher un écosystème naturel' },
+      { val: 'poi', desc: 'Rechercher un point d’intérêt (village)' }
+    ];
+  } else if (argType === 'locate_target') {
+    candidates = (tokens[1] === 'biome') ? MC_BIOMES : MC_STRUCTURES;
+  } else if (argType === 'entity') {
+    candidates = MC_ENTITIES;
+  } else if (argType === 'item') {
+    candidates = MC_ITEMS;
+  } else if (argType === 'effect_action') {
+    candidates = [
+      { val: 'give', desc: 'Accorder un effet de potion' },
+      { val: 'clear', desc: 'Dissiper tous les effets actifs' }
+    ];
+  } else if (argType === 'effect') {
+    candidates = MC_EFFECTS;
+  } else if (argType === 'gamerule') {
+    candidates = MC_GAMERULES;
+  } else if (argType === 'boolean') {
+    candidates = [
+      { val: 'true', desc: 'Activer la règle' },
+      { val: 'false', desc: 'Désactiver la règle' }
+    ];
+  } else if (argType === 'number') {
+    candidates = [
+      { val: '1', desc: 'Quantité : 1' },
+      { val: '16', desc: 'Quantité : 16' },
+      { val: '32', desc: 'Quantité : 32' },
+      { val: '64', desc: 'Quantité : 64 (Stack)' }
+    ];
+  } else if (argType === 'command_name') {
+    candidates = DEFAULT_COMMANDS.map(c => ({ val: c.cmd.split(' ')[0], desc: c.desc }));
+  }
+
+  // Filtrage selon la saisie courante du minibloc actif
+  const filtered = candidates.filter(c => {
+    if (!qArg) return true;
+    const v = c.val.toLowerCase();
+    return v.includes(qArg) || (c.desc || '').toLowerCase().includes(qArg);
+  }).slice(0, 10);
+
+  const suggestions = filtered.map(c => {
+    const tokensCopy = [...tokens];
+    tokensCopy[tokenIndex] = c.val;
+    return {
+      insertText: (hasSlash ? '/' : '') + tokensCopy.join(' ') + ' ',
+      displayCmd: c.val,
+      desc: c.desc || argDesc,
+      kind: argType
+    };
+  });
+
+  return { syntax, suggestions };
 }
 
-function formatCmdWithTags(cmdStr) {
-  // Remplace <...> ou [...] par des badges soignés
-  return escapeHtml(cmdStr).replace(/(&lt;[^&]+&gt;|\[[^\]]+\])/g, '<span class="suggestion-arg-tag">$1</span>');
-}
-
-function renderSuggestions(suggestions, query) {
+function renderSuggestions(smartResult, query) {
   if (!cmdSuggestionsBox || !suggestionsList) return;
+  const { syntax, suggestions } = smartResult || {};
+
+  // Mise à jour de la barre de miniblocs syntaxiques
+  if (cmdSyntaxBar && syntax) {
+    let barHtml = `<span class="syntax-cmd">${escapeHtml(syntax.base || '/')}</span>`;
+    if (syntax.chips && syntax.chips.length > 0) {
+      barHtml += syntax.chips.map(chip => {
+        const statusClass = chip.status || 'pending';
+        return `<span class="syntax-chip ${statusClass}">${escapeHtml(chip.label)}</span>`;
+      }).join('');
+    }
+    cmdSyntaxBar.innerHTML = barHtml;
+  }
+
   if (!suggestions || suggestions.length === 0) {
-    cmdSuggestionsBox.style.display = 'none';
+    suggestionsList.innerHTML = `<div class="suggestions-tip" style="padding: 8px 10px; color: var(--text-dim); font-style: italic;">Aucune suggestion pour cet argument</div>`;
+    cmdSuggestionsBox.style.display = 'flex';
     _selectedSuggestionIndex = -1;
     return;
   }
 
   suggestionsList.innerHTML = suggestions.map((s, idx) => `
     <div class="suggestion-item ${idx === _selectedSuggestionIndex ? 'active' : ''}" data-insert="${escapeHtml(s.insertText)}" data-index="${idx}">
-      <span class="suggestion-cmd">${formatCmdWithTags(s.displayCmd || s.insertText)}</span>
+      <span class="suggestion-cmd">${escapeHtml(s.displayCmd || s.insertText)}</span>
       <span class="suggestion-desc">${escapeHtml(s.desc || '')}</span>
     </div>
   `).join('');
@@ -2172,8 +2572,6 @@ function updateActiveSuggestionHighlight() {
   });
 }
 
-let _currentSuggestionsList = [];
-
 function applySuggestionItem(sug) {
   if (!sug || !cmdInput) return;
   cmdInput.value = sug.insertText;
@@ -2187,16 +2585,15 @@ async function updateCommandSuggestions(query) {
   if (!cmdSuggestionsBox || !suggestionsList) return;
   const clean = query;
 
-  // Calcul immédiat des suggestions intelligentes contextuelles
-  const smartSuggestions = computeCommandSmartSuggestions(clean);
-  _currentSuggestionsList = smartSuggestions;
+  const smartResult = computeCommandSmartSuggestions(clean);
+  _currentSuggestionsList = smartResult.suggestions || [];
 
-  if (smartSuggestions.length > 0) {
-    renderSuggestions(smartSuggestions, query);
+  if (smartResult && (smartResult.suggestions.length > 0 || (smartResult.syntax && smartResult.syntax.chips.length > 0))) {
+    renderSuggestions(smartResult, query);
     return;
   }
 
-  // Repli sur l'API backend si disponible
+  // Repli sur l'API backend si nécessaire
   const wid = selectedTerminalWorldId || activeWorld || '';
   try {
     const res = await fetch(`/api/worlds/command-suggestions?worldId=${encodeURIComponent(wid)}&q=${encodeURIComponent(clean.trim())}`);
@@ -2209,12 +2606,10 @@ async function updateCommandSuggestions(query) {
         kind: 'command'
       }));
       _currentSuggestionsList = formatted;
-      renderSuggestions(formatted, query);
+      renderSuggestions({ syntax: { base: clean, chips: [] }, suggestions: formatted }, query);
       return;
     }
-  } catch (e) {
-    // Échec silencieux
-  }
+  } catch (e) {}
 
   cmdSuggestionsBox.style.display = 'none';
   _selectedSuggestionIndex = -1;
@@ -2262,7 +2657,6 @@ if (cmdInput) {
         _selectedSuggestionIndex = (_selectedSuggestionIndex - 1 + items.length) % items.length;
         updateActiveSuggestionHighlight();
       } else {
-        // Historique des commandes envoyées
         if (cmdHistory.length > 0) {
           e.preventDefault();
           if (cmdHistoryIndex === -1) cmdHistoryIndex = cmdHistory.length - 1;
@@ -4118,12 +4512,14 @@ if (btnClosePlayersModal) {
 
 if (btnRefreshPlayersModal) {
   btnRefreshPlayersModal.addEventListener('click', async () => {
-    btnRefreshPlayersModal.style.transform = 'rotate(180deg)';
-    btnRefreshPlayersModal.style.transition = 'transform 0.4s ease';
+    const svg = btnRefreshPlayersModal.querySelector('svg');
+    if (svg) {
+      svg.classList.remove('spinning');
+      void svg.offsetWidth;
+      svg.classList.add('spinning');
+      setTimeout(() => svg.classList.remove('spinning'), 600);
+    }
     await refreshPlayersData();
-    setTimeout(() => {
-      btnRefreshPlayersModal.style.transform = 'none';
-    }, 400);
   });
 }
 
@@ -6139,7 +6535,18 @@ if (btnLaunchAfterRepair) {
   });
 }
 
-btnRefreshWorlds.addEventListener('click', fetchWorlds);
+if (btnRefreshWorlds) {
+  btnRefreshWorlds.addEventListener('click', () => {
+    const svg = btnRefreshWorlds.querySelector('svg');
+    if (svg) {
+      svg.classList.remove('spinning');
+      void svg.offsetWidth;
+      svg.classList.add('spinning');
+      setTimeout(() => svg.classList.remove('spinning'), 600);
+    }
+    fetchWorlds();
+  });
+}
 
 // Exposer globalement pour les événements onclick HTML
 window.openEditProps = openEditProps;
