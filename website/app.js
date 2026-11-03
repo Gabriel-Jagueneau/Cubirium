@@ -574,22 +574,74 @@ function escapeHtml(str) {
 }
 
 
+
 /**
- * Basculement des onglets du cadre légal (Confidentialité, CGU, Mentions)
+ * Cadre légal : Modal interactif pour Politique de confidentialité, CGU et Mentions légales
  */
-function switchWebLegalTab(tabId) {
-  const tabs = ['privacy', 'terms', 'notices'];
-  tabs.forEach((t) => {
-    const pane = document.getElementById('webLegalPane' + t.charAt(0).toUpperCase() + t.slice(1));
-    const btn = document.getElementById('btnWebLegal' + t.charAt(0).toUpperCase() + t.slice(1));
-    if (pane) pane.style.display = t === tabId ? 'block' : 'none';
-    if (btn) {
-      if (t === tabId) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
-    }
-  });
+const LEGAL_CONTENTS = {
+  privacy: {
+    title: "Politique de confidentialité (Privacy by Design)",
+    html: `
+      <p>Cubirium a été conçu selon le principe fondamental de la <strong>souveraineté locale des données</strong>. L'application n'intègre aucun traceur, aucun outil d'analyse comportementale et ne transmet ni ne revend aucune donnée à des tiers.</p>
+      <ul>
+        <li><strong>Stockage local exclusif :</strong> Vos mondes Minecraft, configurations, inventaires et données de joueurs sont conservés exclusivement sur votre disque dur.</li>
+        <li><strong>Flux réseau :</strong> Le partage de monde transite par un tunnel chiffré sans aucun enregistrement ni analyse du contenu des paquets de jeu.</li>
+        <li><strong>Contrôle utilisateur :</strong> Vous pouvez à tout moment exporter, sauvegarder ou purger l'intégralité de vos fichiers depuis l'interface sans restriction.</li>
+      </ul>
+    `
+  },
+  terms: {
+    title: "Conditions d'utilisation",
+    html: `
+      <p>L'accès à Cubirium est fourni gratuitement pour un usage privé et récréatif. En utilisant ce logiciel, vous acceptez les directives suivantes :</p>
+      <ul>
+        <li><strong>Respect des CGU Mojang :</strong> L'exploitation des serveurs Minecraft doit se conformer aux conditions de licence et au contrat EULA de Mojang Studios / Microsoft.</li>
+        <li><strong>Responsabilité de l'administrateur :</strong> L'administrateur de l'instance est garant des activités, des accès et des comportements sur les serveurs qu'il héberge et partage.</li>
+        <li><strong>Usage loyal du réseau :</strong> Tout abus, saturation volontaire, utilisation de relais à des fins illicites ou tentative de perturbation est strictement prohibé.</li>
+      </ul>
+    `
+  },
+  notices: {
+    title: "Mentions légales & Attribution",
+    html: `
+      <p>Cubirium est une œuvre logicielle originale développée par <strong>Gabriel Jagueneau</strong>.</p>
+      <ul>
+        <li><strong>Droit d'auteur & Propriété intellectuelle :</strong> Le code source, l'interface graphique et les éléments visuels de Cubirium sont protégés au titre du droit d'auteur et de la propriété intellectuelle de Gabriel Jagueneau.</li>
+        <li><strong>Marques tierces :</strong> Minecraft est une marque déposée de Mojang Synergies AB / Microsoft Corporation. Cubirium est un logiciel indépendant et n'est ni sponsorisé ni affilié à Mojang Studios.</li>
+        <li><strong>Éditeur & Contact :</strong> Développé par Gabriel Jagueneau. Contact accessible sur le site officiel de l'auteur : <a href="https://gjagueneau.fr" target="_blank" rel="noopener noreferrer">gjagueneau.fr</a>. Distribué sous licence open-source MIT.</li>
+      </ul>
+    `
+  }
+};
+
+function openLegalModal(type) {
+  const content = LEGAL_CONTENTS[type];
+  if (!content) return;
+  const overlay = document.getElementById("legalModalOverlay");
+  const title = document.getElementById("legalModalTitle");
+  const body = document.getElementById("legalModalBody");
+  if (title) title.textContent = content.title;
+  if (body) body.innerHTML = content.html;
+  if (overlay) {
+    overlay.style.display = "flex";
+    document.body.style.overflow = "hidden";
+  }
 }
-window.switchWebLegalTab = switchWebLegalTab;
+
+function closeLegalModal() {
+  const overlay = document.getElementById("legalModalOverlay");
+  if (overlay) {
+    overlay.style.display = "none";
+    document.body.style.overflow = "";
+  }
+}
+
+window.openLegalModal = openLegalModal;
+window.closeLegalModal = closeLegalModal;
+
+// Fermeture avec la touche Escape
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeLegalModal();
+  }
+});
