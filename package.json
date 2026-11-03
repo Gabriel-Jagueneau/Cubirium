@@ -5,6 +5,7 @@
   "scripts": {
     "diagnose": "node diagnose.js",
     "start": "cd manager && node src/server.js",
+    "sync:app": "cp -R manager/public/* /Applications/Cubirium.app/Contents/Resources/manager/public/ && cp -R manager/src/* /Applications/Cubirium.app/Contents/Resources/manager/src/ 2>/dev/null || true",
     "package:pkg": "bash scripts/build-pkg.sh",
     "package:win": "bash scripts/build-win.sh",
     "package:mac": "bash scripts/build-pkg.sh",
