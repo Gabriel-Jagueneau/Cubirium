@@ -539,6 +539,66 @@ code {
   overflow: hidden;
   box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 50px -15px rgba(99, 102, 241, 0.25);
   text-align: left;
+  position: relative;
+}
+
+/* Notification HUD Top-Center (Style Dynamic Island macOS) */
+.real-hud-toast-wrap {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  pointer-events: none;
+  max-width: 90%;
+}
+
+.real-hud-toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 20px rgba(52, 211, 153, 0.18);
+  padding: 6px 14px 6px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  color: #f1f5f9;
+  white-space: nowrap;
+}
+
+.real-hud-toast__icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.real-hud-toast__text {
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+.real-hud-toast__text strong {
+  color: #ffffff;
+}
+
+.real-hud-toast__badge {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  border-radius: var(--radius-pill);
 }
 
 /* Barre de titre / En-tête de l'application */
@@ -1106,6 +1166,100 @@ code {
   padding: 4px;
 }
 
+/* Menu flottant d'autocomplétion des commandes (console) */
+.real-suggestions-box {
+  background: rgba(13, 17, 26, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.7), 0 0 20px rgba(99, 102, 241, 0.15);
+  padding: 8px;
+  margin-bottom: 10px;
+}
+
+.real-suggestions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px 6px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 6px;
+}
+
+.real-suggestions-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-lo);
+}
+
+.real-suggestions-hint {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: #818cf8;
+}
+
+.real-suggestions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.real-suggestion-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  color: var(--text-mid);
+  transition: all 0.15s ease;
+}
+
+.real-suggestion-item.is-selected {
+  background: rgba(99, 102, 241, 0.18);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  color: #ffffff;
+}
+
+.real-suggestion-cmd code {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: #a5b4fc;
+}
+
+.real-suggestion-item.is-selected .real-suggestion-cmd code {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.real-suggestion-desc {
+  font-size: 0.72rem;
+  color: var(--text-lo);
+  flex: 1;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.real-suggestion-item.is-selected .real-suggestion-desc {
+  color: #cbd5e1;
+}
+
+.real-suggestion-key {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-weight: 600;
+}
+
 /* --------------------------------------------------------------------------
    Sections communes
    -------------------------------------------------------------------------- */
@@ -1162,6 +1316,10 @@ code {
 
 .bento-card--large {
   grid-column: span 2;
+}
+
+.bento-card--full {
+  grid-column: span 3;
 }
 
 .bento-card__content {
@@ -1326,33 +1484,161 @@ code {
   padding: 1px 4px;
 }
 
-/* 3. Visuel Auto-réparation */
-.bento-mockup-repair {
+/* 3. Visuel Diagnostic & Réparation méthodique en 5 étapes */
+.bento-mockup-repair-timeline {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px 14px;
+}
+
+.bento-repair-backup-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  color: #34d399;
+  font-weight: 500;
+}
+
+.bento-repair-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bento-repair-step {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+}
+
+.bento-repair-step__left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-hi);
+  font-size: 0.78rem;
+}
+
+.bento-repair-step__icon {
+  color: #34d399;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.bento-repair-step__tag {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  white-space: nowrap;
+}
+
+/* 4. Visuel Console interactive & Autocomplétion */
+.bento-mockup-cmd {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bento-mockup-cmd__preview {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: var(--radius-sm);
 }
 
-.bento-mockup-repair__item {
+.bento-mockup-cmd__row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
+  font-size: 0.78rem;
+  color: var(--text-mid);
+}
+
+.bento-mockup-cmd__row code {
+  font-family: var(--font-mono);
+  color: #a5b4fc;
+  font-size: 0.75rem;
+}
+
+.bento-mockup-cmd__row.is-active {
+  color: #ffffff;
+}
+
+.bento-mockup-cmd__row.is-active code {
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.bento-mockup-cmd__kbd {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  padding: 1px 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  color: var(--text-mid);
+}
+
+/* 7. Visuel Mise à jour in-app */
+.bento-mockup-update {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-sm);
+  flex-wrap: wrap;
+}
+
+.bento-mockup-update__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bento-mockup-update__badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  background: rgba(99, 102, 241, 0.2);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  border-radius: var(--radius-pill);
+}
+
+.bento-mockup-update__text {
   font-size: 0.82rem;
   color: var(--text-mid);
 }
 
-.bento-mockup-repair__item.is-ok svg {
+.bento-mockup-update__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
   color: #34d399;
-  flex-shrink: 0;
-}
-
-.bento-mockup-repair__item code {
-  font-size: 0.78rem;
-  padding: 1px 4px;
 }
 
 /* 4. Visuel Modpack */
@@ -2046,7 +2332,8 @@ code {
     grid-template-columns: 1fr;
   }
 
-  .bento-card--large {
+  .bento-card--large,
+  .bento-card--full {
     grid-column: span 1;
   }
 
