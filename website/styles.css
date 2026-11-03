@@ -2192,8 +2192,8 @@ code {
 
 .footer__container {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 56px;
+  grid-template-columns: 1.8fr 1fr 1fr 1fr;
+  gap: 40px;
 }
 
 .footer__col--brand {
@@ -3713,37 +3713,78 @@ code {
 
 /* ==========================================================================
    LAYOUT PREVIEW HERO 1:1 FIDÈLE A L'APPLICATION (IMAGE 1)
+   Volet Gauche seul flottant, Terminal plein format sans cadre flottant
    ========================================================================== */
 .real-app-layout {
   display: grid;
   grid-template-columns: 360px 1fr;
-  gap: 14px;
-  padding: 14px;
-  background: #080b12;
+  gap: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: #060910 !important;
   box-sizing: border-box;
   align-items: stretch;
 }
 
+/* 1. SEUL le volet des mondes flotte (Sidebar élevée avec marge) */
 .real-worlds-panel {
-  background: rgba(16, 21, 34, 0.96);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  margin: 12px 4px 12px 12px !important;
+  background: rgba(16, 21, 34, 0.96) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  box-shadow: 8px 0 24px -2px rgba(0, 0, 0, 0.5), 0 10px 30px rgba(0, 0, 0, 0.4) !important;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   height: auto;
+  position: relative;
+  z-index: 2;
 }
 
+/* 2. Le Terminal n'est PAS dans un cadre flottant (fond continu comme dans l'app) */
 .real-console-panel {
-  background: #080b12;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  background: #060910 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   height: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.real-console-header {
+  height: 56px !important;
+  box-sizing: border-box;
+  padding: 12px 20px !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  background: transparent !important;
+}
+
+.real-terminal-body {
+  padding: 16px 20px !important;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.72rem;
+  line-height: 1.55;
+  background: #060910 !important;
+  height: 380px !important;
+  overflow-y: hidden;
+  box-sizing: border-box;
+  border: none !important;
+}
+
+.real-terminal-footer {
+  padding: 12px 20px !important;
+  background: rgba(12, 16, 26, 0.6) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-sizing: border-box;
 }
 
 .real-panel-header {
@@ -4083,4 +4124,60 @@ code {
   font-size: 0.7rem;
   padding: 2px 8px;
   border-radius: 12px;
+}
+
+@media (max-width: 992px) {
+  .footer__container {
+    grid-template-columns: 1fr 1fr;
+    gap: 36px;
+  }
+}
+
+/* Fix Anti-compression Joueurs & Bento */
+.bento-players-tabs {
+  display: flex !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.bento-players-tab {
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  font-size: 0.74rem !important;
+  padding: 5px 12px !important;
+}
+
+.bento-player-name-wrap {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.bento-player-tag {
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+  line-height: 1.2 !important;
+}
+
+.bento-player-tag.online {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #10b981 !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  font-size: 0.68rem !important;
+  padding: 2px 8px !important;
+  border-radius: 4px !important;
+  font-weight: 600 !important;
+}
+
+.bento-player-tag.op {
+  background: rgba(245, 158, 11, 0.15) !important;
+  color: #f59e0b !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+  font-size: 0.68rem !important;
+  padding: 2px 8px !important;
+  border-radius: 4px !important;
+  font-weight: 600 !important;
 }

@@ -397,6 +397,7 @@
         </div>
 
         <div class="bento-grid">
+          <!-- Ligne 1 : Grand à gauche (Tunnel) / Petit à droite (Java) -->
           <!-- Carte 1 : Partage instantané & Tunnel public sécurisé -->
           <div class="bento-card bento-card--large">
             <div class="bento-card__content">
@@ -493,6 +494,47 @@
             </div>
           </div>
 
+          <!-- Ligne 2 : Petit à gauche (Mods) / Grand à droite (Réparation) -->
+          <!-- Carte 5 : Filtrage de modpacks -->
+          <div class="bento-card">
+            <div class="bento-card__content">
+              <div class="bento-card__icon-wrapper">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path
+                    d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                  <line x1="12" y1="22.08" x2="12" y2="12" />
+                </svg>
+              </div>
+              <h3 class="bento-card__title">Filtrage automatique de modpacks</h3>
+              <p class="bento-card__text">
+                Glissez-déposez n'importe quel modpack CurseForge ou Modrinth. Cubirium isole les mods serveur et exclut automatiquement les mods client non compatibles (shaders, interface).
+              </p>
+            </div>
+            <!-- Visuel réel de l'application : Panneau de tri des mods -->
+            <div class="bento-visual">
+              <div class="bento-mockup-mods">
+                <div class="analysis-summary-demo">
+                  <div class="summary-box-demo success">
+                    <span class="summary-val-demo">38</span>
+                    <span class="summary-lbl-demo">Mods Serveur retenus</span>
+                  </div>
+                  <div class="summary-box-demo warning">
+                    <span class="summary-val-demo">6</span>
+                    <span class="summary-lbl-demo">Mods Client exclus</span>
+                  </div>
+                </div>
+                <div class="bento-mockup-mods__chips">
+                  <span class="mod-chip is-excluded">Iris Shaders</span>
+                  <span class="mod-chip is-excluded">Sodium</span>
+                  <span class="mod-chip is-included">Fabric API</span>
+                  <span class="mod-chip is-included">FerriteCore</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Carte 3 : Diagnostic & Réparation méthodique en 5 étapes -->
           <div class="bento-card bento-card--large">
             <div class="bento-card__content">
@@ -554,8 +596,9 @@
             </div>
           </div>
 
+          <!-- Ligne 3 : Grand à gauche (Joueurs & Permissions) / Petit à droite (Moteurs) -->
           <!-- Carte 4 : Gestionnaire des joueurs & Permissions -->
-          <div class="bento-card">
+          <div class="bento-card bento-card--large">
             <div class="bento-card__content">
               <div class="bento-card__icon-wrapper">
                 <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
@@ -594,48 +637,8 @@
             </div>
           </div>
 
-          <!-- Carte 5 : Filtrage de modpacks -->
-          <div class="bento-card">
-            <div class="bento-card__content">
-              <div class="bento-card__icon-wrapper">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path
-                    d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                  <line x1="12" y1="22.08" x2="12" y2="12" />
-                </svg>
-              </div>
-              <h3 class="bento-card__title">Filtrage automatique de modpacks</h3>
-              <p class="bento-card__text">
-                Glissez-déposez n'importe quel modpack CurseForge ou Modrinth. Cubirium isole les mods serveur et exclut automatiquement les mods client non compatibles (shaders, interface).
-              </p>
-            </div>
-            <!-- Visuel réel de l'application : Panneau de tri des mods -->
-            <div class="bento-visual">
-              <div class="bento-mockup-mods">
-                <div class="analysis-summary-demo">
-                  <div class="summary-box-demo success">
-                    <span class="summary-val-demo">38</span>
-                    <span class="summary-lbl-demo">Mods Serveur retenus</span>
-                  </div>
-                  <div class="summary-box-demo warning">
-                    <span class="summary-val-demo">6</span>
-                    <span class="summary-lbl-demo">Mods Client exclus</span>
-                  </div>
-                </div>
-                <div class="bento-mockup-mods__chips">
-                  <span class="mod-chip is-excluded">Iris Shaders</span>
-                  <span class="mod-chip is-excluded">Sodium</span>
-                  <span class="mod-chip is-included">Fabric API</span>
-                  <span class="mod-chip is-included">FerriteCore</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <!-- Carte 6 : Prise en charge multi-moteurs -->
-          <div class="bento-card bento-card--large">
+          <div class="bento-card">
             <div class="bento-card__content">
               <div class="bento-card__icon-wrapper">
                 <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
@@ -682,6 +685,7 @@
             </div>
           </div>
 
+          <!-- Ligne 4 : Pleine largeur (Exportation & Sauvegarde) -->
           <!-- Carte 7 : Exportation, Sauvegarde & Import en 1 clic -->
           <div class="bento-card bento-card--full">
             <div class="bento-card__content">
