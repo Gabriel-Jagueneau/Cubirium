@@ -2965,3 +2965,593 @@ code {
   color: #818cf8;
   text-decoration: underline;
 }
+
+/* ==========================================================================
+   STYLES SPECIFIQUES PREVIEW HERO 1:1 FIDÈLE A L'APPLICATION (IMAGE 1)
+   ========================================================================== */
+
+.real-app-titlebar-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  text-align: center;
+  flex: 1;
+}
+
+.real-app-titlebar-spacer {
+  width: 52px;
+  flex-shrink: 0;
+}
+
+.real-worlds-count-badge {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 12px;
+}
+
+.real-panel-create-bar {
+  padding: 12px 16px;
+}
+
+.real-btn-create-world {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  border: none;
+  border-radius: 20px;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: default;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  transition: transform 0.2s ease;
+}
+
+.real-btn-create-world__plus {
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.real-world-card {
+  background: #131926;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  transition: all 0.2s ease;
+}
+
+.real-world-card--active {
+  border: 1.5px solid #3b82f6 !important;
+  background: #141c2e !important;
+  box-shadow: 0 0 16px rgba(59, 130, 246, 0.2) !important;
+}
+
+.real-world-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.real-world-card__identity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.real-world-card__name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.real-world-card__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #64748b;
+  display: inline-block;
+}
+
+.real-world-card__top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.real-card-icon-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+}
+
+.real-card-chevron {
+  color: #64748b;
+  display: flex;
+  align-items: center;
+}
+
+.real-card-pin {
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+}
+
+.real-card-drag-handle {
+  color: #475569;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  user-select: none;
+}
+
+.real-world-card__tags {
+  margin-top: 6px;
+}
+
+.real-world-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.real-world-tag--vanilla {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #10b981;
+}
+
+.real-world-tag--modded {
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: #60a5fa;
+}
+
+.real-world-card__details {
+  margin-top: 8px;
+  font-size: 0.74rem;
+  color: #94a3b8;
+}
+
+.real-world-card__line {
+  margin-bottom: 4px;
+}
+
+.real-world-card__stats-row {
+  display: flex;
+  gap: 16px;
+}
+
+.real-world-card__footer-actions {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.real-btn-launch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #10b981;
+  color: #022c22;
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 20px;
+  cursor: default;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.real-btn-icon-group {
+  display: flex;
+  gap: 6px;
+}
+
+.real-icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+
+.real-icon-btn--danger {
+  color: #f87171;
+}
+
+/* Header de la Console */
+.real-console-header {
+  height: 54px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0b0f19;
+}
+
+.real-terminal-title-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.real-terminal-title-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3b82f6;
+  box-shadow: 0 0 6px #3b82f6;
+}
+
+.real-console-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.real-btn-launch-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  background: #10b981;
+  color: #022c22;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 20px;
+  cursor: default;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.real-btn-clear-header {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: default;
+}
+
+/* Zone Terminal */
+.real-terminal-body {
+  padding: 16px 20px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  background: #060910;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.real-terminal-line {
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin-bottom: 2px;
+}
+
+.real-terminal-line .log-ts {
+  color: #64748b;
+}
+
+.real-terminal-line .log-warn {
+  color: #eab308;
+  font-weight: 600;
+}
+
+.real-terminal-line .log-info {
+  color: #94a3b8;
+}
+
+.real-terminal-line .log-msg {
+  color: #cbd5e1;
+}
+
+.real-terminal-line.is-warn .log-msg {
+  color: #fef08a;
+}
+
+/* Footer Terminal */
+.real-terminal-footer {
+  padding: 12px 20px;
+  background: #0b0f19;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.real-cmd-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #060910;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 8px 12px;
+  gap: 12px;
+}
+
+.real-cmd-placeholder {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.75rem;
+  color: #475569;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.real-cmd-send-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #6366f1;
+  border: none;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: default;
+}
+
+/* ==========================================================================
+   STYLES SPECIFIQUES DES CARTES BENTO AVEC EXTRAITS D'UI REELS
+   ========================================================================== */
+
+.tunnel-share-pill-demo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #090d16;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50px;
+  padding: 6px 14px;
+}
+
+.tunnel-share-pill-demo__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.tunnel-share-pill-demo__addr {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.tunnel-share-pill-demo__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  color: #c7d2fe;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  cursor: default;
+}
+
+.tunnel-share-pill-demo__btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  cursor: default;
+}
+
+.bento-players-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.bento-players-tab {
+  font-size: 0.72rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.bento-players-tab.active {
+  background: rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  color: #c7d2fe;
+}
+
+.bento-player-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.bento-player-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 0.85rem;
+}
+
+.bento-player-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bento-player-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bento-player-name {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #ffffff;
+}
+
+.bento-player-tag.online {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.bento-player-tag.op {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.bento-player-sub {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+.analysis-summary-demo {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.summary-box-demo {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.summary-box-demo.success {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.summary-box-demo.warning {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.summary-val-demo {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.summary-lbl-demo {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+.bento-mockup-engines {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bento-engine-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 6px 14px;
+}
+
+.bento-engine-badge.is-active {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.bento-engine-badge .engine-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #64748b;
+}
+
+.bento-engine-badge.is-active .engine-dot {
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+}
+
+.bento-engine-badge .engine-name {
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: #f8fafc;
+}
+
+.bento-engine-badge .engine-tag {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
