@@ -2192,8 +2192,8 @@ code {
 
 .footer__container {
   display: grid;
-  grid-template-columns: 1.8fr 1fr 1fr 1fr;
-  gap: 40px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 48px;
 }
 
 .footer__col--brand {
@@ -3094,9 +3094,29 @@ code {
 }
 
 .real-card-pin {
-  color: #94a3b8;
-  display: flex;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #64748b;
+  cursor: pointer;
+  padding: 3px;
+  border-radius: 6px;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: all 0.15s ease;
+}
+
+.real-card-pin:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.real-card-pin.active {
+  color: #818cf8;
+  background: rgba(99, 102, 241, 0.16);
+  border-color: rgba(99, 102, 241, 0.35);
 }
 
 .real-card-drag-handle {
@@ -4140,17 +4160,31 @@ code {
 
 
 /* Fix Anti-compression Joueurs & Bento */
+.bento-mockup-players {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
 .bento-players-tabs {
   display: flex !important;
-  gap: 8px !important;
+  gap: 6px !important;
   flex-wrap: wrap !important;
+  align-items: center !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 .bento-players-tab {
   white-space: nowrap !important;
   flex-shrink: 0 !important;
-  font-size: 0.74rem !important;
-  padding: 5px 12px !important;
+  font-size: 0.72rem !important;
+  padding: 4px 10px !important;
+  border-radius: 20px !important;
+  box-sizing: border-box !important;
 }
 
 .bento-player-name-wrap {
