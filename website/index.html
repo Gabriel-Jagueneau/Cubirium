@@ -52,6 +52,7 @@
         <a href="#compatibilite" class="navbar__link">Compatibilité</a>
         <a href="#changelog" class="navbar__link">Changelog</a>
         <a href="#faq" class="navbar__link">FAQ</a>
+        <a href="#legal" class="navbar__link">Légal</a>
       </nav>
 
       <div class="navbar__actions">
@@ -137,7 +138,7 @@
           </div>
         </div>
 
-        <!-- VRAIE INTERFACE DE L'APPLICATION CUBIRIUM -->
+        <!-- VRAIE INTERFACE DE L'APPLICATION CUBIRIUM (Fidèle à 100% à l'application) -->
         <div class="hero__preview" id="apercu">
           <div class="real-app-window">
             <!-- Barre de fenêtre macOS -->
@@ -148,197 +149,265 @@
                 <span class="dot dot--green"></span>
               </div>
               <div class="real-app-brand">
-                <img src="./app-icon.png" alt="Logo" class="real-app-logo" />
                 <span class="real-app-title">Cubirium</span>
-                <span class="real-app-sub">L'app pour héberger des serveurs Minecraft sur votre ordinateur.</span>
-              </div>
-              <div class="real-app-header-actions">
-                <div class="real-btn-secondary">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path
-                      d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
-                    </path>
-                  </svg>
-                  <span>Paramètres</span>
-                </div>
-                <div class="real-btn-primary">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                  </svg>
-                  <span>Nouveau Monde</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Notification HUD Haute Visibilité (Style Dynamic Island macOS) -->
-            <div class="real-hud-toast-wrap">
-              <div class="real-hud-toast">
-                <div class="real-hud-toast__icon">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                </div>
-                <span class="real-hud-toast__text">Monde <strong>Survie Entre Potes</strong> actif</span>
-                <span class="real-hud-toast__badge">Port 25565 validé</span>
               </div>
             </div>
 
             <!-- Structure 2 Colonnes Réelle de Cubirium -->
             <div class="real-app-layout">
-              <!-- Colonne Gauche : Mondes Disponibles -->
+              <!-- Colonne Gauche : Mondes -->
               <div class="real-worlds-panel">
                 <div class="real-panel-header">
                   <div class="real-panel-title-wrap">
-                    <h3>Mondes Disponibles</h3>
-                    <span class="real-badge">2</span>
+                    <h3>Mondes</h3>
+                    <span class="real-badge">7</span>
                   </div>
-                  <div class="real-btn-icon" title="Actualiser la liste">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path
-                        d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15">
-                      </path>
-                    </svg>
+                  <div class="real-panel-header-actions">
+                    <button type="button" class="real-btn-icon" title="Actualiser la liste">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 4v6h-6"></path>
+                        <path d="M1 20v-6h6"></path>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                      </svg>
+                    </button>
+                    <button type="button" class="real-btn-icon" title="Paramètres">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                      </svg>
+                    </button>
                   </div>
                 </div>
 
+                <!-- Bouton Nouveau Monde -->
+                <div class="real-new-world-wrap">
+                  <button type="button" class="real-btn-new-world">
+                    <span>+ Nouveau Monde</span>
+                  </button>
+                </div>
+
                 <div class="real-worlds-grid">
-                  <!-- Carte 1 : Serveur actif / en cours d'exécution (Running) -->
-                  <div class="real-world-card real-world-card--running real-world-card--selected is-pinned">
+                  <!-- Carte 1 : avec-elie-or (Sélectionné) -->
+                  <div class="real-world-card real-world-card--selected">
                     <div class="real-world-header">
                       <div class="real-world-title-box">
                         <div class="real-world-title-row">
-                          <span class="real-world-name">Survie Entre Potes</span>
-                          <span class="real-pulse-dot real-pulse-dot--running"
-                            title="Serveur en cours d'exécution"></span>
-                        </div>
-                        <span class="real-type-badge real-type-badge--modded">MODDÉ (38 mods)</span>
-                      </div>
-                      <div class="real-world-header-actions">
-                        <span class="real-pin-btn active" title="Monde épinglé">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor"
-                            stroke-width="2">
-                            <line x1="12" y1="17" x2="12" y2="22"></line>
-                            <path d="M5 17h14v-2l-2-2V5a1 1 0 0 0-1-1h-8a1 1 0 0 0-1 1v8l-2 2v2z"></path>
-                            <circle cx="12" cy="3" r="1"></circle>
-                          </svg>
-                        </span>
-                        <span class="real-chevron-btn">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.2">
-                            <polyline points="6 9 12 15 18 9"></polyline>
-                          </svg>
-                        </span>
-                      </div>
-                    </div>
-
-                    <div class="real-world-meta">
-                      <div class="real-meta-item real-meta-launcher">
-                        <span>Lanceur:</span>
-                        <strong>Fabric 1.21.1</strong>
-                      </div>
-                      <div class="real-meta-item">
-                        <span>Runtime:</span>
-                        <strong>02:45:18</strong>
-                      </div>
-                      <div class="real-meta-item">
-                        <span>Taille:</span>
-                        <strong>1.42 Go</strong>
-                      </div>
-                    </div>
-
-                    <div class="real-world-actions">
-                      <button class="real-btn-stop" type="button">Arrêter</button>
-                      <button class="real-btn-action" title="Gestion des Joueurs">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                          stroke-width="2">
-                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                          <circle cx="9" cy="7" r="4"></circle>
-                          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                        </svg>
-                      </button>
-                      <button class="real-btn-action" title="Options du serveur">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                          stroke-width="2">
-                          <circle cx="12" cy="12" r="3"></circle>
-                          <path
-                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
-                          </path>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Carte 2 : Deuxième monde arrêté -->
-                  <div class="real-world-card">
-                    <div class="real-world-header">
-                      <div class="real-world-title-box">
-                        <div class="real-world-title-row">
-                          <span class="real-world-name">Vanilla Hardcore</span>
-                          <span class="real-pulse-dot" title="Serveur arrêté"></span>
+                          <span class="real-world-name">avec-elie-or</span>
+                          <span class="real-pulse-dot" style="background: #64748b;" title="Serveur à l'arrêt"></span>
                         </div>
                         <span class="real-type-badge real-type-badge--vanilla">VANILLA</span>
                       </div>
                       <div class="real-world-header-actions">
-                        <span class="real-pin-btn" title="Épingler ce monde">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <line x1="12" y1="17" x2="12" y2="22"></line>
-                            <path d="M5 17h14v-2l-2-2V5a1 1 0 0 0-1-1h-8a1 1 0 0 0-1 1v8l-2 2v2z"></path>
-                            <circle cx="12" cy="3" r="1"></circle>
+                        <span class="real-bell-btn active" title="Notifications et options">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                           </svg>
                         </span>
                         <span class="real-chevron-btn">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.2">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                          </svg>
+                        </span>
+                        <span class="real-drag-handle">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="9" cy="5" r="2"></circle><circle cx="9" cy="12" r="2"></circle><circle cx="9" cy="19" r="2"></circle>
+                            <circle cx="15" cy="5" r="2"></circle><circle cx="15" cy="12" r="2"></circle><circle cx="15" cy="19" r="2"></circle>
+                          </svg>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Carte 2 : horrorCraft -->
+                  <div class="real-world-card">
+                    <div class="real-world-header">
+                      <div class="real-world-title-box">
+                        <div class="real-world-title-row">
+                          <span class="real-world-name">horrorCraft</span>
+                          <span class="real-pulse-dot" style="background: #64748b;" title="Serveur à l'arrêt"></span>
+                        </div>
+                        <span class="real-type-badge real-type-badge--modded">MODDÉ (287 MODS)</span>
+                      </div>
+                      <div class="real-world-header-actions">
+                        <span class="real-bell-btn active" title="Notifications et options">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                          </svg>
+                        </span>
+                        <span class="real-chevron-btn">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                          </svg>
+                        </span>
+                        <span class="real-drag-handle">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="9" cy="5" r="2"></circle><circle cx="9" cy="12" r="2"></circle><circle cx="9" cy="19" r="2"></circle>
+                            <circle cx="15" cy="5" r="2"></circle><circle cx="15" cy="12" r="2"></circle><circle cx="15" cy="19" r="2"></circle>
+                          </svg>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Carte 3 : monde-4 -->
+                  <div class="real-world-card">
+                    <div class="real-world-header">
+                      <div class="real-world-title-box">
+                        <div class="real-world-title-row">
+                          <span class="real-world-name">monde-4</span>
+                          <span class="real-pulse-dot" style="background: #64748b;" title="Serveur à l'arrêt"></span>
+                        </div>
+                        <span class="real-type-badge real-type-badge--vanilla">VANILLA</span>
+                      </div>
+                      <div class="real-world-header-actions">
+                        <span class="real-bell-btn active" title="Notifications et options">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                          </svg>
+                        </span>
+                        <span class="real-chevron-btn">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                          </svg>
+                        </span>
+                        <span class="real-drag-handle">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="9" cy="5" r="2"></circle><circle cx="9" cy="12" r="2"></circle><circle cx="9" cy="19" r="2"></circle>
+                            <circle cx="15" cy="5" r="2"></circle><circle cx="15" cy="12" r="2"></circle><circle cx="15" cy="19" r="2"></circle>
+                          </svg>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Carte 4 : monde-5 (Déplié) -->
+                  <div class="real-world-card real-world-card--expanded">
+                    <div class="real-world-header">
+                      <div class="real-world-title-box">
+                        <div class="real-world-title-row">
+                          <span class="real-world-name">monde-5</span>
+                          <span class="real-pulse-dot" style="background: #64748b;" title="Serveur à l'arrêt"></span>
+                        </div>
+                        <span class="real-type-badge real-type-badge--modded">MODDÉ (8 MODS)</span>
+                      </div>
+                      <div class="real-world-header-actions">
+                        <span class="real-pin-btn" title="Épingler ce monde">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="17" x2="12" y2="22"></line>
+                            <path d="M5 17h14v-2l-2-2V5a1 1 0 0 0-1-1h-8a1 1 0 0 0-1 1v8l-2 2v2z"></path>
+                          </svg>
+                        </span>
+                        <span class="real-chevron-btn open">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                             <polyline points="6 9 12 15 18 9"></polyline>
                           </svg>
                         </span>
                       </div>
                     </div>
-
                     <div class="real-world-meta">
                       <div class="real-meta-item real-meta-launcher">
                         <span>Lanceur:</span>
-                        <strong>Paper 1.21.1</strong>
+                        <strong>Forge 1.18.2-40.3.0</strong>
                       </div>
-                      <div class="real-meta-item">
-                        <span>Runtime:</span>
-                        <strong>18:12:04</strong>
-                      </div>
-                      <div class="real-meta-item">
-                        <span>Taille:</span>
-                        <strong>840 Mo</strong>
+                      <div class="real-meta-row-duo">
+                        <div class="real-meta-item">
+                          <span>Runtime:</span>
+                          <strong>00:54:31</strong>
+                        </div>
+                        <div class="real-meta-item">
+                          <span>Taille:</span>
+                          <strong>333.1 Mo</strong>
+                        </div>
                       </div>
                     </div>
-
                     <div class="real-world-actions">
                       <button class="real-btn-launch" type="button">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                           <polygon points="5 3 19 12 5 21 5 3"></polygon>
                         </svg>
                         <span>Lancer</span>
                       </button>
-                      <button class="real-btn-action" title="Gestion des Joueurs">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                          stroke-width="2">
-                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                          <circle cx="9" cy="7" r="4"></circle>
-                          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                      <div class="real-card-icon-group">
+                        <button class="real-btn-action" title="Gestion des Joueurs">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                          </svg>
+                        </button>
+                        <button class="real-btn-action" title="Options du serveur">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                          </svg>
+                        </button>
+                        <button class="real-btn-action" title="Renommer">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 20h9"></path>
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                          </svg>
+                        </button>
+                        <button class="real-btn-action" title="Exporter">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Carte 5 : monde-8 -->
+                  <div class="real-world-card real-world-card--expanded">
+                    <div class="real-world-header">
+                      <div class="real-world-title-box">
+                        <div class="real-world-title-row">
+                          <span class="real-world-name">monde-8</span>
+                          <span class="real-pulse-dot" style="background: #64748b;" title="Serveur à l'arrêt"></span>
+                        </div>
+                        <span class="real-type-badge real-type-badge--modded">MODDÉ (8 MODS)</span>
+                      </div>
+                      <div class="real-world-header-actions">
+                        <span class="real-pin-btn" title="Épingler ce monde">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="17" x2="12" y2="22"></line>
+                            <path d="M5 17h14v-2l-2-2V5a1 1 0 0 0-1-1h-8a1 1 0 0 0-1 1v8l-2 2v2z"></path>
+                          </svg>
+                        </span>
+                        <span class="real-chevron-btn open">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                          </svg>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="real-world-meta">
+                      <div class="real-meta-item real-meta-launcher">
+                        <span>Lanceur:</span>
+                        <strong>Forge 1.18.2-40.3.0</strong>
+                      </div>
+                      <div class="real-meta-row-duo">
+                        <div class="real-meta-item">
+                          <span>Runtime:</span>
+                          <strong>00:41:30</strong>
+                        </div>
+                        <div class="real-meta-item">
+                          <span>Taille:</span>
+                          <strong>289.5 Mo</strong>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="real-world-actions">
+                      <button class="real-btn-launch" type="button">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                          <polygon points="5 3 19 12 5 21 5 3"></polygon>
                         </svg>
-                      </button>
-                      <button class="real-btn-action" title="Options du serveur">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                          stroke-width="2">
-                          <circle cx="12" cy="12" r="3"></circle>
-                          <path
-                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
-                          </path>
-                        </svg>
+                        <span>Lancer</span>
                       </button>
                     </div>
                   </div>
@@ -348,86 +417,59 @@
               <!-- Colonne Droite : Terminal & Console en Direct -->
               <div class="real-console-panel">
                 <div class="real-console-header">
-                  <div class="real-console-title">
-                    <span class="real-pulse-dot real-pulse-dot--running"></span>
-                    <span class="real-active-title">Survie Entre Potes</span>
+                  <div class="real-console-pill">
+                    <span class="real-pulse-dot" style="background: #64748b;"></span>
+                    <span class="real-active-title">Terminal : avec-elie-or</span>
                   </div>
 
                   <div class="real-console-actions">
-                    <!-- Tunnel Share Pill Authentique avec Copie interactive -->
-                    <div class="real-tunnel-pill" id="tunnelSharePill">
-                      <span class="real-tunnel-dot"></span>
-                      <span class="real-tunnel-ip" id="tunnelShareIp">bore.pub:38421</span>
-                      <button type="button" class="real-btn-copy" id="btnCopyTunnel">Copier l'IP</button>
-                      <span class="real-btn-restart-tunnel" title="Actualiser le tunnel">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
-                        </svg>
-                      </span>
-                    </div>
-
-                    <button class="real-btn-danger" type="button">Arrêter</button>
-                    <button class="real-btn-small" type="button">Effacer</button>
+                    <button class="real-btn-launch-hero" type="button">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                      </svg>
+                      <span>Lancer ce monde</span>
+                    </button>
+                    <button class="real-btn-clear" type="button">Effacer</button>
                   </div>
                 </div>
 
-                <!-- Logs Terminal Authentiques -->
+                <!-- Logs Terminal Authentiques (Reconstitution exacte) -->
                 <div class="real-terminal-body">
-                  <div class="real-terminal-line info">[18:24:02] [Server thread/INFO]: Starting minecraft server
-                    version 1.21.1</div>
-                  <div class="real-terminal-line info">[18:24:05] [Server thread/INFO]: Loading 38 mods from Fabric
-                    Loader</div>
-                  <div class="real-terminal-line info">[18:24:08] [Server thread/INFO]: Preparing start region for
-                    dimension minecraft:overworld</div>
-                  <div class="real-terminal-line tunnel">[18:24:10] [Cubirium/TUNNEL]: Tunnel public actif sécurisé sur
-                    bore.pub:38421</div>
-                  <div class="real-terminal-line info">[18:25:31] [Server thread/INFO]: Steve[/127.0.0.1:51420] logged
-                    in with entity id 142</div>
-                  <div class="real-terminal-line info">[18:26:14] [Server thread/INFO]: Alex joined the game</div>
-                  <div class="real-terminal-line player">[18:28:40] [Server thread/INFO]: &lt;Steve&gt; Quelqu'un a du
-                    fer ?</div>
-                  <div class="real-terminal-line player">[18:29:02] [Server thread/INFO]: &lt;Alex&gt; J'en ai miné 32
-                    près du spawn</div>
-                  <div class="real-terminal-line info">[18:30:15] [Server thread/INFO]: Steve issued server command:
-                    /whitelist list</div>
-                  <div class="real-terminal-line info">[18:30:15] [Server thread/INFO]: Joueurs sur liste blanche :
-                    Steve, Alex, Pixel</div>
+                  <div class="real-terminal-line warn">[23:33:30] [ServerMain/WARN]: Unable to parse version 27.2 to a codename.</div>
+                  <div class="real-terminal-line info">[23:33:32] [ServerMain/INFO]: Environment: Environment[discoveryUrl=https://discovery.minecraftservices.com/minecraft/client, name=PROD]</div>
+                  <div class="real-terminal-line info">[23:33:33] [Worker-Main-10/INFO]: Loaded 1866 advancements</div>
+                  <div class="real-terminal-line info">[23:33:33] [Server thread/INFO]: Starting minecraft server version 26.3</div>
+                  <div class="real-terminal-line info">[23:33:33] [Server thread/INFO]: Loading properties</div>
+                  <div class="real-terminal-line info">[23:33:33] [Server thread/INFO]: Default game type: SURVIVAL</div>
+                  <div class="real-terminal-line info">[23:33:33] [Server thread/INFO]: Generating keypair</div>
+                  <div class="real-terminal-line info">[23:33:33] [Server thread/INFO]: Starting Minecraft server on *:25565</div>
+                  <div class="real-terminal-line info">[23:33:33] [Server thread/INFO]: Preparing level "world"</div>
+                  <div class="real-terminal-line info">[23:33:33] [Server thread/INFO]: Loading 0 persistent chunks...</div>
+                  <div class="real-terminal-line info">[23:33:33] [Server thread/INFO]: Preparing spawn area: 100%</div>
+                  <div class="real-terminal-line info">[23:33:33] [Server thread/INFO]: Time elapsed: 19 ms</div>
+                  <div class="real-terminal-line info">[23:33:33] [Server thread/INFO]: Done (0.159s)! For help, type "help"</div>
+                  <div class="real-terminal-line info">[23:33:33] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld</div>
+                  <div class="real-terminal-line info">[23:33:33] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether</div>
+                  <div class="real-terminal-line info">[23:33:33] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end</div>
+                  <div class="real-terminal-line info">[23:33:34] [Server thread/INFO]: System chat: Game rule send_command_feedback is already set to false</div>
+                  <div class="real-terminal-line info">[23:33:34] [Server thread/INFO]: System chat: Game rule log_admin_commands is already set to false</div>
+                  <div class="real-terminal-line info">[23:33:34] [Server thread/INFO]: System chat: Stopping the server</div>
+                  <div class="real-terminal-line info">[23:33:34] [Server thread/INFO]: Stopping server</div>
+                  <div class="real-terminal-line info">[23:33:34] [Server thread/INFO]: Saving players</div>
+                  <div class="real-terminal-line info">[23:33:34] [Server thread/INFO]: Saving worlds</div>
+                  <div class="real-terminal-line info">[23:33:34] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld</div>
+                  <div class="real-terminal-line info">[23:33:34] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether</div>
+                  <div class="real-terminal-line info">[23:33:34] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end</div>
                 </div>
 
-                <!-- Saisie de commande console en bas avec autocomplétion flottante -->
+                <!-- Saisie de commande console en bas -->
                 <div class="real-console-footer">
-                  <!-- Menu flottant d'autocomplétion des commandes -->
-                  <div class="real-suggestions-box">
-                    <div class="real-suggestions-header">
-                      <span class="real-suggestions-title">Suggestions de commande</span>
-                      <span class="real-suggestions-hint">Tab pour autocompléter</span>
-                    </div>
-                    <div class="real-suggestions-list">
-                      <div class="real-suggestion-item is-selected">
-                        <div class="real-suggestion-cmd"><code>/whitelist add &lt;joueur&gt;</code></div>
-                        <span class="real-suggestion-desc">Ajouter à la liste d'accès</span>
-                        <span class="real-suggestion-key">Entrée</span>
-                      </div>
-                      <div class="real-suggestion-item">
-                        <div class="real-suggestion-cmd"><code>/whitelist remove &lt;joueur&gt;</code></div>
-                        <span class="real-suggestion-desc">Retirer de la liste</span>
-                      </div>
-                      <div class="real-suggestion-item">
-                        <div class="real-suggestion-cmd"><code>/whitelist list</code></div>
-                        <span class="real-suggestion-desc">Afficher les autorisations</span>
-                      </div>
-                    </div>
-                  </div>
-
                   <div class="real-cmd-wrap">
                     <span class="real-cmd-prompt">&gt;</span>
-                    <input type="text" class="real-cmd-input"
-                      placeholder="Entrer une commande Minecraft... (ex: /say, /whitelist, /op)" readonly
-                      value="/whitelist add Pixel" />
+                    <span class="real-cmd-placeholder">Ce monde est à l'arrêt. Cliquez sur 'Lancer ce monde' pour démarrer.</span>
                     <button class="real-cmd-send" type="button" title="Envoyer">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="22" y1="2" x2="11" y2="13"></line>
                         <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                       </svg>
@@ -453,43 +495,258 @@
         </div>
 
         <div class="bento-grid">
-          <!-- Carte 1 : Tunnel -->
+          <!-- Carte 1 : Diagnostic & Réparation méthodique (Large) -->
           <div class="bento-card bento-card--large">
             <div class="bento-card__content">
               <div class="bento-card__icon-wrapper">
-                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
                   stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 014-10z" />
+                  <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"></path>
                 </svg>
               </div>
-              <h3 class="bento-card__title">Tunnel public zéro-configuration</h3>
+              <h3 class="bento-card__title">Diagnostic &amp; Réparation de Monde</h3>
               <p class="bento-card__text">
-                Invitez vos amis à distance en un clic. Pas besoin d'ouvrir de ports sur votre box internet,
-                ni de bidouiller les tables NAT ou d'installer des logiciels tiers chez vos invités.
+                Procédure méthodique en 5 étapes issue de l'application avec sauvegarde préalable recommandée. Identification précise des erreurs de journaux, détection des processus et sockets orphelins, calibrage JVM, restauration NBT et reconstruction du cache des chunks.
               </p>
             </div>
-            <!-- Visuel réel de l'application : Widget de Tunnel actif -->
+            <!-- Extrait d'UI réel de Cubirium : Modal de Réparation -->
+            <div class="bento-visual">
+              <div class="bento-real-repair-ui">
+                <div class="repair-warning-box">
+                  <div class="repair-warning-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                      <line x1="12" y1="9" x2="12" y2="13"></line>
+                      <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                  </div>
+                  <div class="repair-warning-text">
+                    <strong>Sauvegarde préalable recommandée</strong>
+                    <p>Sécurisez une copie complète avant d'exécuter la réparation.</p>
+                  </div>
+                </div>
+
+                <div class="repair-timeline-header">
+                  <span class="timeline-title">Progression de l'analyse méthodique</span>
+                  <span class="timeline-eta">Estimation : ~10s</span>
+                </div>
+
+                <div class="repair-progress-track">
+                  <div class="repair-progress-bar" style="width: 60%;"></div>
+                </div>
+
+                <div class="repair-timeline-steps">
+                  <div class="timeline-step done">
+                    <div class="timeline-step-badge">1</div>
+                    <div class="timeline-step-content">
+                      <strong>Analyse des Journaux &amp; Crash Reports</strong>
+                      <span>Inspection de latest.log et détection des exceptions JVM</span>
+                    </div>
+                  </div>
+                  <div class="timeline-step done">
+                    <div class="timeline-step-badge">2</div>
+                    <div class="timeline-step-content">
+                      <strong>Réseau &amp; Ports de Socket</strong>
+                      <span>Détection des conflits et fermeture des sockets orphelins</span>
+                    </div>
+                  </div>
+                  <div class="timeline-step active">
+                    <div class="timeline-step-badge">3</div>
+                    <div class="timeline-step-content">
+                      <strong>Mémoire Vive &amp; Environnement Java</strong>
+                      <span>Contrôle de la RAM allouée (-Xmx) et alignement du runtime JRE</span>
+                    </div>
+                  </div>
+                  <div class="timeline-step">
+                    <div class="timeline-step-badge">4</div>
+                    <div class="timeline-step-content">
+                      <strong>Intégrité du Monde &amp; Fichiers NBT</strong>
+                      <span>Contrôle level.dat / level.dat_old et purge des corruptions</span>
+                    </div>
+                  </div>
+                  <div class="timeline-step">
+                    <div class="timeline-step-badge">5</div>
+                    <div class="timeline-step-content">
+                      <strong>Dépendances, Mods &amp; Exécutables</strong>
+                      <span>Vérification des mixins, permissions et server.properties</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="repair-action-minibloc">
+                  <span class="minibloc-spinner"></span>
+                  <span class="minibloc-text">Calibrage de l'allocation mémoire JVM (-Xms2G -Xmx6G)...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Carte 2 : Filtrage de Modpacks -->
+          <div class="bento-card">
+            <div class="bento-card__content">
+              <div class="bento-card__icon-wrapper">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                  <polyline points="2 17 12 22 22 17"></polyline>
+                  <polyline points="2 12 12 17 22 12"></polyline>
+                </svg>
+              </div>
+              <h3 class="bento-card__title">Filtrage de packs CurseForge &amp; Modrinth</h3>
+              <p class="bento-card__text">
+                À l'import d'un modpack, Cubirium sépare automatiquement les dépendances serveur des mods purement client (shaders, interface) pour éliminer les crashs au démarrage.
+              </p>
+            </div>
+            <!-- Extrait d'UI réel de Cubirium : Analyse de Mods -->
+            <div class="bento-visual">
+              <div class="bento-real-mods-ui">
+                <div class="analysis-summary">
+                  <div class="summary-box success">
+                    <span class="summary-val">38</span>
+                    <span class="summary-lbl">Mods Serveur retenus</span>
+                  </div>
+                  <div class="summary-box warning">
+                    <span class="summary-val">6</span>
+                    <span class="summary-lbl">Mods Client exclus</span>
+                  </div>
+                </div>
+                <div class="mods-filter-controls">
+                  <div class="mods-filter-tabs">
+                    <button type="button" class="mods-tab-btn active">Serveur (38)</button>
+                    <button type="button" class="mods-tab-btn">Exclus (6)</button>
+                  </div>
+                </div>
+                <div class="bento-mockup-mods__chips">
+                  <span class="mod-chip is-excluded">Iris Shaders</span>
+                  <span class="mod-chip is-excluded">Sodium</span>
+                  <span class="mod-chip is-included">Fabric API</span>
+                  <span class="mod-chip is-included">FerriteCore</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Carte 3 : Gestion des Joueurs & Permissions -->
+          <div class="bento-card">
+            <div class="bento-card__content">
+              <div class="bento-card__icon-wrapper">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </div>
+              <h3 class="bento-card__title">Gestion des Joueurs &amp; Whitelist</h3>
+              <p class="bento-card__text">
+                Gérez vos listes blanches, rôles d'opérateurs et sanctions directement depuis une interface graphique dédiée, sans exécuter de commande compliquée.
+              </p>
+            </div>
+            <!-- Extrait d'UI réel de Cubirium : Onglets Joueurs -->
+            <div class="bento-visual">
+              <div class="bento-real-players-ui">
+                <div class="players-tabs">
+                  <button type="button" class="players-tab active">Joueurs <span class="tab-badge">3</span></button>
+                  <button type="button" class="players-tab">Opérateurs <span class="tab-badge">1</span></button>
+                  <button type="button" class="players-tab">Whitelist <span class="tab-badge">3</span></button>
+                  <button type="button" class="players-tab">Bannis <span class="tab-badge">0</span></button>
+                </div>
+                <div class="real-player-item-row">
+                  <div class="real-player-info">
+                    <span class="real-player-dot is-online"></span>
+                    <span class="real-player-name">Steve</span>
+                  </div>
+                  <span class="real-player-role-badge">Opérateur</span>
+                </div>
+                <div class="real-player-item-row">
+                  <div class="real-player-info">
+                    <span class="real-player-dot"></span>
+                    <span class="real-player-name">Alex</span>
+                  </div>
+                  <span class="real-player-role-badge is-user">Membre</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Carte 4 : Runtimes Java 21 LTS (Large) -->
+          <div class="bento-card bento-card--large">
+            <div class="bento-card__content">
+              <div class="bento-card__icon-wrapper">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+              </div>
+              <h3 class="bento-card__title">Détection exhaustive &amp; Java 21 LTS autonome</h3>
+              <p class="bento-card__text">
+                Cubirium inspecte vos installations Java système et locales pour réutiliser immédiatement vos runtimes sans téléchargement superflu. Pour les nouvelles versions, un JRE 21 LTS autonome est déployé dans un bac à sable sans modifier votre variable PATH.
+              </p>
+            </div>
+            <!-- Extrait d'UI réel de Cubirium : Diagnostic d'environnement -->
+            <div class="bento-visual">
+              <div class="bento-real-java-ui">
+                <div class="bento-mockup-java__item is-ok">
+                  <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                  </svg>
+                  <span>Runtime <code>OpenJDK 21 LTS (64-bit)</code> détecté localement</span>
+                </div>
+                <div class="bento-mockup-java__item is-ok">
+                  <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                  </svg>
+                  <span>Re-téléchargement évité : <strong>0 Mo gaspillé</strong></span>
+                </div>
+                <div class="bento-mockup-java__item is-ok">
+                  <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                  </svg>
+                  <span>Sandbox isolée, variables <code>PATH</code> système intactes</span>
+                </div>
+                <div class="bento-mockup-java__item is-ok">
+                  <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                  </svg>
+                  <span>Plage mémoire optimisée automatiquement (<code>-Xms2G -Xmx6G</code>)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Carte 5 : Partage instantané sans NAT -->
+          <div class="bento-card">
+            <div class="bento-card__content">
+              <div class="bento-card__icon-wrapper">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 014-10z"></path>
+                </svg>
+              </div>
+              <h3 class="bento-card__title">Partage instantané sans NAT</h3>
+              <p class="bento-card__text">
+                Invitez vos amis à distance en un clic. Aucune manipulation sur votre box internet ni ouverture de port requise grâce à un relais sécurisé.
+              </p>
+            </div>
+            <!-- Extrait d'UI réel de Cubirium : Widget de partage -->
             <div class="bento-visual">
               <div class="bento-mockup-tunnel">
                 <div class="bento-mockup-tunnel__header">
                   <div class="bento-mockup-tunnel__status-wrap">
                     <span class="real-pulse-dot real-pulse-dot--running"></span>
-                    <span class="bento-mockup-tunnel__status">Tunnel public sécurisé actif</span>
+                    <span class="bento-mockup-tunnel__status">Relais sécurisé actif</span>
                   </div>
                   <span class="bento-mockup-tunnel__ping">18 ms</span>
                 </div>
                 <div class="bento-mockup-tunnel__body">
-                  <div class="bento-mockup-tunnel__route-group">
-                    <div class="bento-mockup-tunnel__route">
-                      <span class="route-label">Port local</span>
-                      <span class="route-val">25565</span>
-                    </div>
-                    <span class="route-arrow">→</span>
-                    <div class="bento-mockup-tunnel__ip-box">
-                      <span class="route-label">Adresse de connexion partagée</span>
-                      <span class="route-ip">bore.pub:38421</span>
-                    </div>
+                  <div class="bento-mockup-tunnel__ip-box">
+                    <span class="route-label">Adresse de partage</span>
+                    <span class="route-ip">bore.pub:38421</span>
                   </div>
                   <div class="bento-mockup-tunnel__copy-btn">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -503,266 +760,36 @@
             </div>
           </div>
 
-          <!-- Carte 2 : Java 21 portable & intelligent -->
-          <div class="bento-card">
-            <div class="bento-card__content">
-              <div class="bento-card__icon-wrapper">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <line x1="16" y1="13" x2="8" y2="13" />
-                  <line x1="16" y1="17" x2="8" y2="17" />
-                </svg>
-              </div>
-              <h3 class="bento-card__title">Runtimes Java 21 sans friction</h3>
-              <p class="bento-card__text">
-                Ciblage automatique de Java 21 LTS pour les versions récentes et snapshots. Détection locale exhaustive réutilisant vos JRE sans re-téléchargements inutiles.
-              </p>
-            </div>
-            <!-- Visuel réel de l'application : Runtime déployé -->
-            <div class="bento-visual">
-              <div class="bento-mockup-java">
-                <div class="bento-mockup-java__item is-ok">
-                  <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clip-rule="evenodd" />
-                  </svg>
-                  <span>Runtime <code>OpenJDK 21 LTS</code> détecté</span>
-                </div>
-                <div class="bento-mockup-java__item is-ok">
-                  <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clip-rule="evenodd" />
-                  </svg>
-                  <span>Re-téléchargements évités : <strong>0 Mo</strong> gaspillé</span>
-                </div>
-                <div class="bento-mockup-java__item is-ok">
-                  <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clip-rule="evenodd" />
-                  </svg>
-                  <span>Sandbox isolée, variables <code>PATH</code> intactes</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Carte 3 : Diagnostic & Réparation méthodique -->
+          <!-- Carte 6 : Export, Sauvegarde & Réinitialisation sélective (Large) -->
           <div class="bento-card bento-card--large">
             <div class="bento-card__content">
               <div class="bento-card__icon-wrapper">
                 <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
                   stroke-linecap="round" stroke-linejoin="round">
-                  <path
-                    d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" />
+                  <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                  <polyline points="7 3 7 8 15 8"></polyline>
                 </svg>
               </div>
-              <h3 class="bento-card__title">Diagnostic &amp; Réparation méthodique</h3>
+              <h3 class="bento-card__title">Export de monde &amp; Dimensions indépendantes</h3>
               <p class="bento-card__text">
-                Sauvegarde préalable obligatoire avant toute tentative. Investigation méthodique en 5 étapes : inspection des crash-reports, libération des ports 25565 occupés, calibrage JVM (-Xms/-Xmx), restauration NBT (level.dat) et reconstruction du cache de chunks via --forceUpgrade --eraseCache.
+                Exportez l'intégralité de vos fichiers en archive compressée .zip d'un simple clic. Réinitialisez le Nether ou l'End séparément pour régénérer le monde sans impacter vos constructions de l'Overworld.
               </p>
             </div>
-            <!-- Visuel réel de l'application : Timeline de diagnostic -->
+            <!-- Extrait d'UI réel de Cubirium : Actions de maintenance et d'export -->
             <div class="bento-visual">
-              <div class="bento-mockup-repair-timeline">
-                <div class="bento-repair-backup-badge">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path>
-                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                    <polyline points="7 3 7 8 15 8"></polyline>
-                  </svg>
-                  <span>Sauvegarde préalable de sécurité créée (world_repair_backup)</span>
-                </div>
-                <div class="bento-repair-steps-list">
-                  <div class="bento-repair-step">
-                    <div class="bento-repair-step__left">
-                      <span class="bento-repair-step__icon">
-                        <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor">
-                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                        </svg>
-                      </span>
-                      <span>1. Analyse des logs &amp; crash-reports récents</span>
-                    </div>
-                    <span class="bento-repair-step__tag">0 exception bloquante</span>
+              <div class="bento-real-export-ui">
+                <div class="bento-export-box">
+                  <div class="bento-export-info">
+                    <span class="export-label">Archive compressée (.zip)</span>
+                    <span class="export-sub">Préservation du temps de jeu et des données de joueurs</span>
                   </div>
-                  <div class="bento-repair-step">
-                    <div class="bento-repair-step__left">
-                      <span class="bento-repair-step__icon">
-                        <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor">
-                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                        </svg>
-                      </span>
-                      <span>2. Libération du port 25565 &amp; processus orphelins</span>
-                    </div>
-                    <span class="bento-repair-step__tag">Socket disponible</span>
-                  </div>
-                  <div class="bento-repair-step">
-                    <div class="bento-repair-step__left">
-                      <span class="bento-repair-step__icon">
-                        <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor">
-                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                        </svg>
-                      </span>
-                      <span>3. Calibrage mémoire JVM (<code>-Xms2G -Xmx6G</code>)</span>
-                    </div>
-                    <span class="bento-repair-step__tag">Mémoire optimale</span>
-                  </div>
-                  <div class="bento-repair-step">
-                    <div class="bento-repair-step__left">
-                      <span class="bento-repair-step__icon">
-                        <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor">
-                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                        </svg>
-                      </span>
-                      <span>4. Restauration NBT &amp; <code>--forceUpgrade --eraseCache</code></span>
-                    </div>
-                    <span class="bento-repair-step__tag">Chunks rebâtis</span>
-                  </div>
+                  <span class="bento-export-badge">1-Clic</span>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Carte 4 : Console interactive & Autocomplétion -->
-          <div class="bento-card">
-            <div class="bento-card__content">
-              <div class="bento-card__icon-wrapper">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="4 17 10 11 4 5"></polyline>
-                  <line x1="12" y1="19" x2="20" y2="19"></line>
-                </svg>
-              </div>
-              <h3 class="bento-card__title">Console &amp; Autocomplétion</h3>
-              <p class="bento-card__text">
-                Tapez un slash (/) pour afficher la complétion en direct avec arguments. Navigation au clavier (Tab, Flèches) et masquage des bruits périodiques de sauvegarde.
-              </p>
-            </div>
-            <!-- Visuel réel de l'application : Suggestions console -->
-            <div class="bento-visual">
-              <div class="bento-mockup-cmd">
-                <div class="bento-mockup-cmd__preview">
-                  <div class="bento-mockup-cmd__row is-active">
-                    <code>/locate structure &lt;type&gt;</code>
-                    <span class="bento-mockup-cmd__kbd">Tab</span>
-                  </div>
-                  <div class="bento-mockup-cmd__row">
-                    <code>/tp &lt;cible&gt; &lt;destination&gt;</code>
-                    <span class="bento-mockup-cmd__kbd">↓</span>
-                  </div>
-                  <div class="bento-mockup-cmd__row">
-                    <code>/gamerule keepInventory true</code>
-                    <span class="bento-mockup-cmd__kbd">Entrée</span>
-                  </div>
+                <div class="bento-dimension-reset-row">
+                  <span class="bento-dimension-pill">Régénérer DIM-1 (Nether)</span>
+                  <span class="bento-dimension-pill">Régénérer DIM1 (The End)</span>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Carte 5 : Filtrage Modpacks -->
-          <div class="bento-card">
-            <div class="bento-card__content">
-              <div class="bento-card__icon-wrapper">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="12 2 2 7 12 12 22 7 12 2" />
-                  <polyline points="2 17 12 22 22 17" />
-                  <polyline points="2 12 12 17 22 12" />
-                </svg>
-              </div>
-              <h3 class="bento-card__title">Filtrage de modpacks</h3>
-              <p class="bento-card__text">
-                Importez des packs CurseForge ou Modrinth. Cubirium isole les mods serveur et exclut automatiquement les mods client non compatibles (shaders, interface).
-              </p>
-            </div>
-            <!-- Visuel réel de l'application : Panneau de tri des mods -->
-            <div class="bento-visual">
-              <div class="bento-mockup-mods">
-                <div class="bento-mockup-mods__header">
-                  <div class="mod-status-tag is-server">
-                    <span class="mod-status-bullet"></span>
-                    <span><strong>38</strong> mods serveur retenus</span>
-                  </div>
-                  <div class="mod-status-tag is-client">
-                    <span class="mod-status-bullet"></span>
-                    <span><strong>6</strong> mods client exclus</span>
-                  </div>
-                </div>
-                <div class="bento-mockup-mods__chips">
-                  <span class="mod-chip is-excluded">Iris Shaders</span>
-                  <span class="mod-chip is-excluded">Sodium</span>
-                  <span class="mod-chip is-included">Fabric API</span>
-                  <span class="mod-chip is-included">FerriteCore</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Carte 6 : Sauvegarde et Persistance -->
-          <div class="bento-card bento-card--large">
-            <div class="bento-card__content">
-              <div class="bento-card__icon-wrapper">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
-                  <polyline points="17 21 17 13 7 13 7 21" />
-                  <polyline points="7 3 7 8 15 8" />
-                </svg>
-              </div>
-              <h3 class="bento-card__title">Persistance totale &amp; Temps de jeu fidèle</h3>
-              <p class="bento-card__text">
-                Cumul exact et continu du temps de jeu sans dérive ni retour arrière lors des arrêts et redémarrages. Conservation intégrale des logs, profils et permissions de joueurs.
-              </p>
-            </div>
-            <!-- Visuel réel de l'application : Compteurs persistants -->
-            <div class="bento-visual">
-              <div class="bento-mockup-stats">
-                <div class="bento-stat-card">
-                  <span class="bento-stat-num">142h 35m</span>
-                  <span class="bento-stat-desc">Temps de jeu effectif</span>
-                </div>
-                <div class="bento-stat-card">
-                  <span class="bento-stat-num">12 profils</span>
-                  <span class="bento-stat-desc">Joueurs &amp; permissions</span>
-                </div>
-                <div class="bento-stat-card">
-                  <span class="bento-stat-num">1.42 Go</span>
-                  <span class="bento-stat-desc">Monde sauvegardé</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Carte 7 : Mises à jour transparentes -->
-          <div class="bento-card bento-card--full">
-            <div class="bento-card__content">
-              <div class="bento-card__icon-wrapper">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 11-.57-8.38l5.67-5.67" />
-                </svg>
-              </div>
-              <h3 class="bento-card__title">Mises à jour in-app en 1 clic</h3>
-              <p class="bento-card__text">
-                Dès qu'une nouvelle version de Cubirium est publiée sur GitHub, l'application vous notifie et s'installe directement en conservant vos mondes et configurations.
-              </p>
-            </div>
-            <div class="bento-visual">
-              <div class="bento-mockup-update">
-                <div class="bento-mockup-update__left">
-                  <span class="bento-mockup-update__badge">v1.3.0 disponible</span>
-                  <span class="bento-mockup-update__text">Vérification automatique GitHub Releases</span>
-                </div>
-                <span class="bento-mockup-update__tag">
-                  <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                  </svg>
-                  <span>Mise à niveau sans perte</span>
-                </span>
               </div>
             </div>
           </div>
@@ -770,7 +797,7 @@
       </div>
     </section>
 
-    <!-- Section Compatibilité & Spécifications (Flat icons sans emoji) -->
+        <!-- Section Compatibilité & Spécifications (Flat icons sans emoji) -->
     <section class="section section--alt" id="compatibilite">
       <div class="container">
         <div class="section__header">
@@ -969,6 +996,66 @@
         </div>
       </div>
     </section>
+
+    <!-- Section Cadre Légal (Mentions légales, Confidentialité, Conditions) -->
+    <section class="section section--alt" id="legal">
+      <div class="container container--narrow">
+        <div class="section__header">
+          <h2 class="section__title">Cadre légal &amp; Transparence</h2>
+          <p class="section__description">
+            Engagement de souveraineté des données, respect des conditions d'utilisation et mentions légales officielles de Cubirium.
+          </p>
+        </div>
+
+        <div class="legal-box-wrapper">
+          <!-- Contrôle Segmenté avec Onglets Interactifs -->
+          <div class="legal-segmented-control" id="legalSegmentedControl">
+            <button type="button" class="legal-seg-btn active" id="btnWebLegalPrivacy" onclick="switchWebLegalTab('privacy')">Confidentialité</button>
+            <button type="button" class="legal-seg-btn" id="btnWebLegalTerms" onclick="switchWebLegalTab('terms')">Conditions d'utilisation</button>
+            <button type="button" class="legal-seg-btn" id="btnWebLegalNotices" onclick="switchWebLegalTab('notices')">Mentions légales</button>
+          </div>
+
+          <!-- Contenu Onglet 1 : Confidentialité -->
+          <div id="webLegalPanePrivacy" class="legal-pane" style="display: block;">
+            <h4 class="legal-pane__title">Protection absolue des données et de la vie privée (Privacy by Design)</h4>
+            <p class="legal-pane__desc">
+              Cubirium a été conçu selon le principe de la souveraineté locale des données. L'application n'intègre aucun traceur, aucun outil d'analyse comportementale et ne revend aucune donnée à des tiers.
+            </p>
+            <ul class="legal-pane__list">
+              <li><strong>Stockage local exclusif :</strong> Vos mondes Minecraft, configurations, inventaires et données de joueurs sont conservés localement sur votre disque dur.</li>
+              <li><strong>Flux réseau :</strong> Le partage de monde transite par un tunnel sécurisé sans enregistrement ni analyse du contenu des paquets de jeu.</li>
+              <li><strong>Contrôle utilisateur :</strong> Vous pouvez à tout moment exporter, sauvegarder ou purger l'intégralité de vos fichiers depuis les paramètres.</li>
+            </ul>
+          </div>
+
+          <!-- Contenu Onglet 2 : Conditions d'utilisation -->
+          <div id="webLegalPaneTerms" class="legal-pane" style="display: none;">
+            <h4 class="legal-pane__title">Cadre d'utilisation et règles de bonne conduite</h4>
+            <p class="legal-pane__desc">
+              L'accès à Cubirium est fourni gratuitement pour un usage privé et récréatif. En utilisant ce logiciel, vous acceptez les directives suivantes :
+            </p>
+            <ul class="legal-pane__list">
+              <li><strong>Respect des CGU Mojang :</strong> L'exploitation des serveurs Minecraft doit se conformer aux conditions de licence et à l'EULA de Mojang Studios / Microsoft.</li>
+              <li><strong>Responsabilité du contenu :</strong> L'administrateur du monde est garant des activités et des comportements sur les serveurs qu'il héberge et partage.</li>
+              <li><strong>Usage loyal du réseau :</strong> Tout abus, saturation volontaire, utilisation de relais à des fins illicites ou tentative de perturbation est strictement prohibé.</li>
+            </ul>
+          </div>
+
+          <!-- Contenu Onglet 3 : Mentions légales -->
+          <div id="webLegalPaneNotices" class="legal-pane" style="display: none;">
+            <h4 class="legal-pane__title">Propriété intellectuelle &amp; Attribution</h4>
+            <p class="legal-pane__desc">
+              Cubirium est une œuvre logicielle originale développée par <strong>Gabriel Jagueneau</strong>.
+            </p>
+            <ul class="legal-pane__list">
+              <li><strong>Droits d'auteur :</strong> Le code source, l'interface graphique et les éléments visuels de Cubirium sont protégés au titre du droit d'auteur et de la propriété intellectuelle de Gabriel Jagueneau.</li>
+              <li><strong>Marques tierces :</strong> Minecraft est une marque déposée de Mojang Synergies AB / Microsoft Corporation. Cubirium est un logiciel indépendant et n'est ni sponsorisé ni affilié à Mojang Studios.</li>
+              <li><strong>Éditeur &amp; Contact :</strong> Développé par Gabriel Jagueneau. Contact accessible sur le site officiel de l'auteur : <a href="https://gjagueneau.fr" target="_blank" rel="noopener noreferrer">gjagueneau.fr</a>. Distribué sous licence MIT.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- Pied de page -->
@@ -995,6 +1082,15 @@
           <li><a href="https://github.com/Gabriel-Jagueneau/Cubirium/releases/latest/download/win-Cubirium.exe">Windows
               (win-Cubirium.exe)</a></li>
           <li><a href="#changelog">Toutes les versions</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h4 class="footer__heading">Cadre légal</h4>
+        <ul class="footer__links">
+          <li><a href="#legal" onclick="switchWebLegalTab('notices')">Mentions légales</a></li>
+          <li><a href="#legal" onclick="switchWebLegalTab('privacy')">Confidentialité</a></li>
+          <li><a href="#legal" onclick="switchWebLegalTab('terms')">Conditions d'utilisation</a></li>
         </ul>
       </div>
 

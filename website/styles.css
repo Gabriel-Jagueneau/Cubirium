@@ -542,64 +542,7 @@ code {
   position: relative;
 }
 
-/* Notification HUD Top-Center (Style Dynamic Island macOS) */
-.real-hud-toast-wrap {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 30;
-  pointer-events: none;
-  max-width: 90%;
-}
 
-.real-hud-toast {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(15, 23, 42, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(52, 211, 153, 0.4);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 20px rgba(52, 211, 153, 0.18);
-  padding: 6px 14px 6px 10px;
-  border-radius: var(--radius-pill);
-  font-size: 0.8rem;
-  color: #f1f5f9;
-  white-space: nowrap;
-}
-
-.real-hud-toast__icon {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: rgba(16, 185, 129, 0.2);
-  color: #34d399;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.real-hud-toast__text {
-  font-weight: 500;
-  color: #e2e8f0;
-}
-
-.real-hud-toast__text strong {
-  color: #ffffff;
-}
-
-.real-hud-toast__badge {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 2px 7px;
-  background: rgba(52, 211, 153, 0.15);
-  color: #34d399;
-  border: 1px solid rgba(52, 211, 153, 0.25);
-  border-radius: var(--radius-pill);
-}
 
 /* Barre de titre / En-tête de l'application */
 .real-app-titlebar {
@@ -2435,4 +2378,590 @@ code {
   .bento-mockup-stats {
     grid-template-columns: 1fr;
   }
+}
+/* --------------------------------------------------------------------------
+   PREVIEW WINDOW LAYOUT AJUSTEMENTS (Fidèle à Image 1)
+   -------------------------------------------------------------------------- */
+.real-panel-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.real-new-world-wrap {
+  margin-bottom: 12px;
+}
+
+.real-btn-new-world {
+  width: 100%;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+
+.real-bell-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  background: rgba(99, 102, 241, 0.22);
+  color: #a5b4fc;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.real-drag-handle {
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 2px;
+}
+
+.real-meta-row-duo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 3px;
+}
+
+.real-card-icon-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.real-console-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.real-btn-launch-hero {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 6px 16px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: default;
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+}
+
+.real-btn-clear {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 0.8rem;
+  cursor: default;
+  margin-left: 6px;
+}
+
+.real-cmd-placeholder {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: #64748b;
+  flex: 1;
+}
+
+/* --------------------------------------------------------------------------
+   EXTRAITS D'UI RÉELLE DANS LE BENTO
+   -------------------------------------------------------------------------- */
+.bento-real-repair-ui {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.repair-warning-box {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.repair-warning-icon {
+  color: #f59e0b;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.repair-warning-text strong {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fef3c7;
+  margin-bottom: 2px;
+}
+
+.repair-warning-text p {
+  font-size: 0.72rem;
+  color: #cbd5e1;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.repair-timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.76rem;
+}
+
+.timeline-title {
+  font-weight: 700;
+  color: var(--text-hi);
+}
+
+.timeline-eta {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-lo);
+}
+
+.repair-progress-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.repair-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #38bdf8);
+  border-radius: var(--radius-pill);
+}
+
+.repair-timeline-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.timeline-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 0.74rem;
+  opacity: 0.45;
+}
+
+.timeline-step.active {
+  opacity: 1;
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+.timeline-step.done {
+  opacity: 0.95;
+  background: rgba(16, 185, 129, 0.06);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.timeline-step-badge {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-lo);
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.timeline-step.active .timeline-step-badge {
+  background: #6366f1;
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.5);
+}
+
+.timeline-step.done .timeline-step-badge {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.timeline-step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.timeline-step-content strong {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-hi);
+}
+
+.timeline-step-content span {
+  font-size: 0.68rem;
+  color: var(--text-lo);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.repair-action-minibloc {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  font-size: 0.72rem;
+  color: #a5b4fc;
+}
+
+.minibloc-spinner {
+  width: 10px;
+  height: 10px;
+  border: 2px solid rgba(165, 180, 252, 0.3);
+  border-top-color: #a5b4fc;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 2. Vraie UI Analyse Mods */
+.bento-real-mods-ui {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.analysis-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.summary-box {
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-box.success {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.summary-box.warning {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.summary-val {
+  font-size: 1.05rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--text-hi);
+}
+
+.summary-lbl {
+  font-size: 0.68rem;
+  color: var(--text-lo);
+}
+
+.mods-filter-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mods-filter-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.mods-tab-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-mid);
+  padding: 3px 8px;
+  font-size: 0.7rem;
+  border-radius: 6px;
+  cursor: default;
+}
+
+.mods-tab-btn.active {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #ffffff;
+}
+
+/* 3. Vraie UI Gestion des Joueurs */
+.bento-real-players-ui {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.players-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.players-tab {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-mid);
+  padding: 3px 8px;
+  font-size: 0.7rem;
+  border-radius: 6px;
+  cursor: default;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.players-tab.active {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #ffffff;
+}
+
+.tab-badge {
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 0.65rem;
+  padding: 1px 5px;
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+}
+
+.real-player-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  font-size: 0.74rem;
+}
+
+.real-player-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.real-player-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #64748b;
+}
+
+.real-player-dot.is-online {
+  background: #34d399;
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.5);
+}
+
+.real-player-name {
+  font-weight: 600;
+  color: var(--text-hi);
+}
+
+.real-player-role-badge {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.real-player-role-badge.is-user {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-lo);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* 4. Vraie UI Java Sandbox */
+.bento-real-java-ui {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-sm);
+}
+
+/* 6. Vraie UI Export & Dimensions */
+.bento-real-export-ui {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bento-export-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-sm);
+}
+
+.bento-export-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.export-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-hi);
+}
+
+.export-sub {
+  font-size: 0.7rem;
+  color: var(--text-lo);
+}
+
+.bento-export-badge {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.bento-dimension-reset-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bento-dimension-pill {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-mid);
+}
+
+/* --------------------------------------------------------------------------
+   CADRE LÉGAL SECTION STYLES
+   -------------------------------------------------------------------------- */
+.legal-box-wrapper {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 28px 32px;
+  box-shadow: var(--shadow-card);
+}
+
+.legal-segmented-control {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+  gap: 4px;
+  margin-bottom: 24px;
+  max-width: 520px;
+}
+
+.legal-seg-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-lo);
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.legal-seg-btn:hover {
+  color: var(--text-hi);
+}
+
+.legal-seg-btn.active {
+  background: #4f46e5;
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(79, 70, 229, 0.4);
+}
+
+.legal-pane__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 12px;
+}
+
+.legal-pane__desc {
+  font-size: 0.92rem;
+  color: var(--text-mid);
+  line-height: 1.65;
+  margin-bottom: 16px;
+}
+
+.legal-pane__list {
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.88rem;
+  color: var(--text-mid);
+  line-height: 1.6;
+}
+
+.legal-pane__list strong {
+  color: #ffffff;
+}
+
+.legal-pane__list a {
+  color: #818cf8;
+  text-decoration: underline;
 }

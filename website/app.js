@@ -572,3 +572,23 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+
+/**
+ * Basculement des onglets du cadre légal (Confidentialité, CGU, Mentions)
+ */
+function switchWebLegalTab(tabId) {
+  const tabs = ["privacy", "terms", "notices"];
+  tabs.forEach((t) => {
+    const pane = document.getElementById(`webLegalPane${t.charAt(0).toUpperCase() + t.slice(1)}`);
+    const btn = document.getElementById(`btnWebLegal${t.charAt(0).toUpperCase() + t.slice(1)}`);
+    if (pane) pane.style.display = t === tabId ? "block" : "none";
+    if (btn) {
+      if (t === tabId) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    }
+  });
+}
+window.switchWebLegalTab = switchWebLegalTab;
