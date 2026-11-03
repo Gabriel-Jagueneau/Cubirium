@@ -6905,10 +6905,18 @@ if (appSettingsModal) {
   });
 }
 
-// Touche Échap pour fermer les paramètres (avec auto-save)
+// Touche Échap pour fermer les modaux (avec auto-save paramètres)
 window.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && appSettingsModal && appSettingsModal.style.display !== 'none') {
-    closeAppSettingsModal();
+  if (e.key === 'Escape') {
+    const aboutModal = document.getElementById('aboutModal');
+    if (aboutModal && aboutModal.style.display !== 'none') {
+      closeAboutModal();
+      return;
+    }
+    if (appSettingsModal && appSettingsModal.style.display !== 'none') {
+      closeAppSettingsModal();
+      return;
+    }
   }
   // Raccourci universel Cmd+C / Ctrl+C sur le texte sélectionné hors des champs
   if (e.metaKey || e.ctrlKey) {
@@ -6929,6 +6937,23 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
+function openAboutModal() {
+  const modal = document.getElementById('aboutModal');
+  if (modal) {
+    modal.style.display = 'flex';
+    requestAnimationFrame(() => {
+      switchLegalTab('privacy');
+    });
+  }
+}
+
+function closeAboutModal() {
+  const modal = document.getElementById('aboutModal');
+  if (modal) modal.style.display = 'none';
+}
+
+window.openAboutModal = openAboutModal;
+window.closeAboutModal = closeAboutModal;
 window.openAppSettingsModal = openAppSettingsModal;
 window.closeAppSettingsModal = closeAppSettingsModal;
 window.cancelAppSettingsModal = cancelAppSettingsModal;

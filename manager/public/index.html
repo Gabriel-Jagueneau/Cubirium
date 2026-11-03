@@ -42,6 +42,15 @@
                 <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
               </svg>
             </button>
+            <button class="btn-icon" id="btnOpenAboutModal" title="À propos de Cubirium &amp; Cadre légal"
+              onclick="openAboutModal()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </button>
             <button class="btn-icon" id="btnOpenAppSettings" title="Paramètres de l'application"
               onclick="openAppSettingsModal()">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -1606,8 +1615,7 @@
                 stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="2" y1="12" x2="22" y2="12"></line>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z">
-                </path>
+                <ellipse cx="12" cy="12" rx="4.5" ry="10"></ellipse>
               </svg>
               <h4>Adresse Réseau &amp; Partage</h4>
             </div>
@@ -1621,10 +1629,9 @@
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="2" y1="12" x2="22" y2="12"></line>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z">
-                    </path>
+                    <ellipse cx="12" cy="12" rx="4.5" ry="10"></ellipse>
                   </svg>
-                  <input type="text" id="settingsCustomDomainPrefix" class="settings-text-input custom-domain-prefix-input"
+                  <input type="text" id="settingsCustomDomainPrefix" class="custom-domain-prefix-input"
                     placeholder="lesMondesAvecMesPotes" value="lesMondesAvecMesPotes" spellcheck="false" autocomplete="off" />
                   <span class="custom-domain-suffix">.cubirium.fr</span>
                 </div>
@@ -1877,13 +1884,15 @@
               <div class="settings-update-info">
                 <div class="settings-update-title-wrap">
                   <span class="settings-update-title">Version installée</span>
-                  <span class="settings-update-tag" id="settingsCurrentVersionTag">v1.2.2</span>
-                  <button type="button" class="btn-info-icon" id="btnShowUpdateNotes" onclick="showCurrentUpdateNotes()" title="Voir les notes de mise à jour">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <line x1="12" y1="16" x2="12" y2="12"></line>
-                      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                  <span class="settings-update-tag" id="settingsCurrentVersionTag">v1.3.0</span>
+                  <button type="button" class="btn-changelog-pill" id="btnShowUpdateNotes" onclick="showCurrentUpdateNotes()" title="Consulter les notes de version et nouveautés">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
                     </svg>
+                    <span>Notes de version</span>
                   </button>
                 </div>
                 <span class="settings-update-desc" id="settingsUpdateFeedback">Vérifiez si une nouvelle version ou des
@@ -1900,84 +1909,21 @@
             </div>
           </div>
 
-          <!-- Section 3 : Informations sur l'application & Cadre Légal -->
+          <!-- Raccourci vers À propos & Cadre Légal -->
           <div class="settings-section" style="margin-top: 22px;">
-            <div class="settings-section-header">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-              </svg>
-              <h4>À propos &amp; Cadre Légal</h4>
-            </div>
-            <p class="settings-section-desc">Identité du logiciel, engagements de confidentialité et conditions régissant l'utilisation de Cubirium.</p>
-
-            <!-- En-tête Identité & Liens -->
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 14px; flex-wrap: wrap;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <img src="/assets/logo.png?v=5" alt="Logo Cubirium" style="width: 36px; height: 36px; object-fit: contain; border-radius: 8px;" />
-                <div>
-                  <strong style="font-size: 1.02rem; font-weight: 700; color: #ffffff; letter-spacing: -0.01em;">Cubirium</strong>
-                  <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 1px;">Gestionnaire autonome de serveurs Minecraft</div>
-                </div>
+            <div class="settings-about-row">
+              <div class="settings-about-row__info">
+                <span class="settings-about-row__title">À propos de Cubirium &amp; Cadre Légal</span>
+                <span class="settings-about-row__desc">Propriété intellectuelle, licence MIT, engagements de confidentialité et conditions d'utilisation.</span>
               </div>
-
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <button type="button" class="btn-official-site" onclick="openOfficialWebsite()" title="Site officiel Cubirium">
-                  <span>cubirium.fr</span>
-                </button>
-                <button type="button" class="legal-link-author" onclick="openAuthorPortfolio()" title="Portfolio de Gabriel Jagueneau">
-                  gjagueneau.fr
-                </button>
-              </div>
-            </div>
-
-            <!-- Contrôle Segmenté avec Sliding Pill -->
-            <div class="legal-segmented-control" id="legalSegmentedControl">
-              <div class="legal-sliding-pill" id="legalSlidingPill"></div>
-              <button type="button" class="legal-seg-btn active" id="btnLegalTabPrivacy" onclick="switchLegalTab('privacy', this)">Confidentialité</button>
-              <button type="button" class="legal-seg-btn" id="btnLegalTabTerms" onclick="switchLegalTab('terms', this)">Conditions d'utilisation</button>
-              <button type="button" class="legal-seg-btn" id="btnLegalTabNotices" onclick="switchLegalTab('notices', this)">Mentions légales</button>
-            </div>
-
-            <!-- Contenu Onglet 1 : Confidentialité -->
-            <div id="legalPanePrivacy" class="legal-pane" style="display: block; margin-top: 14px; font-size: 0.82rem; line-height: 1.6; color: #cbd5e1;">
-              <h5 style="color: #ffffff; font-size: 0.88rem; margin-bottom: 6px; font-weight: 600;">Protection absolue des données et de la vie privée</h5>
-              <p style="margin-bottom: 8px;">
-                Cubirium a été conçu selon le principe de la souveraineté locale des données (Privacy by Design). L'application n'intègre aucun traceur, aucun outil d'analyse comportementale et ne revend aucune donnée à des tiers.
-              </p>
-              <ul style="padding-left: 18px; margin: 0; color: var(--text-dim);">
-                <li><strong style="color: #cbd5e1;">Stockage local exclusif :</strong> Vos mondes Minecraft, configurations, inventaires et données de joueurs sont conservés localement sur votre disque dur.</li>
-                <li><strong style="color: #cbd5e1;">Flux réseau :</strong> Le partage de monde transite par un tunnel sécurisé sans enregistrement ni analyse du contenu des paquets de jeu.</li>
-                <li><strong style="color: #cbd5e1;">Contrôle utilisateur :</strong> Vous pouvez à tout moment exporter, sauvegarder ou purger l'intégralité de vos fichiers depuis les paramètres.</li>
-              </ul>
-            </div>
-
-            <!-- Contenu Onglet 2 : Conditions d'utilisation -->
-            <div id="legalPaneTerms" class="legal-pane" style="display: none; margin-top: 14px; font-size: 0.82rem; line-height: 1.6; color: #cbd5e1;">
-              <h5 style="color: #ffffff; font-size: 0.88rem; margin-bottom: 6px; font-weight: 600;">Cadre d'utilisation et règles de bonne conduite</h5>
-              <p style="margin-bottom: 8px;">
-                L'accès à Cubirium est fourni gratuitement pour un usage privé et récréatif. En utilisant ce logiciel, vous acceptez les directives suivantes :
-              </p>
-              <ul style="padding-left: 18px; margin: 0; color: var(--text-dim);">
-                <li><strong style="color: #cbd5e1;">Respect des CGU Mojang :</strong> L'exploitation des serveurs Minecraft doit se conformer aux conditions de licence et à l'EULA de Mojang Studios / Microsoft.</li>
-                <li><strong style="color: #cbd5e1;">Responsabilité du contenu :</strong> L'administrateur du monde est garant des activités et des comportements sur les serveurs qu'il héberge et partage.</li>
-                <li><strong style="color: #cbd5e1;">Usage loyal du réseau :</strong> Tout abus, saturation volontaire, utilisation de relais à des fins illicites ou tentative de perturbation est strictement prohibé.</li>
-              </ul>
-            </div>
-
-            <!-- Contenu Onglet 3 : Mentions légales -->
-            <div id="legalPaneNotices" class="legal-pane" style="display: none; margin-top: 14px; font-size: 0.82rem; line-height: 1.6; color: #cbd5e1;">
-              <h5 style="color: #ffffff; font-size: 0.88rem; margin-bottom: 6px; font-weight: 600;">Propriété intellectuelle &amp; Attribution</h5>
-              <p style="margin-bottom: 8px;">
-                Cubirium est une œuvre logicielle originale développée par <strong>Gabriel Jagueneau</strong>.
-              </p>
-              <ul style="padding-left: 18px; margin: 0; color: var(--text-dim);">
-                <li><strong style="color: #cbd5e1;">Droits d'auteur :</strong> Le code source, l'interface graphique et les éléments visuels de Cubirium sont protégés au titre du droit d'auteur et de la propriété intellectuelle.</li>
-                <li><strong style="color: #cbd5e1;">Marques tierces :</strong> Minecraft est une marque déposée de Mojang Synergies AB / Microsoft Corporation. Cubirium est un logiciel indépendant et n'est ni sponsorisé ni affilié à Mojang Studios.</li>
-                <li><strong style="color: #cbd5e1;">Contact :</strong> Pour toute question relative au projet, rendez-vous sur le site officiel de l'auteur : <a href="https://gjagueneau.fr" target="_blank" style="color: var(--accent-indigo); text-decoration: underline;">gjagueneau.fr</a>.</li>
-              </ul>
+              <button type="button" class="btn-secondary" onclick="openAboutModal()" title="Consulter le cadre légal">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span>Consulter</span>
+              </button>
             </div>
           </div>
 
@@ -2015,6 +1961,114 @@
           </button>
           <button type="button" class="btn-primary" id="btnSaveAppSettings" onclick="closeAppSettingsModal()">
             <span>Enregistrer</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Dédié : À propos de Cubirium & Cadre Légal -->
+    <div class="modal-backdrop" id="aboutModal" style="display: none; z-index: 150;">
+      <div class="modal-card modal-card-about blur-box">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <h3>À propos de Cubirium</h3>
+            <span class="sub-brand">Informations logicielles, propriété intellectuelle &amp; cadre légal</span>
+          </div>
+          <button class="btn-close" id="btnCloseAboutModal" onclick="closeAboutModal()" title="Fermer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-content about-modal-content">
+          <!-- Carte d'identité du logiciel -->
+          <div class="about-hero-card">
+            <div class="about-hero-identity">
+              <img src="/assets/logo.png?v=5" alt="Logo Cubirium" class="about-hero-logo" />
+              <div class="about-hero-text">
+                <div class="about-hero-title-row">
+                  <strong class="about-app-name">Cubirium</strong>
+                  <span class="about-version-tag">v1.3.0</span>
+                </div>
+                <span class="about-app-desc">Gestionnaire autonome et hébergement de serveurs Minecraft locaux.</span>
+                <span class="about-author-line">Développé et maintenu par <strong>Gabriel Jagueneau</strong>.</span>
+              </div>
+            </div>
+
+            <div class="about-links-row">
+              <button type="button" class="btn-official-site" onclick="openOfficialWebsite()" title="Site officiel Cubirium">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <ellipse cx="12" cy="12" rx="4.5" ry="10"></ellipse>
+                </svg>
+                <span>cubirium.fr</span>
+              </button>
+              <button type="button" class="legal-link-author" onclick="openAuthorPortfolio()" title="Portfolio de Gabriel Jagueneau">
+                <span>gjagueneau.fr</span>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Contrôle Segmenté avec Sliding Pill -->
+          <div class="legal-segmented-control" id="legalSegmentedControl">
+            <div class="legal-sliding-pill" id="legalSlidingPill"></div>
+            <button type="button" class="legal-seg-btn active" id="btnLegalTabPrivacy" onclick="switchLegalTab('privacy', this)">Confidentialité</button>
+            <button type="button" class="legal-seg-btn" id="btnLegalTabTerms" onclick="switchLegalTab('terms', this)">Conditions d'utilisation</button>
+            <button type="button" class="legal-seg-btn" id="btnLegalTabNotices" onclick="switchLegalTab('notices', this)">Mentions légales</button>
+          </div>
+
+          <!-- Panneaux Légaux -->
+          <div class="about-legal-panes-wrapper">
+            <div id="legalPanePrivacy" class="legal-pane" style="display: block;">
+              <h5 class="legal-pane-heading">Protection absolue des données et de la vie privée</h5>
+              <p class="legal-pane-intro">
+                Cubirium a été conçu selon le principe de la souveraineté locale des données (Privacy by Design). L'application n'intègre aucun traceur, aucun outil d'analyse comportementale et ne revend aucune donnée à des tiers.
+              </p>
+              <ul class="legal-pane-list">
+                <li><strong>Stockage local exclusif :</strong> Vos mondes Minecraft, configurations, inventaires et données de joueurs sont conservés localement sur votre disque dur.</li>
+                <li><strong>Flux réseau :</strong> Le partage de monde transite par un tunnel sécurisé sans enregistrement ni analyse du contenu des paquets de jeu.</li>
+                <li><strong>Contrôle utilisateur :</strong> Vous pouvez à tout moment exporter, sauvegarder ou purger l'intégralité de vos fichiers depuis l'application.</li>
+              </ul>
+            </div>
+
+            <div id="legalPaneTerms" class="legal-pane" style="display: none;">
+              <h5 class="legal-pane-heading">Cadre d'utilisation et règles de bonne conduite</h5>
+              <p class="legal-pane-intro">
+                L'accès à Cubirium est fourni gratuitement pour un usage privé et récréatif. En utilisant ce logiciel, vous acceptez les directives suivantes :
+              </p>
+              <ul class="legal-pane-list">
+                <li><strong>Respect des CGU Mojang :</strong> L'exploitation des serveurs Minecraft doit se conformer aux conditions de licence et à l'EULA de Mojang Studios / Microsoft.</li>
+                <li><strong>Responsabilité du contenu :</strong> L'administrateur du monde est garant des activités et des comportements sur les serveurs qu'il héberge et partage.</li>
+                <li><strong>Usage loyal du réseau :</strong> Tout abus, saturation volontaire, utilisation de relais à des fins illicites ou tentative de perturbation est strictement prohibé.</li>
+              </ul>
+            </div>
+
+            <div id="legalPaneNotices" class="legal-pane" style="display: none;">
+              <h5 class="legal-pane-heading">Propriété intellectuelle &amp; Attribution</h5>
+              <p class="legal-pane-intro">
+                Cubirium est une œuvre logicielle originale développée par <strong>Gabriel Jagueneau</strong>.
+              </p>
+              <ul class="legal-pane-list">
+                <li><strong>Droits d'auteur :</strong> Le code source, l'interface graphique et les éléments visuels de Cubirium sont protégés au titre du droit d'auteur et de la propriété intellectuelle.</li>
+                <li><strong>Marques tierces :</strong> Minecraft est une marque déposée de Mojang Synergies AB / Microsoft Corporation. Cubirium est un logiciel indépendant et n'est ni sponsorisé ni affilié à Mojang Studios.</li>
+                <li><strong>Licence :</strong> Logiciel distribué sous licence MIT. Pour toute question, consultez le site de l'auteur : <a href="https://gjagueneau.fr" target="_blank" style="color: var(--accent-indigo); text-decoration: underline;">gjagueneau.fr</a>.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; padding: 16px 24px;">
+          <button type="button" class="btn-primary" onclick="closeAboutModal()">
+            <span>Fermer</span>
           </button>
         </div>
       </div>
