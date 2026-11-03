@@ -6631,16 +6631,15 @@ function switchLegalTab(tab, btn) {
 window.switchLegalTab = switchLegalTab;
 
 function showCurrentUpdateNotes() {
-  const version = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.3.0');
+  const version = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.4.0');
   const summary = {
     version: version,
     releaseName: `Cubirium v${version}`,
     releaseNotes: `### Notes de version v${version}
-- **Refonte Interface Immersive** : Console plein écran avec navigation latérale flottante et cartes de mondes élargies.
-- **HUD Supérieur Harmonisé** : Boutons de contrôle et statut serveur unifiés à 38px en haute visibilité.
-- **Défilement Console Amélioré** : Défilement fluide passant sous la zone d'écriture avec dégradé d'estompage supérieur et inférieur, scrollbar toujours au premier plan.
-- **Adresses Dédiées Fixes** : Préparation de l'infrastructure pour sous-domaines permanents uniques (*.cubirium.fr) supportant plus de 1000 connexions simultanées sans ouverture de port box.
-- **Cadre Légal & Transparence** : Intégration complète de la politique de confidentialité, des conditions d'utilisation et des mentions légales dans les paramètres.`
+- **Protocole de Réparation Méthodique en 5 Étapes** : Sauvegarde préventive de sécurité, libération des ports occupés, allocation RAM adaptée, vérification de compatibilité Java et correction des corruptions NBT / level.dat.
+- **Workflow Interactif & Mode Sécurisé** : Modale d'investigation en temps réel avec timeline, journal d'actions en direct et verrouillage sécurisé en cas de corruption irréversible avec accès direct au dossier.
+- **Interface & Paramètres Repensés** : Icône globe réseau épurée, boîte d'adresse unifiée, pilule haute visibilité pour les notes de version et allègement des paramètres.
+- **Modal Dédié « À propos & Cadre Légal »** : Fenêtre modale accessible directement depuis l'en-tête principal et les paramètres regroupant identité, licence MIT, confidentialité et CGU.`
   };
   showUpdateSummaryModal(summary);
   const title = document.getElementById('updateSummaryTitle');

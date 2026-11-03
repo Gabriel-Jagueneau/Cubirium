@@ -105,7 +105,7 @@ JavaAlreadyInstalled:
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "DisplayIcon" "$\"$INSTDIR\AppIcon.ico$\""
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "Publisher" "Gabriel JAGUENEAU"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "DisplayVersion" "1.3.0"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "DisplayVersion" "1.4.0"
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "NoModify" 1
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "NoRepair" 1
 SectionEnd

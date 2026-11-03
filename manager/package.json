@@ -1,6 +1,6 @@
 {
   "name": "cubirium",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Cubirium - Gestionnaire et automatisation de serveurs Minecraft locaux avec tunnel public",
   "main": "src/server.js",
   "scripts": {
