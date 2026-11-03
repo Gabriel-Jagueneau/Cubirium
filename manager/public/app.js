@@ -369,28 +369,28 @@ async function startInteractiveWorldRepair() {
   }).then(r => r.json()).catch(err => ({ success: false, error: err.message }));
 
   try {
-    // Étape 1 : Journaux & Crash Reports
-    setTimelineStep(1, 'active', "Lecture des journaux latest.log et détection des exceptions Java...");
-    if (pEta) pEta.textContent = "Estimation : ~8s";
+    // Étape 1 : Analyse des Journaux & Crash Reports
+    setTimelineStep(1, 'active', "Analyse méthodique de latest.log et crash-reports/, repérage des exceptions [ERROR]/[FATAL]...");
+    if (pEta) pEta.textContent = "Estimation : ~10s";
     await new Promise(r => setTimeout(r, 1400));
 
-    // Étape 2 : Réseau & Sockets
-    setTimelineStep(2, 'active', "Vérification de la disponibilité du port 25565 et fermeture des sockets orphelins...");
-    if (pEta) pEta.textContent = "Estimation : ~6s";
+    // Étape 2 : Ports Réseau & Sockets (FAILED TO BIND TO PORT)
+    setTimelineStep(2, 'active', "Contrôle du port réseau 25565 et fermeture des sockets ou instances Java orphelines...");
+    if (pEta) pEta.textContent = "Estimation : ~8s";
     await new Promise(r => setTimeout(r, 1600));
 
-    // Étape 3 : Mémoire & Java
-    setTimelineStep(3, 'active', "Contrôle des allocations de mémoire -Xmx et alignement du runtime JRE...");
-    if (pEta) pEta.textContent = "Estimation : ~4s";
+    // Étape 3 : Mémoire Vive & Arguments JVM (OutOfMemoryError)
+    setTimelineStep(3, 'active', "Calibration de la mémoire vive (-Xms/-Xmx) et réglage des arguments JVM GC...");
+    if (pEta) pEta.textContent = "Estimation : ~5s";
     await new Promise(r => setTimeout(r, 1500));
 
-    // Étape 4 : Fichiers NBT & level.dat
-    setTimelineStep(4, 'active', "Contrôle d'intégrité de level.dat, session.lock et purge des fichiers 0-octet...");
-    if (pEta) pEta.textContent = "Estimation : ~2s";
+    // Étape 4 : Intégrité du Monde & Chunks NBT (level.dat / données NBT)
+    setTimelineStep(4, 'active', "Vérification de level.dat (level.dat_old), isolation des régions corrompues et purge du cache...");
+    if (pEta) pEta.textContent = "Estimation : ~3s";
     await new Promise(r => setTimeout(r, 1600));
 
-    // Étape 5 : Dépendances & Exécutables
-    setTimelineStep(5, 'active', "Validation de server.properties, EULA et synchronisation des scripts de lancement...");
+    // Étape 5 : Environnement Java, Conflits de Mods & Exécutables
+    setTimelineStep(5, 'active', "Synchronisation du JRE, isolation des mixins défaillants et validation de server.properties / EULA...");
     if (pEta) pEta.textContent = "Finalisation...";
 
     const data = await repairPromise;
@@ -1032,7 +1032,7 @@ function buildWorldCardHtml(w, opts) {
                </svg>
                <span>Réparer</span>
              </button>`
-          : `<button class="btn-launch" ${isServerRunning ? 'disabled' : ''} onclick="if(event.shiftKey||event.altKey){forceStartWorld('${w.id}');}else{startWorld('${w.id}');}" title="Lancer le serveur (Shift+Clic pour forcer le démarrage)">
+          : `<button class="btn-launch" ${isServerRunning ? 'disabled' : ''} onclick="startWorld('${w.id}')" title="Lancer le serveur">
                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
                </svg>
@@ -1351,7 +1351,7 @@ function renderWorlds(worlds) {
           expectedBtnHtml = `<button class="btn-repair" ${isServerRunning ? 'disabled' : ''} onclick="triggerWorldRepair('${w.id}')" title="Incident détecté. Cliquez pour lancer la réparation méthodique."><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg><span>Réparer</span></button>`;
         } else {
           expectedType = 'launch';
-          expectedBtnHtml = `<button class="btn-launch" ${isServerRunning ? 'disabled' : ''} onclick="if(event.shiftKey||event.altKey){forceStartWorld('${w.id}');}else{startWorld('${w.id}');}" title="Lancer le serveur (Shift+Clic pour forcer le démarrage)"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>Lancer</button>`;
+          expectedBtnHtml = `<button class="btn-launch" ${isServerRunning ? 'disabled' : ''} onclick="startWorld('${w.id}')" title="Lancer le serveur"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>Lancer</button>`;
         }
 
         if (primaryWrap) {
@@ -1362,8 +1362,6 @@ function renderWorlds(worlds) {
           } else {
             const launchBtn = primaryWrap.querySelector('.btn-launch, .btn-repair');
             if (launchBtn && launchBtn.disabled !== isServerRunning) launchBtn.disabled = isServerRunning;
-            const forceBtn = primaryWrap.querySelector('.btn-card-force');
-            if (forceBtn && forceBtn.disabled !== isServerRunning) forceBtn.disabled = isServerRunning;
           }
         } else {
           const legacyPrimary = actionsDiv.querySelector('.btn-stop-world, .btn-launch, .btn-repair, .btn-corrupted, .btn-downloading-java, .btn-group-repair');

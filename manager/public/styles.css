@@ -7537,40 +7537,29 @@ button.btn-repair:disabled {
   box-sizing: border-box !important;
 }
 
-/* Mode corrompu : carte grisée avec un seul bouton pour ouvrir le dossier */
+/* Mode corrompu : carte entièrement grisée avec un unique bouton pour ouvrir le dossier */
 .world-card.corrupted {
-  opacity: 0.55 !important;
-  filter: grayscale(0.85) !important;
-  border-color: rgba(255, 255, 255, 0.06) !important;
+  opacity: 0.5 !important;
+  filter: grayscale(1) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
   transition: opacity 0.25s ease, filter 0.25s ease;
+  pointer-events: auto;
 }
 
 .world-card.corrupted:hover {
-  opacity: 0.75 !important;
-  filter: grayscale(0.4) !important;
+  opacity: 0.7 !important;
+  filter: grayscale(0.7) !important;
 }
 
-.world-card.corrupted .world-actions .btn-card-action:not(.btn-card-open-folder) {
+.world-card.corrupted .world-header-actions,
+.world-card.corrupted .world-actions .btn-card-action {
   display: none !important;
+}
+
+.world-card.corrupted .world-actions {
+  justify-content: stretch !important;
 }
 
 .world-card.corrupted .primary-action-container {
   width: 100% !important;
-}
-
-.btn-card-force {
-  color: #fbbf24;
-  border-color: rgba(245, 158, 11, 0.35);
-  background: rgba(245, 158, 11, 0.08);
-}
-
-.btn-card-force:hover:not(:disabled) {
-  background: rgba(245, 158, 11, 0.22) !important;
-  border-color: rgba(245, 158, 11, 0.7) !important;
-  color: #fef08a !important;
-}
-
-.btn-card-force:disabled {
-  opacity: 0.45;
-  cursor: not-allowed !important;
 }

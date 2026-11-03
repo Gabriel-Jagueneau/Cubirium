@@ -2236,7 +2236,26 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
    * Enregistre un crash ou incident sur un monde pour proposer la réparation
    */
   /**
-   * Analyse et diagnostique le dernier crash d'un monde
+   * Vérifie si un port TCP local (ex: 25565) est actuellement occupé par un processus
+   */
+  checkPortInUse(port = 25565) {
+    return new Promise((resolve) => {
+      const net = require('net');
+      const tester = net.createServer();
+      tester.once('error', (err) => {
+        if (err.code === 'EADDRINUSE') resolve(true);
+        else resolve(false);
+      });
+      tester.once('listening', () => {
+        tester.close(() => resolve(false));
+      });
+      tester.listen(port, '0.0.0.0');
+    });
+  }
+
+  /**
+   * Analyse et diagnostique les causes exactes d'un plantage ou arrêt anormal
+   * Conforme à la méthodologie en 5 typologies de pannes.
    */
   analyzeWorldCrash(worldId) {
     const worldPath = path.join(this.gamesDir, worldId);
@@ -2263,7 +2282,7 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
     if (fs.existsSync(latestLog)) {
       try {
         const logData = fs.readFileSync(latestLog, 'utf8');
-        logContent = logData.slice(-15000);
+        logContent = logData.slice(-25000);
       } catch (_) {}
     }
 
@@ -2276,44 +2295,59 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       isJavaMismatch: false,
       isCorruptChunk: false,
       isPortConflict: false,
+      corruptedRegionFile: null,
       suspectedMod: null,
       entityCount: null,
       summary: ''
     };
 
     if (!fullText.trim()) {
-      diagnosis.summary = "Aucun rapport d'erreur ou crash récent n'a été enregistré.";
+      diagnosis.summary = "Arrêt inattendu du serveur (aucun fichier de crash généré).";
       return diagnosis;
     }
 
-    if (fullText.includes('ServerHangWatchdog') || fullText.includes('ServerWatchdog') || fullText.includes('single server tick took') || fullText.includes('Watching Server')) {
-      diagnosis.isWatchdog = true;
-    }
-
-    if (fullText.includes('OutOfMemoryError') || fullText.includes('Java heap space') || fullText.includes('Compressed class space')) {
-      diagnosis.isOutOfMemory = true;
-    }
-
-    if (fullText.includes('UnsupportedClassVersionError') || fullText.includes('has been compiled by a more recent version')) {
-      diagnosis.isJavaMismatch = true;
-    }
-
-    if (fullText.includes('Address already in use') || fullText.includes('FAILED TO BIND TO PORT')) {
+    // A. Port réseau déjà utilisé
+    if (/FAILED TO BIND TO PORT|Address already in use|bind\(.*\)\s*failed|Port 25565 is already in use|Could not reserve port/i.test(fullText)) {
       diagnosis.isPortConflict = true;
     }
 
-    if (fullText.includes('CorruptWorldException') || fullText.includes('Failed to load chunk') || fullText.includes('Empty Anvil header')) {
+    // B. Mémoire allouée insuffisante
+    if (/OutOfMemoryError|Java heap space|Compressed class space|GC overhead limit exceeded|unable to create new native thread/i.test(fullText)) {
+      diagnosis.isOutOfMemory = true;
+    }
+
+    // C. Incompatibilité d'environnement Java
+    if (/UnsupportedClassVersionError|has been compiled by a more recent version of the Java Runtime/i.test(fullText)) {
+      diagnosis.isJavaMismatch = true;
+    }
+
+    // D. Corruption du monde ou de chunks (level.dat / NBT / régions MCA)
+    if (/CorruptWorldException|Failed to load chunk|Empty Anvil header|Corrupt NBT tag|java\.util\.zip\.ZipException|Chunk file at.*is in the wrong location/i.test(fullText)) {
       diagnosis.isCorruptChunk = true;
     }
 
+    const regionMatch = fullText.match(/(?:region[/\\])?(r\.-?\d+\.-?\d+\.mca)/i);
+    if (regionMatch) {
+      diagnosis.isCorruptChunk = true;
+      diagnosis.corruptedRegionFile = regionMatch[1];
+    }
+
+    // E. Conflit de Mods ou Plugins
     const suspectedModMatch = fullText.match(/Suspected Mod:\s*\n?\s*([^\n\r]+)/i);
     if (suspectedModMatch) {
       diagnosis.suspectedMod = suspectedModMatch[1].trim();
     } else {
-      const modMatch = fullText.match(/at TRANSFORMER\/([a-zA-Z0-9_-]+)@/i) || fullText.match(/net\.mcreator\.([a-zA-Z0-9_]+)/i);
-      if (modMatch) {
-        diagnosis.suspectedMod = modMatch[1].trim();
+      const mixinMatch = fullText.match(/MixinApplyError:.*?in module\s+([a-zA-Z0-9_-]+)/i) ||
+                         fullText.match(/at TRANSFORMER\/([a-zA-Z0-9_-]+)@/i) ||
+                         fullText.match(/net\.mcreator\.([a-zA-Z0-9_]+)/i);
+      if (mixinMatch) {
+        diagnosis.suspectedMod = mixinMatch[1].trim();
       }
+    }
+
+    // Watchdog
+    if (fullText.includes('ServerHangWatchdog') || fullText.includes('ServerWatchdog') || fullText.includes('single server tick took') || fullText.includes('Watching Server')) {
+      diagnosis.isWatchdog = true;
     }
 
     const entityMatch = fullText.match(/entities:\s*([0-9]+)/i);
@@ -2321,21 +2355,25 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       diagnosis.entityCount = parseInt(entityMatch[1], 10);
     }
 
-    if (diagnosis.isWatchdog) {
-      let desc = "Arrêt forcé par le Server Watchdog : un tick a dépassé la limite de 60s (blocage ou lag intensif).";
-      if (diagnosis.suspectedMod) desc += ` Mod en cause : ${diagnosis.suspectedMod}.`;
-      if (diagnosis.entityCount && diagnosis.entityCount > 500) desc += ` ${diagnosis.entityCount} entités étaient actives lors du crash (ex: explosion TNT géante).`;
-      diagnosis.summary = desc;
+    // Synthèse du diagnostic méthodique
+    if (diagnosis.isPortConflict) {
+      diagnosis.summary = "Port réseau 25565 déjà utilisé par un processus résiduel (FAILED TO BIND TO PORT).";
     } else if (diagnosis.isOutOfMemory) {
-      diagnosis.summary = "Mémoire vive saturée (OutOfMemoryError). La RAM allouée au serveur était insuffisante.";
+      diagnosis.summary = "Mémoire vive allouée insuffisante (OutOfMemoryError / Java heap space).";
     } else if (diagnosis.isJavaMismatch) {
-      diagnosis.summary = "Incompatibilité de version Java avec le serveur Minecraft.";
-    } else if (diagnosis.isPortConflict) {
-      diagnosis.summary = "Conflit réseau : le port 25565 est déjà occupé par un autre processus.";
+      diagnosis.summary = "Incompatibilité de bytecode Java avec le serveur (UnsupportedClassVersionError).";
     } else if (diagnosis.isCorruptChunk) {
-      diagnosis.summary = "Corruption de blocs ou de chunks dans la carte Minecraft.";
+      diagnosis.summary = diagnosis.corruptedRegionFile 
+        ? `Corruption détectée sur la région ${diagnosis.corruptedRegionFile}.`
+        : "Corruption de données NBT ou de chunks dans la carte du monde.";
+    } else if (diagnosis.isWatchdog) {
+      let desc = "Arrêt forcé par le Server Watchdog (tick de calcul supérieur à 60s).";
+      if (diagnosis.suspectedMod) desc += ` Mod suspect : ${diagnosis.suspectedMod}.`;
+      diagnosis.summary = desc;
+    } else if (diagnosis.suspectedMod) {
+      diagnosis.summary = `Conflit de mod ou exception mixin causé par ${diagnosis.suspectedMod}.`;
     } else {
-      diagnosis.summary = "Incident ou arrêt anormal du serveur détecté.";
+      diagnosis.summary = "Incident technique ou arrêt anormal constaté dans les journaux.";
     }
 
     return diagnosis;
@@ -2385,7 +2423,8 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
   }
 
   /**
-   * Réparation automatique et chirurgicale d'un monde corrompu ou crashé
+   * Diagnostic et réparation méthodique complète selon les normes AzurHOSTS / Minecraft
+   * Couvre les 5 typologies de pannes : Réseau, Mémoire, Java, Corruption NBT/Monde, Conflits de Mods.
    */
   async repairWorld(worldId) {
     const worldPath = path.join(this.gamesDir, worldId);
@@ -2400,14 +2439,31 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
     if (this.activeWorld === worldId && this.activeProcess) {
       try {
         await this.stopWorld(true);
-        report.push("Serveur actif arrêté pour libérer les fichiers.");
+        report.push("Serveur actif arrêté pour libérer les fichiers et verrous.");
       } catch (_) {}
     }
 
-    // 1. Analyse approfondie des causes du crash
+    // 0-bis. Sauvegarde préalable de sécurité (copie préventive des métadonnées vitales)
+    try {
+      const backupDir = path.join(worldPath, 'backups', `pre-repair-${Date.now()}`);
+      fs.mkdirSync(backupDir, { recursive: true });
+      const filesToPreserve = ['level.dat', 'level.dat_old', 'server.properties'];
+      for (const f of filesToPreserve) {
+        const src1 = path.join(worldPath, f);
+        const src2 = path.join(worldPath, 'world', f);
+        if (fs.existsSync(src1)) {
+          fs.copyFileSync(src1, path.join(backupDir, f));
+        } else if (fs.existsSync(src2)) {
+          fs.copyFileSync(src2, path.join(backupDir, f));
+        }
+      }
+      report.push("Instantané préventif de sécurité enregistré dans le dossier backups du monde.");
+    } catch (_) {}
+
+    // 1. Analyse méthodique approfondie des journaux (Logs & Crash Reports)
     const diagnosis = this.analyzeWorldCrash(worldId);
     if (diagnosis.summary) {
-      report.push(`Diagnostic : ${diagnosis.summary}`);
+      report.push(`Diagnostic méthodique : ${diagnosis.summary}`);
     }
 
     // 2. Détection et suppression de TOUS les verrous session.lock résiduels
@@ -2440,7 +2496,70 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       report.push(`${removedLocksCount} verrou(s) session.lock résiduels supprimés.`);
     }
 
-    // 3. Nettoyage des fichiers de chunks, régions, poi et entités corrompus de 0 octet
+    // 3. Typologie A : Port réseau déjà utilisé (FAILED TO BIND TO PORT)
+    const portBusy = await this.checkPortInUse(25565);
+    if (diagnosis.isPortConflict || portBusy) {
+      try {
+        if (process.platform === 'win32') {
+          try { execSync('taskkill /f /im java.exe', { stdio: 'ignore', windowsHide: true }); } catch (_) {}
+          try { execSync('taskkill /f /im javaw.exe', { stdio: 'ignore', windowsHide: true }); } catch (_) {}
+        } else {
+          try { execSync('lsof -ti :25565 | xargs kill -9', { stdio: 'ignore' }); } catch (_) {}
+          try { execSync('killall -9 java', { stdio: 'ignore' }); } catch (_) {}
+        }
+        fixes.push("Fermeture des instances Java orphelines bloquant le port réseau (25565)");
+        report.push("Port réseau 25565 libéré et processus fantômes arrêtés.");
+      } catch (_) {}
+    }
+
+    // 4. Typologie B : Mémoire allouée insuffisante (OutOfMemoryError)
+    const runShPath = path.join(worldPath, 'run.sh');
+    const runBatPath = path.join(worldPath, 'run.bat');
+    const serverJarPath = path.join(worldPath, 'server.jar');
+    const totalMemGB = Math.floor(os.totalmem() / (1024 * 1024 * 1024));
+    const targetXmx = totalMemGB >= 8 ? '6G' : (totalMemGB >= 4 ? '3G' : '2G');
+    const targetXms = totalMemGB >= 8 ? '2G' : '1G';
+
+    if (diagnosis.isOutOfMemory || fs.existsSync(runShPath)) {
+      try {
+        if (fs.existsSync(runShPath)) {
+          let shContent = fs.readFileSync(runShPath, 'utf8');
+          if (shContent.includes('-Xmx') || diagnosis.isOutOfMemory) {
+            shContent = shContent.replace(/-Xmx[0-9]+[GMK]/g, `-Xmx${targetXmx}`);
+            shContent = shContent.replace(/-Xms[0-9]+[GMK]/g, `-Xms${targetXms}`);
+            fs.writeFileSync(runShPath, shContent, 'utf8');
+            fixes.push(`Allocation de mémoire vive calibrée (-Xms${targetXms} -Xmx${targetXmx})`);
+            report.push(`Plage de mémoire Java configurée à -Xms${targetXms} -Xmx${targetXmx} dans run.sh.`);
+          }
+        }
+        if (fs.existsSync(runBatPath)) {
+          let batContent = fs.readFileSync(runBatPath, 'utf8');
+          if (batContent.includes('-Xmx') || diagnosis.isOutOfMemory) {
+            batContent = batContent.replace(/-Xmx[0-9]+[GMK]/g, `-Xmx${targetXmx}`);
+            batContent = batContent.replace(/-Xms[0-9]+[GMK]/g, `-Xms${targetXms}`);
+            fs.writeFileSync(runBatPath, batContent, 'utf8');
+          }
+        }
+      } catch (_) {}
+    }
+
+    // 5. Typologie C : Incompatibilité d'environnement Java (UnsupportedClassVersionError)
+    try {
+      const javaCheck = this.findJavaExecutable(worldId);
+      const reqMajor = javaCheck.requiredMajor || 21;
+      if (!javaCheck.isWorking) {
+        report.push(`Runtime Java ${reqMajor} requis pour cette version Minecraft. Configuration d'OpenJDK ${reqMajor}...`);
+        await this.downloadAndSetupJavaLatest(reqMajor);
+        fixes.push(`Installation et synchronisation d'OpenJDK ${reqMajor}`);
+        report.push(`OpenJDK ${reqMajor} opérationnel et prêt pour ce monde.`);
+      }
+      this.synchronizeWorldLaunchScripts(worldId, javaCheck);
+    } catch (jErr) {
+      report.push(`Note Java : ${jErr.message}`);
+    }
+
+    // 6. Typologie D : Corruption du monde ou de chunks (level.dat / données NBT / régions)
+    // 6.1. Nettoyage des fichiers de chunks et entités corrompus de 0 octet
     const findCorruptedZeroByteFiles = (dir) => {
       let zeroFiles = [];
       try {
@@ -2448,7 +2567,7 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
         for (const entry of entries) {
           const fp = path.join(dir, entry.name);
           if (entry.isDirectory()) {
-            if (entry.name !== 'logs' && entry.name !== 'crash-reports') {
+            if (entry.name !== 'logs' && entry.name !== 'crash-reports' && entry.name !== 'backups') {
               zeroFiles = zeroFiles.concat(findCorruptedZeroByteFiles(fp));
             }
           } else if (entry.isFile()) {
@@ -2474,11 +2593,13 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       } catch (_) {}
     }
     if (cleanedZeroFilesCount > 0) {
-      fixes.push(`Suppression de ${cleanedZeroFilesCount} fichier(s) de chunk/entités corrompus (0 octet)`);
-      report.push(`${cleanedZeroFilesCount} fichier(s) de données corrompus de 0 octet supprimés.`);
+      fixes.push(`Suppression de ${cleanedZeroFilesCount} fichier(s) de données corrompus (0 octet)`);
+      report.push(`${cleanedZeroFilesCount} fichier(s) de données corrompus de 0 octet purgés.`);
     }
 
-    // 3-bis. Contrôle et restauration de l'intégrité de level.dat
+    // 6.2. Contrôle et restauration de l'intégrité de level.dat
+    let levelDatRecovered = false;
+    let levelDatIrrecoverable = false;
     try {
       const zlib = require('zlib');
       const levelDatCandidates = [
@@ -2511,27 +2632,81 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
               fs.copyFileSync(old, main);
               fixes.push("Restauration du fichier level.dat à partir de la sauvegarde saine (level.dat_old)");
               report.push("Fichier level.dat corrompu restauré avec succès depuis level.dat_old.");
+              levelDatRecovered = true;
               break;
             }
           } catch (_) {}
+        } else if (!isMainCorrupt && fs.existsSync(main)) {
+          levelDatRecovered = true;
+          break;
         }
+      }
+
+      const hasMain = fs.existsSync(path.join(worldPath, 'world', 'level.dat')) || fs.existsSync(path.join(worldPath, 'level.dat'));
+      const hasOld = fs.existsSync(path.join(worldPath, 'world', 'level.dat_old')) || fs.existsSync(path.join(worldPath, 'level.dat_old'));
+      if (!levelDatRecovered && !hasMain && !hasOld) {
+        levelDatIrrecoverable = true;
       }
     } catch (_) {}
 
-    // 3-ter. Libération des ports réseau bloqués (FAILED TO BIND TO PORT)
-    if (diagnosis.isPortBusy) {
+    // 6.3. Si une région MCA précise est identifiée comme corrompue dans le crash (ex: r.0.-1.mca)
+    if (diagnosis.corruptedRegionFile) {
       try {
-        if (process.platform === 'win32') {
-          execSync('taskkill /f /im java.exe', { stdio: 'ignore', windowsHide: true });
-        } else {
-          execSync('killall -9 java', { stdio: 'ignore' });
+        const regName = diagnosis.corruptedRegionFile;
+        const possiblePaths = [
+          path.join(worldPath, 'world', 'region', regName),
+          path.join(worldPath, 'region', regName)
+        ];
+        for (const rp of possiblePaths) {
+          if (fs.existsSync(rp)) {
+            const corruptDir = path.join(worldPath, 'corrupted_regions');
+            fs.mkdirSync(corruptDir, { recursive: true });
+            fs.renameSync(rp, path.join(corruptDir, regName));
+            fixes.push(`Région corrompue isolée (${regName}) pour stopper le plantage du serveur`);
+            report.push(`Fichier de région corrompu ${regName} déplacé vers corrupted_regions/.`);
+            break;
+          }
         }
-        fixes.push("Fermeture des instances Java orphelines bloquant le port réseau");
-        report.push("Port réseau 25565 libéré.");
       } catch (_) {}
     }
 
-    // 4. Réparation et optimisation de server.properties (désactivation Watchdog & synchro disque)
+    // 6.4. Réparation Vanilla avancée via --forceUpgrade --eraseCache
+    if (fs.existsSync(serverJarPath) && (diagnosis.isCorruptChunk || diagnosis.isNbtZipCorrupt)) {
+      try {
+        const javaCheck = this.findJavaExecutable(worldId);
+        const jExec = javaCheck.execFile || 'java';
+        report.push("Exécution de l'outil officiel de reconstruction Minecraft (--forceUpgrade --eraseCache)...");
+        execSync(`"${jExec}" -jar "${serverJarPath}" --forceUpgrade --eraseCache nogui`, {
+          cwd: worldPath,
+          timeout: 20000,
+          stdio: 'ignore',
+          windowsHide: true
+        });
+        fixes.push("Mise à niveau et purge du cache de chunks effectuées (--forceUpgrade --eraseCache)");
+        report.push("Reconstruction des chunks terminée sans lever d'exception.");
+      } catch (_) {}
+    }
+
+    // 7. Typologie E : Conflit de Mods ou Plugins
+    if (diagnosis.suspectedMod) {
+      try {
+        const modName = diagnosis.suspectedMod.toLowerCase();
+        const modsDir = path.join(worldPath, 'mods');
+        if (fs.existsSync(modsDir)) {
+          const files = fs.readdirSync(modsDir);
+          const found = files.find(f => f.toLowerCase().includes(modName));
+          if (found) {
+            const disabledDir = path.join(worldPath, 'disabled_mods');
+            fs.mkdirSync(disabledDir, { recursive: true });
+            fs.renameSync(path.join(modsDir, found), path.join(disabledDir, found));
+            fixes.push(`Mod conflictuel identifié et isolé : ${found}`);
+            report.push(`Mod défaillant ${found} déplacé vers disabled_mods/.`);
+          }
+        }
+      } catch (_) {}
+    }
+
+    // 8. Réparation et optimisation de server.properties (désactivation Watchdog & synchro disque)
     const propsPath = path.join(worldPath, 'server.properties');
     const isModded = fs.existsSync(path.join(worldPath, 'mods')) ||
                      fs.existsSync(path.join(worldPath, 'type.txt')) ||
@@ -2595,7 +2770,7 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       } catch (_) {}
     }
 
-    // 5. Acceptation stricte du CLUF EULA
+    // 9. Acceptation stricte du CLUF EULA
     const eulaPath = path.join(worldPath, 'eula.txt');
     try {
       fs.writeFileSync(eulaPath, 'eula=true\n', 'utf8');
@@ -2603,7 +2778,7 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       report.push("Contrat de licence EULA confirmé.");
     } catch (_) {}
 
-    // 6. Nettoyage des fichiers JSON de cache corrompus
+    // 10. Nettoyage des fichiers JSON de cache corrompus
     const jsonFilesToCheck = [
       { name: 'usercache.json', defaultContent: '[]' },
       { name: 'usernamecache.json', defaultContent: '{}' },
@@ -2623,10 +2798,9 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
             fs.writeFileSync(jp, jf.defaultContent, 'utf8');
             jsonCleanedCount++;
           } else {
-            JSON.parse(raw); // Tester la validité
+            JSON.parse(raw);
           }
         } catch (_) {
-          // Fichier JSON invalide suite au crash
           try {
             fs.writeFileSync(jp, jf.defaultContent, 'utf8');
             jsonCleanedCount++;
@@ -2639,11 +2813,7 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       report.push(`${jsonCleanedCount} fichier(s) JSON invalides réinitialisés proprement.`);
     }
 
-    // 7. Vérification des permissions d'exécution sur les scripts de démarrage
-    const runShPath = path.join(worldPath, 'run.sh');
-    const runBatPath = path.join(worldPath, 'run.bat');
-    const serverJarPath = path.join(worldPath, 'server.jar');
-
+    // 11. Permissions d'exécution sur les scripts de démarrage
     if (fs.existsSync(runShPath)) {
       try {
         fs.chmodSync(runShPath, 0o755);
@@ -2652,35 +2822,7 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       } catch (_) {}
     }
 
-    // 8. Ajustement de la mémoire Java si crash OutOfMemory
-    if (diagnosis.isOutOfMemory && fs.existsSync(runShPath)) {
-      try {
-        let shContent = fs.readFileSync(runShPath, 'utf8');
-        if (shContent.includes('-Xmx')) {
-          shContent = shContent.replace(/-Xmx[0-9]+[GMK]/g, '-Xmx6G');
-          fs.writeFileSync(runShPath, shContent, 'utf8');
-          fixes.push("Allocation mémoire augmentée à 6 Go (-Xmx6G) suite à OutOfMemory");
-          report.push("Allocation de mémoire vive rehaussée à 6G dans run.sh.");
-        }
-      } catch (_) {}
-    }
-
-    // 8-bis. Vérification et mise à niveau du runtime Java si nécessaire
-    try {
-      const javaCheck = this.findJavaExecutable(worldId);
-      const reqMajor = javaCheck.requiredMajor || 21;
-      if (!javaCheck.isWorking) {
-        report.push(`Runtime Java ${reqMajor} manquant ou incompatible pour ce monde. Configuration d'OpenJDK ${reqMajor}...`);
-        await this.downloadAndSetupJavaLatest(reqMajor);
-        fixes.push(`Installation et configuration d'OpenJDK ${reqMajor} pour ce monde`);
-        report.push(`OpenJDK ${reqMajor} a été configuré avec succès.`);
-      }
-      this.synchronizeWorldLaunchScripts(worldId, javaCheck);
-    } catch (jErr) {
-      report.push(`Note Java: ${jErr.message}`);
-    }
-
-    // 9. Vérification des exécutables manquants
+    // 12. Vérification des exécutables manquants
     if (!fs.existsSync(runShPath) && !fs.existsSync(serverJarPath) && !fs.existsSync(runBatPath)) {
       try {
         const vanillaInstaller = require('./vanilla-installer-service');
@@ -2691,7 +2833,7 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       } catch (err) {
         this.worldHealth[worldId] = {
           status: 'corrupted',
-          reason: `Impossible de réparer l'exécutable du serveur: ${err.message}`,
+          reason: `Impossible de restaurer l'exécutable du serveur: ${err.message}`,
           lastCrashAt: Date.now()
         };
         return {
@@ -2704,7 +2846,27 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       }
     }
 
-    // 10. Archiver le crash report résolu pour éviter les faux positifs ultérieurs
+    // 13. Évaluation finale de l'intégrité vitale du monde
+    const hasAnyWorldFolder = fs.existsSync(path.join(worldPath, 'world')) ||
+                             fs.existsSync(path.join(worldPath, 'region')) ||
+                             fs.existsSync(path.join(worldPath, 'level.dat'));
+
+    if (levelDatIrrecoverable && !hasAnyWorldFolder) {
+      this.worldHealth[worldId] = {
+        status: 'corrupted',
+        reason: "Les structures primaires du monde (level.dat et dossiers de région) sont absentes ou irrécupérables.",
+        lastCrashAt: Date.now()
+      };
+      return {
+        success: false,
+        corrupted: true,
+        message: "Le monde est corrompu : les données vitales du monde sont absentes ou détruites de façon irréversible.",
+        report,
+        fixes
+      };
+    }
+
+    // 14. Archiver le crash report résolu pour éviter les faux positifs ultérieurs
     const crashDir = path.join(worldPath, 'crash-reports');
     if (fs.existsSync(crashDir)) {
       try {
@@ -2718,7 +2880,7 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       } catch (_) {}
     }
 
-    // 11. Réinitialiser la santé du monde et avertir les clients connectés
+    // 15. Réinitialiser la santé du monde et avertir les clients connectés
     delete this.worldHealth[worldId];
     this.broadcast('world_health_changed', { worldId, health: { status: 'healthy' } });
 
