@@ -10,6 +10,7 @@ const modFilterService = require('./mod-filter-service');
 const vanillaInstaller = require('./vanilla-installer-service');
 const playerDataService = require('./player-data-service');
 const modTextureService = require('./mod-texture-service');
+modTextureService.setMinecraftService(minecraftService);
 const configService = require('./config-service');
 const packageJson = require('../package.json');
 
@@ -705,7 +706,7 @@ const server = http.createServer(async (req, res) => {
             lastError = httpsErr;
             // Fallback curl système si disponible
             try {
-              execSync(`curl -sL --max-time 30 "${dlUrl}" -o "${archiveFile}"`, { stdio: 'pipe' });
+              execSync(`curl -sL --max-time 30 "${dlUrl}" -o "${archiveFile}"`, { stdio: 'pipe', windowsHide: true });
               if (fs.existsSync(archiveFile) && fs.statSync(archiveFile).size > 10000) {
                 downloaded = true;
                 console.log(`[Updater] Archive téléchargée avec succès via curl (${fs.statSync(archiveFile).size} octets)`);
@@ -730,7 +731,7 @@ const server = http.createServer(async (req, res) => {
 
         // 2. Extraire l'archive
         try {
-          execSync(`tar -xzf "${archiveFile}" -C "${tempDir}"`, { stdio: 'pipe' });
+          execSync(`tar -xzf "${archiveFile}" -C "${tempDir}"`, { stdio: 'pipe', windowsHide: true });
         } catch (tarErr) {
           try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (_) {}
           console.error(`[Updater] Échec de décompression tar:`, tarErr);
@@ -1356,17 +1357,19 @@ if ($res -eq [System.Windows.Forms.DialogResult]::OK) {
       }
     }
 
-    // 6g. API Item Texture (Extrait les textures réelles des mods et du jeu)
+    // 6g. API Item Texture (Extrait directement les textures depuis les mods du monde et les JARs du jeu, en mémoire uniquement)
     if (pathname === '/api/item-texture' && method === 'GET') {
       const worldId = parsedUrl.searchParams.get('worldId') || minecraftService.activeWorld || '';
       const item = parsedUrl.searchParams.get('item');
       const color = parsedUrl.searchParams.get('color');
+      const face = parsedUrl.searchParams.get('face');
       if (!item) {
         return sendJson(res, 400, { error: 'item manquant.' });
       }
 
-      // Tenter d'extraire depuis le cache, les versions vanilla locales ou les mods
-      const buf = modTextureService.getTexture(worldId, item, color);
+      const buf = face
+        ? modTextureService.getBlockFaceTexture(worldId, item, face, minecraftService)
+        : modTextureService.getTexture(worldId, item, color, minecraftService);
       if (buf) {
         res.writeHead(200, {
           'Content-Type': 'image/png',
@@ -1386,17 +1389,18 @@ if ($res -eq [System.Windows.Forms.DialogResult]::OK) {
       return res.end();
     }
 
-    // 6h. API Armor Texture 3D (Extrait les textures de modèles d'armures 3D de tous les mods et vanilla)
+    // 6h. API Armor Texture 3D (Extrait directement les textures 3D d'armures et d'élytres depuis les mods du monde et les JARs du jeu)
     if (pathname === '/api/armor-texture' && method === 'GET') {
       const worldId = parsedUrl.searchParams.get('worldId') || minecraftService.activeWorld || '';
       const item = parsedUrl.searchParams.get('item');
       const layer = parseInt(parsedUrl.searchParams.get('layer') || '1', 10);
       const color = parsedUrl.searchParams.get('color');
+      const assetId = parsedUrl.searchParams.get('assetId');
       if (!item) {
         return sendJson(res, 400, { error: 'item manquant.' });
       }
 
-      const buf = modTextureService.getArmorTexture(worldId, item, layer, color);
+      const buf = modTextureService.getArmorTexture(worldId, item, layer, color, assetId, minecraftService);
       if (buf) {
         res.writeHead(200, {
           'Content-Type': 'image/png',

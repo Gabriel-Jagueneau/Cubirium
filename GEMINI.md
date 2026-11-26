@@ -20,6 +20,9 @@ Ce document recense les règles d'architecture technique, d'ergonomie et de conc
 
 * **Parité stricte macOS et Windows** :
   * Toute fonctionnalité ajoutée ou ajustée doit fonctionner de manière transparente et sans friction sur les deux systèmes d'exploitation.
+* **Validation et tests systématiques (Windows & macOS)** :
+  * Tester systématiquement chaque modification avant de conclure (vérification syntaxique, tests fonctionnels/unitaires et validation de l'interface).
+  * Vérifier explicitement la compatibilité Windows et macOS pour tout code ajouté ou modifié : utiliser les API Node.js multiplateformes (`path.join`, gestion `CRLF`/`LF`, `windowsHide: true`), éviter toute dépendance shell Unix-only sans équivalent Windows, et vérifier la compatibilité navigateur/WebView (WKWebView macOS et Edge/Chromium Windows).
 * **Exécution discrète et silencieuse** :
   * Aucun terminal ou invite de commande `cmd.exe` intempestive ne doit s'afficher lors du lancement ou de l'exécution sur Windows.
 * **Réseau & Tunnels** :

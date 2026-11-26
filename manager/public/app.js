@@ -612,13 +612,18 @@ function saveCollapsedWorldIds(ids) {
 function togglePinWorld(worldId) {
   let pinned = getPinnedWorldIds();
   const idx = pinned.indexOf(worldId);
-  if (idx !== -1) {
+  const wasPinned = (idx !== -1);
+  if (wasPinned) {
     pinned.splice(idx, 1);
   } else {
     pinned.push(worldId);
   }
   savePinnedWorldIds(pinned);
   renderWorlds(worldsListCache);
+  if (wasPinned) {
+    selectTerminalWorld(worldId);
+    scrollWorldCardIntoView(worldId);
+  }
 }
 
 function movePinnedWorld(worldId, delta) {
@@ -747,7 +752,7 @@ function handlePinnedPointerDown(e, worldId) {
   if (handleEl && handleEl.setPointerCapture) {
     try {
       handleEl.setPointerCapture(e.pointerId);
-    } catch (err) {}
+    } catch (err) { }
   }
 
   const startX = e.clientX;
@@ -861,7 +866,7 @@ function handlePinnedPointerDown(e, worldId) {
         if (handleEl.hasPointerCapture(e.pointerId)) {
           handleEl.releasePointerCapture(e.pointerId);
         }
-      } catch (err) {}
+      } catch (err) { }
     }
 
     document.body.classList.remove('is-dragging-card');
@@ -945,6 +950,602 @@ function getWorldPulseDotInfo(worldId) {
 }
 
 let lastRenderedWorldsSignature = null;
+
+// ==========================================
+// Menu contextuel personnalisé universel (adaptatif selon la zone cliquée)
+// ==========================================
+const worldContextMenuEl = document.getElementById('worldContextMenu');
+let activeContextWorldId = null;
+const isMacContextPlatform = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/i.test(navigator.platform || navigator.userAgent || '');
+const CTX_MOD = isMacContextPlatform ? '⌘' : 'Ctrl+';
+
+const CTX_ICONS = {
+  play: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`,
+  stop: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"></rect></svg>`,
+  spinner: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg>`,
+  folder: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`,
+  repair: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>`,
+  players: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`,
+  sliders: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="4" x2="14" y2="4"></line><line x1="10" y1="4" x2="3" y2="4"></line><line x1="21" y1="12" x2="12" y2="12"></line><line x1="8" y1="12" x2="3" y2="12"></line><line x1="21" y1="20" x2="16" y2="20"></line><line x1="12" y1="20" x2="3" y2="20"></line><line x1="14" y1="2" x2="14" y2="6"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="16" y1="18" x2="16" y2="22"></line></svg>`,
+  settings: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`,
+  edit: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`,
+  pin: (filled) => `<svg width="14" height="14" viewBox="0 0 24 24" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-2l-2-2V5a1 1 0 0 0-1-1h-8a1 1 0 0 0-1 1v8l-2 2v2z"></path><circle cx="12" cy="3" r="1"></circle></svg>`,
+  trash: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`,
+  copy: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`,
+  cut: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg>`,
+  paste: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>`,
+  selectAll: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="4 3"></rect><line x1="8" y1="9" x2="16" y2="9"></line><line x1="8" y1="15" x2="16" y2="15"></line></svg>`,
+  plus: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`,
+  refresh: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>`,
+  arrowDown: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>`,
+  link: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`,
+  info: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`,
+  close: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`,
+  shield: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>`,
+  kick: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>`,
+  ban: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>`
+};
+
+function copyTextUniversal(text, successMsg = null) {
+  const str = String(text ?? '');
+  if (!str) return;
+  const done = () => {
+    if (successMsg && typeof showToast === 'function') showToast(successMsg, 'success');
+  };
+  const fallback = () => {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = str;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      ta.style.pointerEvents = 'none';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      done();
+    } catch (_) { }
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(str).then(done).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+async function clearTerminalDirectFromContextMenu() {
+  if (!selectedTerminalWorldId) return;
+  if (typeof resetClearButton === 'function') resetClearButton();
+  const targetWorld = selectedTerminalWorldId;
+  terminalBuffers[targetWorld] = [];
+  if (terminalOutput) {
+    terminalOutput.innerHTML = `
+      <div class="terminal-welcome">
+        <p>Logs effacés pour le monde <strong>${escapeHtml(targetWorld)}</strong>.</p>
+      </div>`;
+  }
+  if (typeof showToast === 'function') {
+    showToast(`Logs de '${targetWorld}' effacés avec succès.`, 'info');
+  }
+  try {
+    await fetch('/api/logs/clear', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ worldId: targetWorld })
+    });
+  } catch (err) {
+    console.error('Erreur clear logs:', err);
+  }
+}
+
+function closeWorldContextMenu() {
+  if (worldContextMenuEl) {
+    worldContextMenuEl.classList.remove('visible');
+    worldContextMenuEl.setAttribute('aria-hidden', 'true');
+  }
+  if (activeContextWorldId) {
+    const prevCard = document.querySelector(`.world-card[data-id="${activeContextWorldId}"]`);
+    if (prevCard) prevCard.classList.remove('context-active');
+    activeContextWorldId = null;
+  }
+}
+
+function renderCustomContextMenu(menuSpec, clientX, clientY) {
+  if (!worldContextMenuEl || !Array.isArray(menuSpec) || menuSpec.length === 0) return;
+
+  // Nettoyer séparateurs superflus (début, fin, ou consécutifs)
+  const cleaned = [];
+  for (const entry of menuSpec) {
+    if (!entry) continue;
+    if (entry.type === 'separator') {
+      if (cleaned.length === 0 || cleaned[cleaned.length - 1].type === 'separator') continue;
+    }
+    cleaned.push(entry);
+  }
+  while (cleaned.length > 0 && cleaned[cleaned.length - 1].type === 'separator') {
+    cleaned.pop();
+  }
+  if (cleaned.length === 0) return;
+
+  worldContextMenuEl.innerHTML = '';
+  for (const entry of cleaned) {
+    if (entry.type === 'separator') {
+      const sep = document.createElement('div');
+      sep.className = 'world-context-separator';
+      sep.setAttribute('role', 'separator');
+      worldContextMenuEl.appendChild(sep);
+      continue;
+    }
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.setAttribute('role', 'menuitem');
+    btn.className = `world-context-item ${entry.className || ''}`.trim();
+    if (entry.disabled) btn.disabled = true;
+    const shortcutHtml = entry.shortcut ? `<span class="world-context-shortcut">${escapeHtml(entry.shortcut)}</span>` : '';
+    btn.innerHTML = `${entry.icon || ''}<span class="world-context-item-label">${escapeHtml(entry.label)}</span>${shortcutHtml}`;
+    let confirmResetTimer = null;
+    btn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      if (entry.disabled) return;
+      if (entry.confirmLabel) {
+        const isConfirming = btn.getAttribute('data-confirming') === 'true';
+        if (!isConfirming) {
+          btn.setAttribute('data-confirming', 'true');
+          btn.classList.add('confirming');
+          const lbl = btn.querySelector('.world-context-item-label');
+          if (lbl) lbl.textContent = entry.confirmLabel;
+          clearTimeout(confirmResetTimer);
+          confirmResetTimer = setTimeout(() => {
+            btn.removeAttribute('data-confirming');
+            btn.classList.remove('confirming');
+            if (lbl) lbl.textContent = entry.label;
+          }, 4000);
+          return;
+        }
+        clearTimeout(confirmResetTimer);
+      }
+      closeWorldContextMenu();
+      if (typeof entry.onClick === 'function') entry.onClick();
+    });
+    worldContextMenuEl.appendChild(btn);
+  }
+
+  // Positionnement intelligent sans débordement hors de la fenêtre
+  worldContextMenuEl.style.left = '0px';
+  worldContextMenuEl.style.top = '0px';
+  worldContextMenuEl.classList.add('visible');
+  worldContextMenuEl.setAttribute('aria-hidden', 'false');
+
+  const rect = worldContextMenuEl.getBoundingClientRect();
+  const margin = 10;
+  let posX = clientX;
+  let posY = clientY;
+  if (posX + rect.width > window.innerWidth - margin) {
+    posX = Math.max(margin, window.innerWidth - rect.width - margin);
+  }
+  if (posY + rect.height > window.innerHeight - margin) {
+    posY = Math.max(margin, window.innerHeight - rect.height - margin);
+  }
+  worldContextMenuEl.style.left = `${Math.round(posX)}px`;
+  worldContextMenuEl.style.top = `${Math.round(posY)}px`;
+}
+
+function openWorldContextMenu(worldId, clientX, clientY) {
+  if (!worldContextMenuEl) return;
+  const w = (worldsListCache || []).find(item => item.id === worldId);
+  if (!w) return;
+
+  closeWorldContextMenu();
+  activeContextWorldId = worldId;
+  const targetCard = document.querySelector(`.world-card[data-id="${worldId}"]`);
+  if (targetCard) targetCard.classList.add('context-active');
+
+  const isRunning = w.isRunning || (w.id === activeWorld && (serverStatus === 'RUNNING' || serverStatus === 'STARTING'));
+  const isServerRunning = (serverStatus !== 'STOPPED');
+  const isActionDisabled = isServerRunning || isRunning;
+  const isPinned = getPinnedWorldIds().includes(w.id);
+
+  let primaryItem;
+  if (isRunning) {
+    if (isDownloadingJava) {
+      primaryItem = { label: 'Téléchargement...', className: 'primary', disabled: true, icon: CTX_ICONS.spinner };
+    } else {
+      primaryItem = { label: 'Arrêter', className: 'stop', disabled: false, icon: CTX_ICONS.stop, onClick: () => stopActiveWorld() };
+    }
+  } else if (w.isCorrupted) {
+    primaryItem = { label: 'Ouvrir le dossier', className: '', disabled: false, icon: CTX_ICONS.folder, onClick: () => openWorldFolder(w.id) };
+  } else if (w.needsRepair) {
+    primaryItem = { label: 'Réparer', className: 'repair', disabled: isServerRunning, icon: CTX_ICONS.repair, onClick: () => triggerWorldRepair(w.id) };
+  } else {
+    primaryItem = { label: 'Lancer', className: 'primary', disabled: isServerRunning, icon: CTX_ICONS.play, onClick: () => startWorld(w.id) };
+  }
+
+  const menuSpec = [
+    primaryItem,
+    { type: 'separator' },
+    { label: 'Joueurs', disabled: !!w.isCorrupted, icon: CTX_ICONS.players, onClick: () => openPlayersManager(w.id) },
+    { label: 'Paramètres', disabled: isActionDisabled || !!w.isCorrupted, icon: CTX_ICONS.sliders, onClick: () => openEditProps(w.id) },
+    { label: 'Éditer', disabled: isActionDisabled || !!w.isCorrupted, icon: CTX_ICONS.settings, onClick: () => openRenameWorld(w.id) },
+    { type: 'separator' },
+    { label: isPinned ? 'Désépingler' : 'Épingler', className: isPinned ? 'pinned' : '', disabled: !!w.isCorrupted, icon: CTX_ICONS.pin(isPinned), onClick: () => togglePinWorld(w.id) },
+    { type: 'separator' },
+    { label: 'Supprimer', className: 'danger', disabled: isActionDisabled, icon: CTX_ICONS.trash, onClick: () => openDeleteWorld(w.id) }
+  ];
+
+  renderCustomContextMenu(menuSpec, clientX, clientY);
+}
+
+function buildEditableInputContextMenu(inputEl) {
+  const isReadOnly = !!(inputEl.readOnly || inputEl.disabled);
+  const isTextareaOrInput = inputEl.tagName === 'INPUT' || inputEl.tagName === 'TEXTAREA';
+  const val = isTextareaOrInput ? (inputEl.value || '') : (inputEl.textContent || '');
+  let selStart = 0;
+  let selEnd = 0;
+  let selectedText = '';
+
+  if (isTextareaOrInput && typeof inputEl.selectionStart === 'number') {
+    selStart = inputEl.selectionStart;
+    selEnd = inputEl.selectionEnd;
+    selectedText = val.slice(selStart, selEnd);
+  } else {
+    selectedText = (window.getSelection && window.getSelection().toString()) || '';
+  }
+
+  const hasSelection = selectedText.length > 0;
+  const items = [
+    {
+      label: 'Couper',
+      shortcut: `${CTX_MOD}X`,
+      icon: CTX_ICONS.cut,
+      disabled: isReadOnly || !hasSelection,
+      onClick: () => {
+        copyTextUniversal(selectedText);
+        if (isTextareaOrInput && typeof inputEl.setRangeText === 'function') {
+          inputEl.focus();
+          inputEl.setRangeText('', selStart, selEnd, 'start');
+          inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+        } else {
+          inputEl.focus();
+          try { document.execCommand('delete'); } catch (_) { }
+        }
+      }
+    },
+    {
+      label: 'Copier',
+      shortcut: `${CTX_MOD}C`,
+      icon: CTX_ICONS.copy,
+      disabled: !hasSelection,
+      onClick: () => {
+        copyTextUniversal(selectedText);
+        inputEl.focus();
+      }
+    },
+    {
+      label: 'Coller',
+      shortcut: `${CTX_MOD}V`,
+      icon: CTX_ICONS.paste,
+      disabled: isReadOnly,
+      onClick: async () => {
+        inputEl.focus();
+        try {
+          if (navigator.clipboard && navigator.clipboard.readText) {
+            const clip = await navigator.clipboard.readText();
+            if (typeof clip === 'string') {
+              if (isTextareaOrInput && typeof inputEl.setRangeText === 'function') {
+                inputEl.setRangeText(clip, selStart, selEnd, 'end');
+              } else {
+                document.execCommand('insertText', false, clip);
+              }
+              inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+              return;
+            }
+          }
+        } catch (_) { }
+        try { document.execCommand('paste'); } catch (_) { }
+      }
+    },
+    { type: 'separator' },
+    {
+      label: 'Tout sélectionner',
+      shortcut: `${CTX_MOD}A`,
+      icon: CTX_ICONS.selectAll,
+      disabled: val.length === 0,
+      onClick: () => {
+        inputEl.focus();
+        if (typeof inputEl.select === 'function') {
+          inputEl.select();
+        } else {
+          try { document.execCommand('selectAll'); } catch (_) { }
+        }
+      }
+    }
+  ];
+
+  if (!isReadOnly && val.length > 0) {
+    items.push(
+      { type: 'separator' },
+      {
+        label: 'Effacer le champ',
+        className: 'danger',
+        icon: CTX_ICONS.trash,
+        onClick: () => {
+          if (isTextareaOrInput) {
+            inputEl.value = '';
+          } else {
+            inputEl.textContent = '';
+          }
+          inputEl.focus();
+          inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
+    );
+  }
+
+  return items;
+}
+
+function buildPlayerRowContextMenu(playerRowEl) {
+  const nameEl = playerRowEl.querySelector('.player-name');
+  const name = nameEl ? nameEl.textContent.trim() : '';
+  if (!name) return null;
+
+  const lower = name.toLowerCase();
+  const data = (typeof cachedPlayersData === 'object' && cachedPlayersData) ? cachedPlayersData : {};
+  const playerObj = (data.players || []).find(p => (p.name || p).toLowerCase() === lower) || {};
+  const isOnline = !!playerObj.isOnline || (Array.isArray(currentPlayersList) && currentPlayersList.some(p => p.toLowerCase() === lower));
+  const isOp = !!playerObj.isOp || (data.ops || []).some(o => (o.name || o).toLowerCase() === lower);
+  const isBanned = !!playerObj.isBanned || (data.bannedPlayers || []).some(b => (b.name || b).toLowerCase() === lower);
+  const uuid = playerObj.uuid || '';
+
+  const items = [
+    { label: 'Gérer le joueur', icon: CTX_ICONS.edit, onClick: () => openPlayerDetail(name) },
+    { label: 'Copier le pseudo', icon: CTX_ICONS.copy, onClick: () => copyTextUniversal(name, `Pseudo "${name}" copié`) }
+  ];
+  if (uuid) {
+    items.push({ label: "Copier l'UUID", icon: CTX_ICONS.copy, onClick: () => copyTextUniversal(uuid, 'UUID copié') });
+  }
+  items.push({ type: 'separator' });
+  items.push({
+    label: isOp ? 'Retirer Opérateur' : 'Nommer Opérateur',
+    icon: CTX_ICONS.shield,
+    onClick: () => quickPlayerCommand(isOp ? 'deop' : 'op', name)
+  });
+  if (isOnline) {
+    items.push({ label: 'Expulser (Kick)', className: 'repair', icon: CTX_ICONS.kick, onClick: () => quickKickAction(name) });
+  }
+  items.push({ type: 'separator' });
+  if (isBanned) {
+    items.push({ label: 'Pardonner', className: 'primary', icon: CTX_ICONS.shield, onClick: () => removePlayerAction('bannedPlayers', name) });
+  } else {
+    items.push({ label: 'Bannir', className: 'danger', icon: CTX_ICONS.ban, onClick: () => quickBanAction(name) });
+  }
+  return items;
+}
+
+function buildTerminalContextMenu(targetEl, selectedText) {
+  const lineEl = targetEl.closest('.terminal-line');
+  const lineText = lineEl ? lineEl.textContent : '';
+  const worldId = selectedTerminalWorldId;
+  const logs = (worldId && terminalBuffers[worldId]) ? terminalBuffers[worldId] : [];
+  const hasLogs = logs.length > 0;
+  const isThisRunning = !!(worldId && worldId === activeWorld && (serverStatus === 'RUNNING' || serverStatus === 'STARTING'));
+  const isAnyRunning = serverStatus !== 'STOPPED';
+  const tunnelEl = document.getElementById('tunnelShareIp');
+  const tunnelPill = document.getElementById('tunnelSharePill');
+  const hasTunnel = !!(tunnelPill && tunnelPill.style.display !== 'none' && tunnelEl && tunnelEl.textContent && tunnelEl.textContent.trim() !== '...');
+
+  const items = [];
+  if (selectedText) {
+    items.push({
+      label: 'Copier la sélection',
+      shortcut: `${CTX_MOD}C`,
+      icon: CTX_ICONS.copy,
+      onClick: () => copyTextUniversal(selectedText, 'Sélection copiée')
+    });
+  }
+  if (lineText) {
+    items.push({
+      label: 'Copier la ligne',
+      icon: CTX_ICONS.copy,
+      onClick: () => copyTextUniversal(lineText, 'Ligne copiée')
+    });
+  }
+  items.push({
+    label: 'Copier tous les logs',
+    icon: CTX_ICONS.copy,
+    disabled: !hasLogs,
+    onClick: () => copyTextUniversal(logs.join('\n'), 'Logs copiés dans le presse-papiers')
+  });
+
+  items.push({ type: 'separator' });
+  items.push({
+    label: 'Aller en bas',
+    icon: CTX_ICONS.arrowDown,
+    disabled: !terminalOutput,
+    onClick: () => {
+      autoScroll = true;
+      if (terminalOutput) terminalOutput.scrollTop = terminalOutput.scrollHeight;
+    }
+  });
+
+  if (worldId) {
+    if (isThisRunning) {
+      items.push({ label: 'Arrêter ce monde', className: 'stop', icon: CTX_ICONS.stop, onClick: () => stopActiveWorld() });
+    } else {
+      items.push({ label: 'Lancer ce monde', className: 'primary', disabled: isAnyRunning, icon: CTX_ICONS.play, onClick: () => startWorld(worldId) });
+    }
+  }
+  if (hasTunnel) {
+    items.push({ label: "Copier l'adresse du serveur", icon: CTX_ICONS.link, onClick: () => copyTunnelShareIp() });
+  }
+
+  items.push({ type: 'separator' });
+  items.push({
+    label: 'Effacer la console',
+    confirmLabel: 'Vous êtes sûr ?',
+    className: 'danger',
+    icon: CTX_ICONS.trash,
+    disabled: !worldId || !hasLogs,
+    onClick: () => clearTerminalDirectFromContextMenu()
+  });
+
+  return items;
+}
+
+function buildTunnelContextMenu() {
+  return [
+    { label: "Copier l'adresse", icon: CTX_ICONS.copy, onClick: () => copyTunnelShareIp() },
+    { type: 'separator' },
+    { label: 'Reconnecter le tunnel', icon: CTX_ICONS.refresh, onClick: () => restartTunnelManual(null, false) },
+    { label: 'Nouveau port public', icon: CTX_ICONS.link, onClick: () => restartTunnelManual(null, true) }
+  ];
+}
+
+function closeTopVisibleModalFromContextMenu(modalBackdropEl) {
+  if (!modalBackdropEl) return;
+  const closeBtn = modalBackdropEl.querySelector('.btn-close');
+  if (closeBtn) {
+    closeBtn.click();
+  } else {
+    modalBackdropEl.style.display = 'none';
+  }
+}
+
+function handleGlobalContextMenu(e) {
+  const target = e.target;
+  if (!target || typeof target.closest !== 'function') return;
+
+  // Ignorer clic droit sur le menu contextuel lui-même
+  if (worldContextMenuEl && worldContextMenuEl.contains(target)) {
+    e.preventDefault();
+    return;
+  }
+
+  // 1. Carte monde (menu dédié)
+  const worldCard = target.closest('.world-card');
+  if (worldCard) {
+    const worldId = worldCard.getAttribute('data-id');
+    if (worldId) {
+      e.preventDefault();
+      e.stopPropagation();
+      openWorldContextMenu(worldId, e.clientX, e.clientY);
+      return;
+    }
+  }
+
+  closeWorldContextMenu();
+  e.preventDefault();
+
+  // 2. Champ de saisie éditable (input texte / textarea / contenteditable)
+  const editableEl = target.closest('input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="file"]):not([type="color"]), textarea, [contenteditable="true"]');
+  if (editableEl) {
+    renderCustomContextMenu(buildEditableInputContextMenu(editableEl), e.clientX, e.clientY);
+    return;
+  }
+
+  // 3. Ligne de joueur dans le gestionnaire de joueurs
+  const playerRow = target.closest('.player-row');
+  if (playerRow) {
+    const playerItems = buildPlayerRowContextMenu(playerRow);
+    if (playerItems) {
+      renderCustomContextMenu(playerItems, e.clientX, e.clientY);
+      return;
+    }
+  }
+
+  // 4. Pilule d'adresse du tunnel
+  if (target.closest('#tunnelSharePill')) {
+    renderCustomContextMenu(buildTunnelContextMenu(), e.clientX, e.clientY);
+    return;
+  }
+
+  const selectedText = (window.getSelection && window.getSelection().toString().trim()) || '';
+
+  // 5. Terminal / panneau console
+  if (target.closest('#terminalOutput') || target.closest('.console-panel')) {
+    renderCustomContextMenu(buildTerminalContextMenu(target, selectedText), e.clientX, e.clientY);
+    return;
+  }
+
+  // 6. Modale ouverte
+  const modalBackdrop = target.closest('.modal-backdrop');
+  if (modalBackdrop && modalBackdrop.style.display !== 'none') {
+    const modalItems = [];
+    if (selectedText) {
+      modalItems.push(
+        { label: 'Copier la sélection', shortcut: `${CTX_MOD}C`, icon: CTX_ICONS.copy, onClick: () => copyTextUniversal(selectedText, 'Sélection copiée') },
+        { type: 'separator' }
+      );
+    }
+    if (modalBackdrop.id === 'playersModal') {
+      modalItems.push(
+        { label: 'Actualiser les joueurs', icon: CTX_ICONS.refresh, onClick: () => refreshPlayersData(true) },
+        { type: 'separator' }
+      );
+    }
+    modalItems.push(
+      { label: 'Fermer cette fenêtre', shortcut: 'Échap', icon: CTX_ICONS.close, onClick: () => closeTopVisibleModalFromContextMenu(modalBackdrop) },
+      { type: 'separator' },
+      { label: "Recharger l'interface", shortcut: `${CTX_MOD}R`, icon: CTX_ICONS.refresh, onClick: () => window.location.reload() }
+    );
+    renderCustomContextMenu(modalItems, e.clientX, e.clientY);
+    return;
+  }
+
+  // 7. Panneau des mondes / fond global de l'application
+  const globalItems = [];
+  if (selectedText) {
+    globalItems.push(
+      { label: 'Copier la sélection', shortcut: `${CTX_MOD}C`, icon: CTX_ICONS.copy, onClick: () => copyTextUniversal(selectedText, 'Sélection copiée') },
+      { type: 'separator' }
+    );
+  }
+  globalItems.push(
+    { label: 'Créer un monde', className: 'primary', icon: CTX_ICONS.plus, onClick: () => openCreateModal() },
+    {
+      label: 'Actualiser les mondes',
+      icon: CTX_ICONS.refresh,
+      onClick: async () => {
+        await fetchWorlds();
+        if (typeof showToast === 'function') showToast('Liste des mondes actualisée.', 'info');
+      }
+    },
+    { type: 'separator' },
+    { label: 'Paramètres de Cubirium', shortcut: `${CTX_MOD},`, icon: CTX_ICONS.settings, onClick: () => openAppSettingsModal() },
+    { label: 'À propos de Cubirium', shortcut: isMacContextPlatform ? '' : 'F1', icon: CTX_ICONS.info, onClick: () => openAboutModal() },
+    { type: 'separator' },
+    { label: "Recharger l'interface", shortcut: `${CTX_MOD}R`, icon: CTX_ICONS.refresh, onClick: () => window.location.reload() }
+  );
+  renderCustomContextMenu(globalItems, e.clientX, e.clientY);
+}
+
+if (worldsList) {
+  worldsList.addEventListener('scroll', closeWorldContextMenu, { passive: true });
+}
+if (terminalOutput) {
+  terminalOutput.addEventListener('scroll', closeWorldContextMenu, { passive: true });
+}
+
+document.addEventListener('contextmenu', handleGlobalContextMenu);
+
+document.addEventListener('click', (e) => {
+  if (worldContextMenuEl && worldContextMenuEl.classList.contains('visible') && !worldContextMenuEl.contains(e.target)) {
+    closeWorldContextMenu();
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && worldContextMenuEl && worldContextMenuEl.classList.contains('visible')) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    closeWorldContextMenu();
+  }
+}, true);
+
+window.addEventListener('resize', closeWorldContextMenu);
+window.addEventListener('blur', closeWorldContextMenu);
 
 function buildWorldCardHtml(w, opts) {
   const { isRunning, typeClass, isSelected, isActionDisabled, isServerRunning, isPinned, isCollapsed, displayRuntime, baseRuntimeSecs, runtimeSecs, effectiveStartTime } = opts;
@@ -1049,14 +1650,22 @@ function buildWorldCardHtml(w, opts) {
           </svg>
         </button>
         <button ${lockAttr} title="Modifier server.properties" onclick="openEditProps('${w.id}')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="21" y1="4" x2="14" y2="4"></line>
+            <line x1="10" y1="4" x2="3" y2="4"></line>
+            <line x1="21" y1="12" x2="12" y2="12"></line>
+            <line x1="8" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="20" x2="16" y2="20"></line>
+            <line x1="12" y1="20" x2="3" y2="20"></line>
+            <line x1="14" y1="2" x2="14" y2="6"></line>
+            <line x1="8" y1="10" x2="8" y2="14"></line>
+            <line x1="16" y1="18" x2="16" y2="22"></line>
           </svg>
         </button>
         <button ${lockAttr} title="Gestion du monde (Dimensions, Export, Renommer)" onclick="openRenameWorld('${w.id}')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
           </svg>
         </button>
         <button ${lockDeleteAttr} title="Supprimer définitivement ce monde" onclick="openDeleteWorld('${w.id}')">
@@ -1088,6 +1697,58 @@ function buildWorldCardHtml(w, opts) {
   `;
 }
 
+let suppressAutoSelectWorld = false;
+let pendingCreatedWorldId = null;
+let lastCreatedWorldIdToScroll = null;
+
+function scrollWorldCardIntoView(worldId) {
+  if (!worldId || !worldsList) return;
+  const doScroll = () => {
+    const cards = worldsList.querySelectorAll('.world-card');
+    let targetCard = null;
+    for (const c of cards) {
+      if (c.getAttribute('data-id') === worldId) {
+        targetCard = c;
+        break;
+      }
+    }
+    if (targetCard && typeof targetCard.scrollIntoView === 'function') {
+      targetCard.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+    }
+  };
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(() => requestAnimationFrame(doScroll));
+  } else {
+    doScroll();
+  }
+}
+
+function queueFocusCreatedWorld(data, fallbackName) {
+  const cleanFallback = fallbackName ? String(fallbackName).trim().replace(/[^a-zA-Z0-9_-]/g, '-') : '';
+  const createdId = (data && (data.worldId || (data.world && (data.world.id || data.world.worldId)) || data.id)) || cleanFallback;
+  if (!createdId) return;
+  suppressAutoSelectWorld = false;
+  pendingCreatedWorldId = createdId;
+  lastCreatedWorldIdToScroll = createdId;
+  fetchWorlds();
+}
+
+function showNoWorldSelectedTerminal() {
+  selectedTerminalWorldId = null;
+  if (typeof resetClearButton === 'function') resetClearButton();
+  document.querySelectorAll('.world-card.selected').forEach(c => c.classList.remove('selected'));
+  updateTerminalHeader();
+  if (terminalOutput) {
+    terminalOutput.innerHTML = `
+      <div class="terminal-empty-state">
+        <div class="terminal-empty-icon">
+          <img src="/assets/logo.png?v=5" alt="Cubirium" class="terminal-empty-logo" />
+        </div>
+        <p class="terminal-empty-text">Veuillez sélectionner un monde</p>
+      </div>`;
+  }
+}
+
 function renderWorlds(worlds) {
   worldsListCache = worlds || [];
   worldsCountBadge.textContent = worldsListCache.length;
@@ -1098,7 +1759,11 @@ function renderWorlds(worlds) {
 
   if (worldsListCache.length === 0) {
     if (lastRenderedWorldsSignature === 'empty' && worldsList.querySelector('.empty-state')) {
-      updateTerminalHeader();
+      if (!selectedTerminalWorldId && terminalOutput && !terminalOutput.querySelector('.terminal-empty-state')) {
+        showNoWorldSelectedTerminal();
+      } else {
+        updateTerminalHeader();
+      }
       return;
     }
     lastRenderedWorldsSignature = 'empty';
@@ -1121,7 +1786,7 @@ function renderWorlds(worlds) {
           Créer un monde
         </button>
       </div>`;
-    updateTerminalHeader();
+    showNoWorldSelectedTerminal();
     return;
   }
 
@@ -1168,8 +1833,18 @@ function renderWorlds(worlds) {
   });
 
   if (stateSignature === lastRenderedWorldsSignature && worldsList.children.length > 0 && !worldsList.querySelector('.empty-state') && !worldsList.querySelector('.loading-state')) {
-    if (!selectedTerminalWorldId && sortedWorlds.length > 0) {
-      selectTerminalWorld(activeWorld || sortedWorlds[0].id);
+    if (pendingCreatedWorldId) {
+      const createdMatch = sortedWorlds.find(w => w.id === pendingCreatedWorldId) ||
+        sortedWorlds.find(w => w.id.toLowerCase() === pendingCreatedWorldId.toLowerCase());
+      if (createdMatch) {
+        pendingCreatedWorldId = null;
+        selectTerminalWorld(createdMatch.id);
+        scrollWorldCardIntoView(createdMatch.id);
+        return;
+      }
+    }
+    if (!selectedTerminalWorldId && terminalOutput && !terminalOutput.querySelector('.terminal-empty-state')) {
+      showNoWorldSelectedTerminal();
     } else {
       updateTerminalHeader();
     }
@@ -1399,8 +2074,28 @@ function renderWorlds(worlds) {
     worldsList.appendChild(card);
   });
 
-  if (!selectedTerminalWorldId && sortedWorlds.length > 0) {
-    selectTerminalWorld(activeWorld || sortedWorlds[0].id);
+  if (pendingCreatedWorldId) {
+    const createdMatch = sortedWorlds.find(w => w.id === pendingCreatedWorldId) ||
+      sortedWorlds.find(w => w.id.toLowerCase() === pendingCreatedWorldId.toLowerCase());
+    if (createdMatch) {
+      pendingCreatedWorldId = null;
+      selectTerminalWorld(createdMatch.id);
+      scrollWorldCardIntoView(createdMatch.id);
+      return;
+    }
+  }
+
+  if (selectedTerminalWorldId && !sortedWorlds.some(w => w.id === selectedTerminalWorldId)) {
+    showNoWorldSelectedTerminal();
+    return;
+  }
+
+  if (!selectedTerminalWorldId) {
+    if (terminalOutput && !terminalOutput.querySelector('.terminal-empty-state')) {
+      showNoWorldSelectedTerminal();
+    } else {
+      updateTerminalHeader();
+    }
   } else {
     updateTerminalHeader();
   }
@@ -1556,6 +2251,7 @@ function updateTunnelState(state) {
 
 async function selectTerminalWorld(worldId) {
   if (!worldId) return;
+  suppressAutoSelectWorld = false;
   selectedTerminalWorldId = worldId;
   terminalUnread[worldId] = 0; // réinitialiser le compteur de non-lus
   resetClearButton();
@@ -1612,17 +2308,23 @@ async function selectTerminalWorld(worldId) {
 function updateTerminalHeader() {
   if (terminalStatusTag) terminalStatusTag.style.display = 'none';
   if (playersOnlineBadge) playersOnlineBadge.style.display = 'none';
+  const terminalTitlePill = document.getElementById('terminalTitlePill') || (activeWorldTitle && activeWorldTitle.closest('.hud-pill-title'));
 
   if (!selectedTerminalWorldId) {
+    if (terminalTitlePill) terminalTitlePill.style.display = 'none';
     activeWorldTitle.textContent = 'Aucun terminal actif';
     serverPulseDot.className = 'pulse-dot';
     btnStopActiveServer.style.display = 'none';
     btnLaunchViewedWorld.style.display = 'none';
+    if (btnClearConsole) btnClearConsole.style.display = 'none';
     cmdInput.disabled = true;
     btnSendCmd.disabled = true;
     cmdInput.placeholder = 'Sélectionnez un monde pour accéder à sa console';
     return;
   }
+
+  if (terminalTitlePill) terminalTitlePill.style.display = 'inline-flex';
+  if (btnClearConsole) btnClearConsole.style.display = '';
 
   const isViewedRunning = (selectedTerminalWorldId === activeWorld && serverStatus === 'RUNNING');
   const isViewedStarting = (selectedTerminalWorldId === activeWorld && serverStatus === 'STARTING');
@@ -1809,20 +2511,171 @@ function renderTerminalLogs(logsArray) {
 function createTerminalLineElement(text) {
   const line = document.createElement('div');
   line.className = 'terminal-line';
+  const raw = String(text ?? '');
 
-  if (text.includes('[ERR]') || text.includes('ERROR') || text.includes('Exception')) {
-    line.classList.add('error');
-  } else if (text.includes('WARN')) {
-    line.classList.add('warn');
-  } else if (text.startsWith('>')) {
+  // 1. Commandes saisies dans la console (> ...)
+  if (raw.startsWith('>')) {
     line.classList.add('command');
-  } else if (text.startsWith('[Tunnel]')) {
-    line.classList.add('tunnel');
+    const promptSpan = document.createElement('span');
+    promptSpan.className = 'log-cmd-prompt';
+    promptSpan.textContent = '>';
+    const cmdSpan = document.createElement('span');
+    cmdSpan.className = 'log-cmd-text';
+    cmdSpan.textContent = raw.slice(1);
+    line.appendChild(promptSpan);
+    line.appendChild(cmdSpan);
+    return line;
+  }
+
+  // 2. Préfixes internes Cubirium ([Tunnel], [Système], [Java], [Installation], [Réparation], [Cubirium])
+  const internalMatch = raw.match(/^(\[(?:Tunnel|Système|Java|Installation|Réparation|Cubirium|ERR)\])\s*(.*)$/);
+  if (internalMatch) {
+    const tag = internalMatch[1];
+    const msg = internalMatch[2];
+    const tagSpan = document.createElement('span');
+    const msgSpan = document.createElement('span');
+    msgSpan.className = 'log-msg';
+    msgSpan.textContent = msg;
+
+    if (tag === '[ERR]' || /échec|erreur|error|exception/i.test(msg)) {
+      line.classList.add('error');
+      tagSpan.className = 'log-error';
+    } else if (tag === '[Tunnel]') {
+      line.classList.add('tunnel');
+      tagSpan.className = 'log-tag-tunnel';
+    } else {
+      line.classList.add('system');
+      tagSpan.className = 'log-tag-system';
+      if (/avec succès|configuré|prêt|terminé|en ligne/i.test(msg)) {
+        line.classList.add('is-success');
+      }
+    }
+    tagSpan.textContent = tag;
+    line.appendChild(tagSpan);
+    if (msg) {
+      line.appendChild(document.createTextNode(' '));
+      line.appendChild(msgSpan);
+    }
+    return line;
+  }
+
+  // 3. Lignes de stack trace Java (\tat ... ou Caused by:)
+  if (/^\s+at\s+[\w.$<>]+\(/.test(raw) || /^\s+\.\.\.\s+\d+\s+more/.test(raw)) {
+    line.classList.add('stacktrace');
+    line.textContent = raw;
+    return line;
+  }
+
+  // 4. Lignes structurées Minecraft : [HH:MM:SS] [Thread/LEVEL]: Message
+  // Compatible Vanilla, Paper/Spigot, Fabric, Forge et NeoForge
+  const mcMatch = raw.match(/^(\[(?:\d{2}[A-Za-z]{3}\d{4}\s+)?\d{2}:\d{2}:\d{2}(?:\.\d+)?\])\s+(\[[^\]]+\](?:\s+\[[^\]]+\])?:?)\s*(.*)$/);
+  if (mcMatch) {
+    const tsPart = mcMatch[1];
+    const threadPart = mcMatch[2];
+    const msgPart = mcMatch[3] || '';
+
+    const tsSpan = document.createElement('span');
+    tsSpan.className = 'log-ts';
+    tsSpan.textContent = tsPart;
+
+    const threadSpan = document.createElement('span');
+    const isErrLevel = /\/(?:ERROR|FATAL|SEVERE)\b/i.test(threadPart) || /\b(?:Exception|Error):/.test(msgPart);
+    const isWarnLevel = !isErrLevel && /\/WARN(?:ING)?\b/i.test(threadPart);
+
+    if (isErrLevel) {
+      threadSpan.className = 'log-error';
+      line.classList.add('error');
+    } else if (isWarnLevel) {
+      threadSpan.className = 'log-warn';
+      line.classList.add('warn');
+    } else {
+      threadSpan.className = 'log-info';
+      line.classList.add('info');
+    }
+    threadSpan.textContent = threadPart;
+
+    line.appendChild(tsSpan);
+    line.appendChild(document.createTextNode(' '));
+    line.appendChild(threadSpan);
+
+    if (msgPart) {
+      line.appendChild(document.createTextNode(' '));
+      const msgSpan = document.createElement('span');
+      msgSpan.className = 'log-msg';
+
+      if (!isErrLevel && !isWarnLevel) {
+        // Lignes remarquables : détection sémantique
+        const joinMatch = msgPart.match(/^(?:(System chat:\s*))?([a-zA-Z0-9_]{2,16})(\s+(?:joined the game|logged in with entity id).*)$/i);
+        const leaveMatch = !joinMatch && msgPart.match(/^(?:(System chat:\s*))?([a-zA-Z0-9_]{2,16})(\s+(?:left the game|lost connection).*)$/i);
+        const chatMatch = !joinMatch && !leaveMatch && msgPart.match(/^(?:(\[Not Secure\]\s*))?(<[a-zA-Z0-9_]{2,16}>)(\s+.*)$/);
+
+        if (/^Done\s*\([^)]+\)!/i.test(msgPart) || /For help,\s*type\s+"help"/i.test(msgPart) || /RCON running on/i.test(msgPart)) {
+          line.classList.add('is-success');
+          msgSpan.textContent = msgPart;
+        } else if (joinMatch) {
+          line.classList.add('is-join');
+          if (joinMatch[1]) msgSpan.appendChild(document.createTextNode(joinMatch[1]));
+          const pSpan = document.createElement('span');
+          pSpan.className = 'log-player-name';
+          pSpan.textContent = joinMatch[2];
+          msgSpan.appendChild(pSpan);
+          msgSpan.appendChild(document.createTextNode(joinMatch[3]));
+        } else if (leaveMatch) {
+          line.classList.add('is-leave');
+          if (leaveMatch[1]) msgSpan.appendChild(document.createTextNode(leaveMatch[1]));
+          const pSpan = document.createElement('span');
+          pSpan.className = 'log-player-name';
+          pSpan.textContent = leaveMatch[2];
+          msgSpan.appendChild(pSpan);
+          msgSpan.appendChild(document.createTextNode(leaveMatch[3]));
+        } else if (chatMatch) {
+          line.classList.add('is-chat');
+          if (chatMatch[1]) {
+            const nsSpan = document.createElement('span');
+            nsSpan.className = 'log-ts';
+            nsSpan.textContent = chatMatch[1];
+            msgSpan.appendChild(nsSpan);
+          }
+          const pSpan = document.createElement('span');
+          pSpan.className = 'log-player-name';
+          pSpan.textContent = chatMatch[2];
+          msgSpan.appendChild(pSpan);
+          msgSpan.appendChild(document.createTextNode(chatMatch[3]));
+        } else if (/has (?:made the advancement|completed the challenge|reached the goal)/i.test(msgPart)) {
+          line.classList.add('is-advancement');
+          msgSpan.textContent = msgPart;
+        } else if (/^(?:Stopping server|System chat:\s*Stopping the server|Stopping the server|Saving players|Saving worlds|All dimensions are saved)/i.test(msgPart)) {
+          line.classList.add('is-shutdown');
+          msgSpan.textContent = msgPart;
+        } else if (/^(?:Starting minecraft server|Preparing level|Default game type:|Loading \d+ mods|Environment:|Running on )/i.test(msgPart)) {
+          line.classList.add('is-milestone');
+          msgSpan.textContent = msgPart;
+        } else if (/^(?:The nearest\s+|Located\s+|Seed:|Teleported\s+|Gave\s+|Made\s+.+\s+a server operator|No longer a server operator|Set\s+.+game mode|Changed\s+.+game mode|Added\s+.+\s+to the whitelist|Removed\s+.+\s+from the whitelist|Banned\s+|Unbanned\s+|Pardoned\s+|Kicked\s+|Set the time to|Set the weather to|Gamerule\s+)/i.test(msgPart)) {
+          line.classList.add('is-admin');
+          msgSpan.textContent = msgPart;
+        } else {
+          msgSpan.textContent = msgPart;
+        }
+      } else {
+        msgSpan.textContent = msgPart;
+      }
+
+      line.appendChild(msgSpan);
+    }
+
+    return line;
+  }
+
+  // 5. Fallback pour lignes non structurées
+  if (raw.includes('[ERR]') || raw.includes('ERROR') || raw.includes('Exception') || raw.startsWith('Caused by:')) {
+    line.classList.add('error');
+  } else if (raw.includes('WARN')) {
+    line.classList.add('warn');
   } else {
     line.classList.add('info');
   }
 
-  line.textContent = text;
+  line.textContent = raw;
   return line;
 }
 
@@ -2349,9 +3202,9 @@ function computeCommandSmartSuggestions(rawInput) {
     const filtered = !q
       ? DEFAULT_COMMANDS.slice(0, 10)
       : DEFAULT_COMMANDS.filter(c => {
-          const name = c.cmd.split(' ')[0].toLowerCase();
-          return name.startsWith(q) || c.cmd.toLowerCase().includes(q) || (c.desc || '').toLowerCase().includes(q);
-        }).slice(0, 10);
+        const name = c.cmd.split(' ')[0].toLowerCase();
+        return name.startsWith(q) || c.cmd.toLowerCase().includes(q) || (c.desc || '').toLowerCase().includes(q);
+      }).slice(0, 10);
 
     const suggestions = filtered.map(c => {
       const name = c.cmd.split(' ')[0];
@@ -2607,7 +3460,7 @@ async function updateCommandSuggestions(query) {
       renderSuggestions({ syntax: { base: clean, chips: [] }, suggestions: formatted }, query);
       return;
     }
-  } catch (e) {}
+  } catch (e) { }
 
   cmdSuggestionsBox.style.display = 'none';
   _selectedSuggestionIndex = -1;
@@ -2918,6 +3771,11 @@ function closeProgressModal() {
   if (createProgressModal) {
     createProgressModal.style.display = 'none';
   }
+  if (lastCreatedWorldIdToScroll) {
+    const targetId = lastCreatedWorldIdToScroll;
+    lastCreatedWorldIdToScroll = null;
+    scrollWorldCardIntoView(targetId);
+  }
 }
 
 if (btnCloseProgressModal) {
@@ -2962,6 +3820,7 @@ formCreateVanilla.addEventListener('submit', async (e) => {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Erreur création');
+    queueFocusCreatedWorld(data, name);
     updateProgressModal(100, `Monde Vanilla ${name} prêt !`);
   } catch (err) {
     setProgressError(err.message);
@@ -2997,6 +3856,7 @@ if (formCreateCrossplay) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erreur création serveur crossplay');
+      queueFocusCreatedWorld(data, name);
       updateProgressModal(100, `Serveur Crossplay ${name} prêt !`);
     } catch (err) {
       setProgressError(err.message);
@@ -3601,6 +4461,7 @@ formCreateModded.addEventListener('submit', async (e) => {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Erreur création monde moddé');
+    queueFocusCreatedWorld(data, name);
     updateProgressModal(100, `Monde moddé ${name} créé avec succès !`);
   } catch (err) {
     setProgressError(err.message);
@@ -4133,8 +4994,8 @@ if (formImportWorld) {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erreur importation');
+      queueFocusCreatedWorld(data, name);
       updateProgressModal(100, `Monde ${name} importé et configuré avec succès !`);
-      fetchWorlds();
     } catch (err) {
       setProgressError(err.message);
       showToast(err.message, 'error');
@@ -4381,6 +5242,10 @@ const detailPlayerName = document.getElementById('detailPlayerName');
 const detailStatusPill = document.getElementById('detailStatusPill');
 const detailPlayerUuid = document.getElementById('detailPlayerUuid');
 const detailGameModeSelect = document.getElementById('detailGameModeSelect');
+const detailGameModeDropdown = document.getElementById('detailGameModeDropdown');
+const detailGameModeTrigger = document.getElementById('detailGameModeTrigger');
+const detailGameModeLabel = document.getElementById('detailGameModeLabel');
+const detailGameModeMenu = document.getElementById('detailGameModeMenu');
 const optimisticPlayerGameModes = {};
 
 const detailXpLabel = document.getElementById('detailXpLabel');
@@ -4398,6 +5263,9 @@ const player3dCanvas = document.getElementById('player3dCanvas');
 const player3dLoading = document.getElementById('player3dLoading');
 let _skinViewer = null;
 let _mouseMoveListener = null;
+let _isDragging3DSkin = false;
+let _skinDragListeners = null;
+let _isVitalActionBusy = false;
 
 if (player3dCanvas) {
   player3dCanvas.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
@@ -4984,8 +5852,39 @@ window.executeDeletePlayerData = executeDeletePlayerData;
 let playerDetailPollInterval = null;
 let isPollingPlayerDetail = false;
 
-async function pollPlayerDetailTick() {
-  if (isPollingPlayerDetail) return;
+const GAMEMODE_LABELS = {
+  survival: 'Survie',
+  creative: 'Créatif',
+  adventure: 'Aventure',
+  spectator: 'Spectateur'
+};
+
+function syncGameModeDropdownUI(mode) {
+  const safeMode = GAMEMODE_LABELS[mode] ? mode : 'survival';
+  if (detailGameModeSelect) detailGameModeSelect.value = safeMode;
+  if (detailGameModeLabel) detailGameModeLabel.textContent = GAMEMODE_LABELS[safeMode];
+  if (detailGameModeMenu) {
+    detailGameModeMenu.querySelectorAll('.gamemode-dropdown-option').forEach((opt) => {
+      const active = opt.dataset.value === safeMode;
+      opt.classList.toggle('active', active);
+      opt.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
+  }
+}
+
+function setGameModeDropdownOpen(isOpen) {
+  if (!detailGameModeDropdown) return;
+  detailGameModeDropdown.classList.toggle('open', Boolean(isOpen));
+  if (detailGameModeTrigger) detailGameModeTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  if (detailGameModeMenu) detailGameModeMenu.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+}
+
+function closeGameModeDropdown() {
+  setGameModeDropdownOpen(false);
+}
+
+async function pollPlayerDetailTick(forceRefresh = false) {
+  if (isPollingPlayerDetail && !forceRefresh) return;
   if (!playerDetailModal || playerDetailModal.style.display === 'none' || !currentPlayerDetailName) {
     stopPlayerDetailPolling();
     return;
@@ -4998,13 +5897,14 @@ async function pollPlayerDetailTick() {
       if (currentPlayerDetailName === data.name) {
         const prevStr = currentPlayerDetailData ? JSON.stringify(currentPlayerDetailData) : '';
         const nextStr = JSON.stringify(data);
-        if (prevStr !== nextStr) {
+        if (forceRefresh || prevStr !== nextStr) {
           const invPrev = JSON.stringify(currentPlayerDetailData?.inventory);
           const invNext = JSON.stringify(data.inventory);
+          const prevSelectedSlot = currentPlayerDetailData?.selectedSlot;
           currentPlayerDetailData = data;
           renderPlayerDetailView(data);
-          if (invPrev !== invNext && _skinViewer) {
-            _apply3DArmor(_skinViewer, data.inventory || []);
+          if ((invPrev !== invNext || prevSelectedSlot !== data.selectedSlot) && _skinViewer) {
+            _apply3DArmor(_skinViewer, data.inventory || [], data.selectedSlot ?? 0);
           }
         }
       }
@@ -5041,13 +5941,20 @@ function onPlayerPollingFocusChange() {
 window.addEventListener('focus', onPlayerPollingFocusChange);
 document.addEventListener('visibilitychange', onPlayerPollingFocusChange);
 
+function detach3DSkinDragListeners() {
+  _skinDragListeners = null;
+  _isDragging3DSkin = false;
+}
+
 function closePlayerDetail() {
   hideMcTooltip();
+  closeGameModeDropdown();
   stopPlayerDetailPolling();
   if (playerDetailModal) playerDetailModal.style.display = 'none';
   currentPlayerDetailName = null;
   currentPlayerDetailData = null;
-  // Nettoyage du viewer 3D
+  // Nettoyage du viewer 3D et de ses écouteurs
+  detach3DSkinDragListeners();
   if (_mouseMoveListener) {
     document.removeEventListener('mousemove', _mouseMoveListener);
     _mouseMoveListener = null;
@@ -5076,6 +5983,7 @@ async function openPlayerDetail(playerName) {
   if (!currentPlayersWorldId || !playerName) return;
 
   currentPlayerDetailName = playerName;
+  closeGameModeDropdown();
 
   // Pré-remplissage rapide
   if (detailPlayerName) detailPlayerName.textContent = playerName;
@@ -5097,8 +6005,8 @@ async function openPlayerDetail(playerName) {
     currentPlayerDetailData = data;
     if (data.worldId) currentPlayersWorldId = data.worldId;
     renderPlayerDetailView(data);
-    // Lance le rendu 3D du skin du joueur
-    initOrUpdate3DPlayer(playerName, data.inventory || [], data.uuid);
+    // Lance le rendu 3D du skin du joueur avec tout son équipement (armure, élytres, tête, main principale, seconde main)
+    initOrUpdate3DPlayer(playerName, data.inventory || [], data.uuid, data.selectedSlot ?? 0);
   } catch (err) {
     console.error('Erreur chargement joueur:', err);
     showToast(err.message, 'error');
@@ -5115,23 +6023,36 @@ function renderPlayerDetailView(data) {
   if (detailPlayerUuid) detailPlayerUuid.textContent = data.uuid || 'UUID non répertorié';
   if (detailAvatar) detailAvatar.src = `https://minotar.net/avatar/${encodeURIComponent(data.name)}/48`;
 
+  const isOnline = (data.isOnline !== undefined)
+    ? !!data.isOnline
+    : (currentPlayersList && currentPlayersList.some(p => p.toLowerCase() === data.name.toLowerCase()));
+
   if (detailStatusPill) {
-    const isOnline = (data.isOnline !== undefined)
-      ? !!data.isOnline
-      : (currentPlayersList && currentPlayersList.some(p => p.toLowerCase() === data.name.toLowerCase()));
     detailStatusPill.textContent = isOnline ? 'En ligne' : 'Hors ligne';
     detailStatusPill.className = `player-status-pill ${isOnline ? 'online' : 'offline'}`;
   }
 
-  // Mode de jeu (instantané avec support optimiste)
-  if (detailGameModeSelect) {
-    const optMode = data.name ? optimisticPlayerGameModes[data.name.toLowerCase()] : null;
-    const effectiveMode = optMode || data.gameMode || data.gameType || 'survival';
-    detailGameModeSelect.value = effectiveMode;
-    if (data.name && data.gameMode && optMode === data.gameMode) {
-      delete optimisticPlayerGameModes[data.name.toLowerCase()];
-    }
+  // Mode de jeu (instantané avec support optimiste + menu custom)
+  const optMode = data.name ? optimisticPlayerGameModes[data.name.toLowerCase()] : null;
+  const effectiveMode = optMode || data.gameMode || data.gameType || 'survival';
+  syncGameModeDropdownUI(effectiveMode);
+  if (data.name && data.gameMode && optMode === data.gameMode) {
+    delete optimisticPlayerGameModes[data.name.toLowerCase()];
   }
+
+  // Activer / désactiver les contrôles temps réel (Vie, Faim, XP) selon la présence en ligne
+  const liveControls = playerDetailModal
+    ? playerDetailModal.querySelectorAll('.btn-vital-ctrl, .btn-xp-chip')
+    : [];
+  liveControls.forEach((btn) => {
+    if (!btn.dataset.defaultTitle && btn.title) {
+      btn.dataset.defaultTitle = btn.title;
+    }
+    btn.disabled = !isOnline;
+    btn.title = isOnline
+      ? (btn.dataset.defaultTitle || '')
+      : 'Le joueur doit être en ligne sur le serveur actif';
+  });
 
   // Vie et Expérience
   const xpLevel = data.xpLevel || 0;
@@ -5139,21 +6060,25 @@ function renderPlayerDetailView(data) {
   if (detailXpLabel) detailXpLabel.textContent = `Niveau ${xpLevel}`;
   if (detailXpFill) detailXpFill.style.width = `${Math.round(xpProgress * 100)}%`;
 
-  // 10 Cœurs de vie (Santé max: 20) - Vraies textures Minecraft
+  // 10 Cœurs de vie (avec support des mods qui augmentent la santé max) - Vraies textures Minecraft
   if (detailHeartsContainer) {
-    const health = Math.max(0, Math.min(20, Math.round(data.health !== undefined ? data.health : 20)));
+    const maxHealth = Math.max(20, Math.round(data.maxHealth !== undefined ? data.maxHealth : 20));
+    const rawHealth = Math.max(0, Math.min(maxHealth, Math.round(data.health !== undefined ? data.health : 20)));
+    const scaledHealth = maxHealth > 20 ? Math.round((rawHealth / maxHealth) * 20) : rawHealth;
+    const hpTitle = `${rawHealth}/${maxHealth} PV`;
     let heartsHtml = '';
     for (let i = 0; i < 10; i++) {
       const heartValue = (i + 1) * 2;
-      if (health >= heartValue) {
-        heartsHtml += `<img class="mc-heart-img" src="/assets/minecraft/gui/heart_full.png" alt="Cœur plein" title="${health}/20 PV" />`;
-      } else if (health === heartValue - 1) {
-        heartsHtml += `<img class="mc-heart-img" src="/assets/minecraft/gui/heart_half.png" alt="Demi-cœur" title="${health}/20 PV" />`;
+      if (scaledHealth >= heartValue) {
+        heartsHtml += `<img class="mc-heart-img" src="/assets/minecraft/gui/heart_full.png" alt="Cœur plein" title="${hpTitle}" />`;
+      } else if (scaledHealth === heartValue - 1) {
+        heartsHtml += `<img class="mc-heart-img" src="/assets/minecraft/gui/heart_half.png" alt="Demi-cœur" title="${hpTitle}" />`;
       } else {
-        heartsHtml += `<img class="mc-heart-img" src="/assets/minecraft/gui/heart_empty.png" alt="Cœur vide" title="${health}/20 PV" />`;
+        heartsHtml += `<img class="mc-heart-img" src="/assets/minecraft/gui/heart_empty.png" alt="Cœur vide" title="${hpTitle}" />`;
       }
     }
     detailHeartsContainer.innerHTML = heartsHtml;
+    detailHeartsContainer.title = hpTitle;
   }
 
   // 10 Pilons de nourriture (Faim max: 20) - Rendu fidèle au HUD Minecraft (aligné à droite, décroissance de gauche à droite)
@@ -5181,8 +6106,8 @@ function renderPlayerDetailView(data) {
   updatePlayerToggle(toggleBanned, data.isBanned);
   updatePlayerToggle(toggleOp, data.isOp);
 
-  // Inventaire
-  renderPlayerInventory(data.inventory || [], data.worldId);
+  // Inventaire (avec mise en évidence du slot sélectionné dans la hotbar)
+  renderPlayerInventory(data.inventory || [], data.worldId, data.selectedSlot ?? 0);
 
   // Information & Coordonnées
   const pos = data.position || data.pos;
@@ -5284,6 +6209,7 @@ function setBoxUV(geometry, u, v, width, height, depth, texWidth = 64, texHeight
 }
 
 const _armorTextureCache = new Map();
+const _item3dTextureCache = new Map();
 
 function loadHtmlImage(url) {
   return new Promise((resolve) => {
@@ -5297,33 +6223,72 @@ function loadHtmlImage(url) {
   });
 }
 
-async function getArmorTexture(itemIdOrMaterial, layerNum, dyedColor) {
+async function loadPixelCanvasTexture(url) {
+  if (!url) return null;
+  if (_item3dTextureCache.has(url)) {
+    return _item3dTextureCache.get(url);
+  }
+  const p = (async () => {
+    const img = await loadHtmlImage(url);
+    if (!img || !img.naturalWidth || !img.naturalHeight) return null;
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, 0, 0);
+    const tex = new skinview3d.CanvasTexture(canvas);
+    tex.magFilter = 1003; // NearestFilter
+    tex.minFilter = 1003; // NearestFilter
+    tex.needsUpdate = true;
+    tex.texWidth = canvas.width;
+    tex.texHeight = canvas.height;
+    return tex;
+  })();
+  _item3dTextureCache.set(url, p);
+  const res = await p;
+  if (!res) _item3dTextureCache.delete(url);
+  else if (_item3dTextureCache.size > 200) {
+    const oldest = _item3dTextureCache.keys().next().value;
+    _item3dTextureCache.delete(oldest);
+  }
+  return res;
+}
+
+const KNOWN_VANILLA_ARMOR_MATS = new Set(['leather', 'iron', 'gold', 'golden', 'diamond', 'netherite', 'chainmail', 'turtle']);
+
+async function getArmorTexture(itemIdOrMaterial, layerNum, dyedColor, assetId = null) {
   if (!itemIdOrMaterial) return null;
   const worldIdResolved = (currentPlayerDetailData && currentPlayerDetailData.worldId) || currentPlayersWorldId || activeWorld || '';
   const worldParam = encodeURIComponent(worldIdResolved);
-  const cacheKey = `${worldParam}:${itemIdOrMaterial}_l${layerNum}_${dyedColor !== null && dyedColor !== undefined ? dyedColor : 'default'}`;
+  const assetParam = assetId ? `&assetId=${encodeURIComponent(assetId)}` : '';
+  const cacheKey = `${worldParam}:${itemIdOrMaterial}_l${layerNum}_${assetId || ''}_${dyedColor !== null && dyedColor !== undefined ? dyedColor : 'default'}`;
   if (_armorTextureCache.has(cacheKey)) {
     return _armorTextureCache.get(cacheKey);
   }
 
   const p = (async () => {
     try {
-      const isLeather = itemIdOrMaterial.includes('leather');
+      const cleanId = String(itemIdOrMaterial).toLowerCase();
+      const isLeather = cleanId.startsWith('minecraft:leather_') || cleanId === 'leather';
       const colorParam = (dyedColor !== null && dyedColor !== undefined) ? `&color=${encodeURIComponent(dyedColor)}` : '';
-      const apiUrl = `/api/armor-texture?worldId=${worldParam}&item=${encodeURIComponent(itemIdOrMaterial)}&layer=${layerNum}${colorParam}&_t=${Date.now()}`;
+      const apiUrl = `/api/armor-texture?worldId=${worldParam}&item=${encodeURIComponent(itemIdOrMaterial)}&layer=${layerNum}${colorParam}${assetParam}`;
 
       let baseImg = await loadHtmlImage(apiUrl);
-      if (!baseImg) {
-        // Fallback local vanilla
-        const cleanMat = itemIdOrMaterial.replace(/^minecraft:/, '').split('_')[0] || 'iron';
-        baseImg = await loadHtmlImage(`/assets/minecraft/armor/${cleanMat}_layer_${layerNum}.png`);
+      if (!baseImg && cleanId.startsWith('minecraft:')) {
+        const prefix = cleanId.replace(/^minecraft:/, '').split('_')[0];
+        if (KNOWN_VANILLA_ARMOR_MATS.has(prefix)) {
+          const matFile = prefix === 'golden' ? 'gold' : prefix;
+          baseImg = await loadHtmlImage(`/assets/minecraft/armor/${matFile}_layer_${layerNum}.png`);
+        }
       }
-      if (!baseImg) return null;
+      if (!baseImg || !baseImg.naturalWidth || !baseImg.naturalHeight) return null;
 
       const canvas = document.createElement('canvas');
       canvas.width = baseImg.naturalWidth || 64;
       canvas.height = baseImg.naturalHeight || 32;
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      ctx.imageSmoothingEnabled = false;
       ctx.drawImage(baseImg, 0, 0);
 
       if (isLeather) {
@@ -5346,7 +6311,7 @@ async function getArmorTexture(itemIdOrMaterial, layerNum, dyedColor) {
         const overlayPath = `/assets/minecraft/armor/leather_layer_${layerNum}_overlay.png`;
         const overlayImg = await loadHtmlImage(overlayPath);
         if (overlayImg) {
-          ctx.drawImage(overlayImg, 0, 0);
+          ctx.drawImage(overlayImg, 0, 0, canvas.width, canvas.height);
         }
       }
 
@@ -5366,6 +6331,10 @@ async function getArmorTexture(itemIdOrMaterial, layerNum, dyedColor) {
   _armorTextureCache.set(cacheKey, p);
   const result = await p;
   if (!result) _armorTextureCache.delete(cacheKey);
+  else if (_armorTextureCache.size > 160) {
+    const oldest = _armorTextureCache.keys().next().value;
+    _armorTextureCache.delete(oldest);
+  }
   return result;
 }
 
@@ -5374,15 +6343,38 @@ function createArmorMaterial(texture, isEnchanted) {
     map: texture,
     transparent: true,
     alphaTest: 0.1,
+    depthWrite: true,
     side: 2, // DoubleSide
-    roughness: 0.8,
-    metalness: 0.1
+    roughness: 1.0,
+    metalness: 0.0,
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -1
   });
   if (isEnchanted) {
-    mat.emissive.setHex(0x581c87); // Lueur violette d'enchantement
-    mat.emissiveIntensity = 0.55;
+    mat.emissive.setHex(0x6b21a8); // Lueur violette d'enchantement
+    mat.emissiveIntensity = 0.45;
   }
   return mat;
+}
+
+function normalizeEquipmentSlots(inventoryOrSlots, selectedSlot = 0) {
+  if (!inventoryOrSlots) return {};
+  if (!Array.isArray(inventoryOrSlots)) {
+    return inventoryOrSlots;
+  }
+  const slots = {};
+  const safeSelected = (typeof selectedSlot === 'number' && selectedSlot >= 0 && selectedSlot <= 8) ? selectedSlot : 0;
+  for (const item of inventoryOrSlots) {
+    if (!item || item.slot === undefined) continue;
+    if (item.slot === 103) slots.helmet = item;
+    else if (item.slot === 102) slots.chestplate = item;
+    else if (item.slot === 101) slots.leggings = item;
+    else if (item.slot === 100) slots.boots = item;
+    else if (item.slot === -106 || item.slot === 150) slots.offhand = item;
+    else if (item.slot === safeSelected) slots.mainHand = item;
+  }
+  return slots;
 }
 
 async function loadSkinWithFallbacks(viewer, playerName, playerUuid) {
@@ -5416,21 +6408,13 @@ async function loadSkinWithFallbacks(viewer, playerName, playerUuid) {
   return false;
 }
 
-async function initOrUpdate3DPlayer(playerName, inventory, playerUuid = null) {
-  if (!player3dCanvas || typeof skinview3d === 'undefined') return;
+function attach3DSkinDragRotation() {
+  // Rotation manuelle volontairement désactivée : le modèle 3D reste fixe face à l'utilisateur (style inventaire Minecraft)
+  detach3DSkinDragListeners();
+}
 
-  // Récupère les slots d'armure depuis l'inventaire
-  const slots = {};
-  if (Array.isArray(inventory)) {
-    for (const item of inventory) {
-      if (item && item.slot !== undefined) {
-        if (item.slot === 103) slots.helmet = item;
-        if (item.slot === 102) slots.chestplate = item;
-        if (item.slot === 101) slots.leggings = item;
-        if (item.slot === 100) slots.boots = item;
-      }
-    }
-  }
+async function initOrUpdate3DPlayer(playerName, inventory, playerUuid = null, selectedSlot = 0) {
+  if (!player3dCanvas || typeof skinview3d === 'undefined') return;
 
   // Détruit le viewer existant si le joueur change
   if (_skinViewer && _skinViewer._playerName !== playerName) {
@@ -5438,15 +6422,19 @@ async function initOrUpdate3DPlayer(playerName, inventory, playerUuid = null) {
     _skinViewer = null;
   }
 
-  // Affiche le spinner de chargement
-  if (player3dLoading) player3dLoading.classList.remove('hidden');
+  // Affiche le spinner de chargement uniquement si création initiale
+  const isFreshViewer = !_skinViewer;
+  if (isFreshViewer && player3dLoading) player3dLoading.classList.remove('hidden');
 
   try {
     if (!_skinViewer) {
       _skinViewer = new skinview3d.SkinViewer({
         canvas: player3dCanvas,
-        width: 150,
-        height: 210,
+        width: 162,
+        height: 218,
+        zoom: 0.78,
+        fov: 48,
+        enableControls: false,
         renderPaused: false
       });
       _skinViewer._playerName = playerName;
@@ -5455,38 +6443,39 @@ async function initOrUpdate3DPlayer(playerName, inventory, playerUuid = null) {
       _skinViewer.background = null;
       _skinViewer.renderer.setClearColor(0x000000, 0);
 
-      // Caméra cadrée sur le joueur (face avant)
-      _skinViewer.camera.rotation.x = 0;
-      _skinViewer.camera.rotation.y = 0;
-      _skinViewer.camera.rotation.z = 0;
-      _skinViewer.camera.position.set(0, 0, 40);
-      _skinViewer.fov = 50;
+      // Caméra cadrée sur le joueur entier (casque, bottes, armes et élytres 100% visibles)
+      _skinViewer.camera.rotation.set(0, 0, 0);
+      _skinViewer.fov = 48;
+      _skinViewer.zoom = 0.78;
 
       // Animation idle Minecraft (respiration)
       _skinViewer.animation = new skinview3d.IdleAnimation();
       _skinViewer.animation.speed = 0.4;
 
-      // Désactivation formelle du zoom et du pan (vue fixe comme dans l'inventaire)
+      // Désactivation formelle de la rotation, du zoom et du pan
       if (_skinViewer.controls) {
+        _skinViewer.controls.enabled = false;
         _skinViewer.controls.enableZoom = false;
         _skinViewer.controls.enablePan = false;
+        _skinViewer.controls.enableRotate = false;
       }
 
-      // Suivi de la souris : tête et yeux suivent le curseur exactement comme l'inventaire Minecraft
+      // Suivi de la souris : tête et yeux suivent le curseur (atténué lorsqu'on regarde le dos du skin)
       if (_mouseMoveListener) {
         document.removeEventListener('mousemove', _mouseMoveListener);
       }
       _mouseMoveListener = (e) => {
-        if (!_skinViewer || !_skinViewer.playerObject || !_skinViewer.playerObject.skin) return;
+        if (_isDragging3DSkin || !_skinViewer || !_skinViewer.playerObject || !_skinViewer.playerObject.skin) return;
         const rect = player3dCanvas.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height * 0.25; // niveau de la tête
+        const centerY = rect.top + rect.height * 0.25;
 
         const dx = e.clientX - centerX;
         const dy = e.clientY - centerY;
 
-        const yaw = Math.atan2(dx, 130);
-        const pitch = Math.atan2(dy, 130);
+        const frontFactor = Math.max(0, Math.cos(_skinViewer.playerObject.rotation.y || 0));
+        const yaw = Math.atan2(dx, 130) * frontFactor;
+        const pitch = Math.atan2(dy, 130) * frontFactor;
 
         const clampedYaw = Math.max(-0.75, Math.min(0.75, yaw));
         const clampedPitch = Math.max(-0.45, Math.min(0.45, pitch));
@@ -5494,7 +6483,7 @@ async function initOrUpdate3DPlayer(playerName, inventory, playerUuid = null) {
         const head = _skinViewer.playerObject.skin.head;
         head.rotation.y = clampedYaw;
         head.rotation.x = clampedPitch;
-        _skinViewer.playerObject.skin.body.rotation.y = clampedYaw * 0.3;
+        _skinViewer.playerObject.skin.body.rotation.y = clampedYaw * 0.25;
       };
       document.addEventListener('mousemove', _mouseMoveListener);
 
@@ -5505,184 +6494,518 @@ async function initOrUpdate3DPlayer(playerName, inventory, playerUuid = null) {
       await loadSkinWithFallbacks(_skinViewer, playerName, playerUuid);
     }
 
-    // Application dynamique des pièces d'armure 3D
-    await _apply3DArmor(_skinViewer, slots);
+    // Application dynamique de TOUT l'équipement 3D (armure, élytres, têtes/blocs sur la tête, main principale, seconde main)
+    await _apply3DArmor(_skinViewer, inventory, selectedSlot);
 
   } catch (err) {
     console.warn('3D skin error:', err);
   } finally {
     if (player3dLoading) {
-      setTimeout(() => player3dLoading.classList.add('hidden'), 300);
+      setTimeout(() => player3dLoading.classList.add('hidden'), isFreshViewer ? 250 : 60);
     }
   }
 }
 
+const VANILLA_MOB_HEAD_IDS = new Set([
+  'minecraft:creeper_head',
+  'minecraft:zombie_head',
+  'minecraft:skeleton_skull',
+  'minecraft:wither_skeleton_skull',
+  'minecraft:piglin_head',
+  'minecraft:dragon_head'
+]);
 
-async function _apply3DArmor(viewer, slots) {
-  if (!viewer || !viewer.playerObject || !viewer.playerObject.skin) return;
-
-  // Nettoyage complet des anciens overlays d'armure
-  if (viewer._armorMeshes) {
-    for (const mesh of viewer._armorMeshes) {
-      if (mesh.parent) mesh.parent.remove(mesh);
-      try {
-        if (mesh.geometry) mesh.geometry.dispose();
-        if (mesh.material) mesh.material.dispose();
-      } catch (e) { }
+function dispose3DEquipment(viewer) {
+  if (!viewer) return;
+  if (viewer.playerObject && viewer.playerObject.skin) {
+    if (viewer.playerObject.skin.rightArm) viewer.playerObject.skin.rightArm.rotation.x = 0;
+    if (viewer.playerObject.skin.leftArm) viewer.playerObject.skin.leftArm.rotation.x = 0;
+  }
+  if (viewer.playerObject && viewer.playerObject.elytra) {
+    viewer.playerObject.elytra.visible = false;
+    if (viewer.playerObject.elytra.material && viewer.playerObject.elytra.material.emissive) {
+      viewer.playerObject.elytra.material.emissive.setHex(0x000000);
+      viewer.playerObject.elytra.material.emissiveIntensity = 0;
     }
   }
+  if (!Array.isArray(viewer._armorMeshes)) {
+    viewer._armorMeshes = [];
+    return;
+  }
+  for (const obj of viewer._armorMeshes) {
+    if (obj.parent) obj.parent.remove(obj);
+    const disposeNode = (n) => {
+      if (!n) return;
+      if (n.children && n.children.length > 0) {
+        n.children.forEach(disposeNode);
+      }
+      try {
+        if (n.geometry) n.geometry.dispose();
+        if (n.material) {
+          if (Array.isArray(n.material)) n.material.forEach(m => m && m.dispose && m.dispose());
+          else if (n.material.dispose) n.material.dispose();
+        }
+      } catch (_) { }
+    };
+    disposeNode(obj);
+  }
   viewer._armorMeshes = [];
+}
 
+async function _apply3DArmor(viewer, inventoryOrSlots, selectedSlot = 0) {
+  if (!viewer || !viewer.playerObject || !viewer.playerObject.skin) return;
+
+  // Jeton de séquence anti-concurrence pour le live polling
+  const seq = (viewer._armorRenderSeq || 0) + 1;
+  viewer._armorRenderSeq = seq;
+  const isStale = () => !viewer || viewer._armorRenderSeq !== seq;
+
+  dispose3DEquipment(viewer);
+
+  const slots = normalizeEquipmentSlots(inventoryOrSlots, selectedSlot);
   const skin = viewer.playerObject.skin;
   const BoxGeometry = skinview3d.BoxGeometry;
   const Mesh = skinview3d.Mesh;
+  const worldIdResolved = (currentPlayerDetailData && currentPlayerDetailData.worldId) || currentPlayersWorldId || activeWorld || '';
+  const worldParam = encodeURIComponent(worldIdResolved);
 
-  const addArmorMesh = (parent, geometry, material, posY = 0, posX = 0) => {
-    const mesh = new Mesh(geometry, material);
-    mesh.position.set(posX, posY, 0);
-    parent.add(mesh);
-    viewer._armorMeshes.push(mesh);
-    return mesh;
+  const registerObj = (parent, obj) => {
+    parent.add(obj);
+    if (!Array.isArray(viewer._armorMeshes)) viewer._armorMeshes = [];
+    viewer._armorMeshes.push(obj);
+    return obj;
   };
 
-  // 1. Casque / Helmet (Slot 103)
-  if (slots.helmet && slots.helmet.id) {
-    const tex = await getArmorTexture(slots.helmet.id, 1, slots.helmet.dyedColor);
-    if (tex && skin.head) {
-      const mat = createArmorMaterial(tex, slots.helmet.isEnchanted);
-      const tw = tex.texWidth || 64;
-      const th = tex.texHeight || 32;
-      const geo = new BoxGeometry(9.2, 9.2, 9.2);
+  const addArmorMesh = (parent, geometry, material, posY = 0, posX = 0, posZ = 0, renderOrder = 3) => {
+    const mesh = new Mesh(geometry, material);
+    mesh.position.set(posX, posY, posZ);
+    mesh.renderOrder = renderOrder;
+    return registerObj(parent, mesh);
+  };
 
-      if (tw === 128 && th === 128) {
-        setBoxUV(geo, 0, 0, 8, 8, 8, 128, 128);
-      } else {
-        const s = (tw / th === 2) ? (tw / 64) : 1;
-        setBoxUV(geo, 0, 0, 8 * s, 8 * s, 8 * s, tw, th);
+  // =========================================================================
+  // 1. TÊTE / CASQUE / BLOC PORTABLE / TÊTE DE JOUEUR OU MOB (Slot 103)
+  // =========================================================================
+  if (slots.helmet && slots.helmet.id && skin.head) {
+    const helm = slots.helmet;
+    const helmId = String(helm.id).toLowerCase();
+    let headRendered = false;
+
+    // 1a. Tête de joueur (minecraft:player_head)
+    if (helmId === 'minecraft:player_head') {
+      const owner = (helm.skullOwner || '').replace(/[^a-zA-Z0-9_]/g, '');
+      const skinUrl = owner ? `https://minotar.net/skin/${encodeURIComponent(owner)}` : '/assets/minecraft/skin/steve.png';
+      let tex = await loadPixelCanvasTexture(skinUrl);
+      if (!tex && owner) tex = await loadPixelCanvasTexture('/assets/minecraft/skin/steve.png');
+      if (isStale()) return;
+      if (tex) {
+        const tw = tex.texWidth || 64;
+        const th = tex.texHeight || 64;
+        const mat = createArmorMaterial(tex, helm.isEnchanted);
+        const innerGeo = new BoxGeometry(9.2, 9.2, 9.2);
+        setBoxUV(innerGeo, 0, 0, 8, 8, 8, tw, th);
+        addArmorMesh(skin.head, innerGeo, mat, 4, 0, 0);
+
+        const hatGeo = new BoxGeometry(9.7, 9.7, 9.7);
+        setBoxUV(hatGeo, 32, 0, 8, 8, 8, tw, th);
+        addArmorMesh(skin.head, hatGeo, mat, 4, 0, 0);
+        headRendered = true;
       }
-      addArmorMesh(skin.head, geo, mat, 4, 0);
+    }
+
+    // 1b. Têtes de monstres Vanilla (Creeper, Zombie, Squelette, Wither, Piglin, Dragon)
+    if (!headRendered && VANILLA_MOB_HEAD_IDS.has(helmId)) {
+      const tex = await getArmorTexture(helmId, 1, null, null);
+      if (isStale()) return;
+      if (tex) {
+        const tw = tex.texWidth || 64;
+        const th = tex.texHeight || 64;
+        const mat = createArmorMaterial(tex, helm.isEnchanted);
+        if (helmId === 'minecraft:piglin_head') {
+          const geo = new BoxGeometry(10.6, 9.2, 9.2);
+          setBoxUV(geo, 0, 0, 10, 8, 8, tw, th);
+          addArmorMesh(skin.head, geo, mat, 4, 0, 0);
+        } else if (helmId === 'minecraft:dragon_head' && tw >= 256) {
+          const geo = new BoxGeometry(10.2, 10.2, 10.2);
+          setBoxUV(geo, 112, 30, 16, 16, 16, tw, th);
+          addArmorMesh(skin.head, geo, mat, 4.4, 0, 0);
+        } else {
+          const geo = new BoxGeometry(9.3, 9.3, 9.3);
+          setBoxUV(geo, 0, 0, 8, 8, 8, tw, th);
+          addArmorMesh(skin.head, geo, mat, 4, 0, 0);
+        }
+        headRendered = true;
+      }
+    }
+
+    // 1c. Casque d'armure standard ou moddé (64x32, 128x64, 64x64 entity/IceAndFire, 1.21.2+ assetId, 128x128 MCreator)
+    // Inclut la coque principale (0, 0) ET la surcouche visière / cimier / cornes (32, 0), nettement au-dessus de head.outerLayer (9x9x9)
+    if (!headRendered) {
+      const tex = await getArmorTexture(helm.id, 1, helm.dyedColor, helm.equippable?.assetId);
+      if (isStale()) return;
+      if (tex) {
+        const mat = createArmorMaterial(tex, helm.isEnchanted);
+        const tw = tex.texWidth || 64;
+        const th = tex.texHeight || 32;
+        const innerHelmGeo = new BoxGeometry(9.8, 9.8, 9.8);
+        const outerHelmGeo = new BoxGeometry(10.4, 10.4, 10.4);
+        if (tw === 128 && th === 128) {
+          setBoxUV(innerHelmGeo, 0, 0, 8, 8, 8, 128, 128);
+          setBoxUV(outerHelmGeo, 32, 0, 8, 8, 8, 128, 128);
+        } else {
+          const s = (tw / th === 2) ? (tw / 64) : 1;
+          setBoxUV(innerHelmGeo, 0, 0, 8 * s, 8 * s, 8 * s, tw, th);
+          setBoxUV(outerHelmGeo, 32 * s, 0, 8 * s, 8 * s, 8 * s, tw, th);
+        }
+        addArmorMesh(skin.head, innerHelmGeo, mat, 4, 0, 0);
+        addArmorMesh(skin.head, outerHelmGeo, mat, 4, 0, 0);
+        headRendered = true;
+      }
+    }
+
+    // 1d. Tout autre bloc ou objet portable sur la tête (citrouille sculptée, lanterne, verre, TNT, chapeaux/blocs moddés)
+    if (!headRendered) {
+      const baseItemUrl = `/api/item-texture?worldId=${worldParam}&item=${encodeURIComponent(helm.id)}`;
+      const [frontTex, sideTex, topTex, bottomTex] = await Promise.all([
+        loadPixelCanvasTexture(`${baseItemUrl}&face=front`),
+        loadPixelCanvasTexture(`${baseItemUrl}&face=side`),
+        loadPixelCanvasTexture(`${baseItemUrl}&face=top`),
+        loadPixelCanvasTexture(`${baseItemUrl}&face=bottom`)
+      ]);
+      if (isStale()) return;
+      const fallbackTex = frontTex || sideTex || topTex || bottomTex;
+      if (fallbackTex) {
+        const mkMat = (t) => createArmorMaterial(t || fallbackTex, helm.isEnchanted);
+        // BoxGeometry face order: +x (right), -x (left), +y (top), -y (bottom), +z (front), -z (back)
+        const materials = [
+          mkMat(sideTex),
+          mkMat(sideTex),
+          mkMat(topTex),
+          mkMat(bottomTex || topTex),
+          mkMat(frontTex),
+          mkMat(sideTex)
+        ];
+        const blockGeo = new BoxGeometry(9.9, 9.9, 9.9);
+        addArmorMesh(skin.head, blockGeo, materials, 4.2, 0, 0);
+      }
     }
   }
 
-  // 2. Plastron / Chestplate (Slot 102)
+  // =========================================================================
+  // 2. TORSE : ÉLYTRES / AILES OU PLASTRON (Slot 102)
+  // =========================================================================
+  const armWidthChest = skin.slim ? 4.4 : 5.2;
   if (slots.chestplate && slots.chestplate.id) {
-    const tex = await getArmorTexture(slots.chestplate.id, 1, slots.chestplate.dyedColor);
-    if (tex) {
-      const mat = createArmorMaterial(tex, slots.chestplate.isEnchanted);
-      const tw = tex.texWidth || 64;
-      const th = tex.texHeight || 32;
+    const chest = slots.chestplate;
+    const chestId = String(chest.id).toLowerCase();
+    const isWings = chestId.includes('elytra') || chestId.includes('wings');
 
-      if (tw === 128 && th === 128) {
-        // Modèle MCreator ou entité 128x128 (ex: born_in_chaos nightrobebreastplate)
-        if (skin.body) {
-          const bodyGeo = new BoxGeometry(9.2, 12.4, 5.2);
-          setBoxUV(bodyGeo, 29, 0, 8, 14, 4, 128, 128);
-          addArmorMesh(skin.body, bodyGeo, mat, 0, 0);
-
-          // Surcouche manteau / robe
-          const robeGeo = new BoxGeometry(9.6, 12.8, 5.6);
-          setBoxUV(robeGeo, 26, 26, 8, 14, 4, 128, 128);
-          addArmorMesh(skin.body, robeGeo, mat, 0, 0);
+    if (isWings && viewer.playerObject && viewer.playerObject.elytra) {
+      let wingTex = await getArmorTexture(chest.id, 1, chest.dyedColor, chest.equippable?.assetId);
+      if (!wingTex) {
+        wingTex = await loadPixelCanvasTexture(`/api/item-texture?worldId=${worldParam}&item=${encodeURIComponent(chest.id)}`);
+      }
+      if (isStale()) return;
+      if (wingTex) {
+        const elytraObj = viewer.playerObject.elytra;
+        elytraObj.map = wingTex;
+        if (elytraObj.material && elytraObj.material.emissive) {
+          if (chest.isEnchanted) {
+            elytraObj.material.emissive.setHex(0x6b21a8);
+            elytraObj.material.emissiveIntensity = 0.45;
+          } else {
+            elytraObj.material.emissive.setHex(0x000000);
+            elytraObj.material.emissiveIntensity = 0;
+          }
         }
+        elytraObj.resetJoints();
+        elytraObj.visible = true;
+      }
+    } else {
+      const tex = await getArmorTexture(chest.id, 1, chest.dyedColor, chest.equippable?.assetId);
+      if (isStale()) return;
+      if (tex) {
+        const mat = createArmorMaterial(tex, chest.isEnchanted);
+        const tw = tex.texWidth || 64;
+        const th = tex.texHeight || 32;
 
-        if (skin.rightArm && skin.rightArm.children[0]) {
-          const rArmGeo = new BoxGeometry(4.8, 12.4, 4.8);
-          setBoxUV(rArmGeo, 91, 0, 4, 12, 4, 128, 128, false);
-          addArmorMesh(skin.rightArm.children[0], rArmGeo, mat, 0, 0);
+        if (tw === 128 && th === 128) {
+          // Modèle MCreator ou entité 128x128 (ex: born_in_chaos)
+          if (skin.body) {
+            const bodyGeo = new BoxGeometry(9.7, 13.4, 5.7);
+            setBoxUV(bodyGeo, 29, 0, 8, 14, 4, 128, 128);
+            addArmorMesh(skin.body, bodyGeo, mat, 0, 0);
 
-          const rShoulder = new BoxGeometry(5.2, 5.2, 5.2);
-          setBoxUV(rShoulder, 90, 28, 4, 4, 4, 128, 128, false);
-          addArmorMesh(skin.rightArm.children[0], rShoulder, mat, 4, 0);
-        }
+            const robeGeo = new BoxGeometry(10.1, 13.8, 6.1);
+            setBoxUV(robeGeo, 26, 26, 8, 14, 4, 128, 128);
+            addArmorMesh(skin.body, robeGeo, mat, 0, 0);
+          }
 
-        if (skin.leftArm && skin.leftArm.children[0]) {
-          const lArmGeo = new BoxGeometry(4.8, 12.4, 4.8);
-          setBoxUV(lArmGeo, 91, 0, 4, 12, 4, 128, 128, true);
-          addArmorMesh(skin.leftArm.children[0], lArmGeo, mat, 0, 0);
+          if (skin.rightArm && skin.rightArm.children[0]) {
+            const rArmGeo = new BoxGeometry(armWidthChest, 13.4, 5.4);
+            setBoxUV(rArmGeo, 91, 0, 4, 12, 4, 128, 128, false);
+            addArmorMesh(skin.rightArm.children[0], rArmGeo, mat, 0, 0);
 
-          const lShoulder = new BoxGeometry(5.2, 5.2, 5.2);
-          setBoxUV(lShoulder, 90, 28, 4, 4, 4, 128, 128, true);
-          addArmorMesh(skin.leftArm.children[0], lShoulder, mat, 4, 0);
-        }
-      } else {
-        // Modèle standard Minecraft Vanilla et mods (ratio 2:1 ex: 64x32 ou 128x64)
-        const s = (tw / th === 2) ? (tw / 64) : 1;
-        if (skin.body) {
-          const bodyGeo = new BoxGeometry(9.2, 12.4, 5.2);
-          setBoxUV(bodyGeo, 16 * s, 16 * s, 8 * s, 12 * s, 4 * s, tw, th);
-          addArmorMesh(skin.body, bodyGeo, mat, 0, 0);
-        }
+            const rShoulder = new BoxGeometry(armWidthChest + 0.5, 5.6, 5.8);
+            setBoxUV(rShoulder, 90, 28, 4, 4, 4, 128, 128, false);
+            addArmorMesh(skin.rightArm.children[0], rShoulder, mat, 4, 0);
+          }
 
-        if (skin.rightArm && skin.rightArm.children[0]) {
-          const rArmGeo = new BoxGeometry(4.8, 12.4, 4.8);
-          setBoxUV(rArmGeo, 40 * s, 16 * s, 4 * s, 12 * s, 4 * s, tw, th, false);
-          addArmorMesh(skin.rightArm.children[0], rArmGeo, mat, 0, 0);
-        }
+          if (skin.leftArm && skin.leftArm.children[0]) {
+            const lArmGeo = new BoxGeometry(armWidthChest, 13.4, 5.4);
+            setBoxUV(lArmGeo, 91, 0, 4, 12, 4, 128, 128, true);
+            addArmorMesh(skin.leftArm.children[0], lArmGeo, mat, 0, 0);
 
-        if (skin.leftArm && skin.leftArm.children[0]) {
-          const lArmGeo = new BoxGeometry(4.8, 12.4, 4.8);
-          setBoxUV(lArmGeo, 40 * s, 16 * s, 4 * s, 12 * s, 4 * s, tw, th, true);
-          addArmorMesh(skin.leftArm.children[0], lArmGeo, mat, 0, 0);
+            const lShoulder = new BoxGeometry(armWidthChest + 0.5, 5.6, 5.8);
+            setBoxUV(lShoulder, 90, 28, 4, 4, 4, 128, 128, true);
+            addArmorMesh(skin.leftArm.children[0], lShoulder, mat, 4, 0);
+          }
+        } else {
+          // Modèle standard Minecraft Vanilla et mods (64x32, 128x64, ou 64x64 entity/IceAndFire)
+          // Dimensions strictement supérieures à body.outerLayer (8.5x12.5x4.5) et arm.outerLayer (4.5x12.5x4.5)
+          const s = (tw / th === 2) ? (tw / 64) : 1;
+          if (skin.body) {
+            const bodyGeo = new BoxGeometry(9.7, 13.4, 5.7);
+            setBoxUV(bodyGeo, 16 * s, 16 * s, 8 * s, 12 * s, 4 * s, tw, th);
+            addArmorMesh(skin.body, bodyGeo, mat, 0, 0);
+          }
+
+          if (skin.rightArm && skin.rightArm.children[0]) {
+            const rArmGeo = new BoxGeometry(armWidthChest, 13.4, 5.4);
+            setBoxUV(rArmGeo, 40 * s, 16 * s, 4 * s, 12 * s, 4 * s, tw, th, false);
+            addArmorMesh(skin.rightArm.children[0], rArmGeo, mat, 0, 0);
+          }
+
+          if (skin.leftArm && skin.leftArm.children[0]) {
+            const lArmGeo = new BoxGeometry(armWidthChest, 13.4, 5.4);
+            setBoxUV(lArmGeo, 40 * s, 16 * s, 4 * s, 12 * s, 4 * s, tw, th, true);
+            addArmorMesh(skin.leftArm.children[0], lArmGeo, mat, 0, 0);
+          }
         }
       }
     }
   }
 
-  // 3. Jambières / Leggings (Slot 101)
+  // =========================================================================
+  // 3. JAMBIÈRES / LEGGINGS (Slot 101) — Strictement > leg.outerLayer (4.5x12.5x4.5)
+  // =========================================================================
   if (slots.leggings && slots.leggings.id) {
-    const tex = await getArmorTexture(slots.leggings.id, 2, slots.leggings.dyedColor);
+    const tex = await getArmorTexture(slots.leggings.id, 2, slots.leggings.dyedColor, slots.leggings.equippable?.assetId);
+    if (isStale()) return;
     if (tex) {
       const mat = createArmorMaterial(tex, slots.leggings.isEnchanted);
       const tw = tex.texWidth || 64;
       const th = tex.texHeight || 32;
       const s = (tw / th === 2) ? (tw / 64) : 1;
 
-      // Ceinture / Hanches sur le corps
       if (skin.body) {
-        const beltGeo = new BoxGeometry(8.8, 12.2, 4.8);
+        const beltGeo = new BoxGeometry(9.1, 12.9, 5.1);
         setBoxUV(beltGeo, 16 * s, 16 * s, 8 * s, 12 * s, 4 * s, tw, th);
-        addArmorMesh(skin.body, beltGeo, mat, 0, 0);
+        addArmorMesh(skin.body, beltGeo, mat, 0, 0, 0, 2);
       }
 
-      // Cuisse / Jambe droite
       if (skin.rightLeg && skin.rightLeg.children[0]) {
-        const rLegGeo = new BoxGeometry(4.4, 12.2, 4.4);
+        const rLegGeo = new BoxGeometry(4.9, 12.9, 4.9);
         setBoxUV(rLegGeo, 0, 16 * s, 4 * s, 12 * s, 4 * s, tw, th, false);
-        addArmorMesh(skin.rightLeg.children[0], rLegGeo, mat, 0, 0);
+        addArmorMesh(skin.rightLeg.children[0], rLegGeo, mat, 0, 0, 0, 2);
       }
 
-      // Cuisse / Jambe gauche (effet miroir)
       if (skin.leftLeg && skin.leftLeg.children[0]) {
-        const lLegGeo = new BoxGeometry(4.4, 12.2, 4.4);
+        const lLegGeo = new BoxGeometry(4.9, 12.9, 4.9);
         setBoxUV(lLegGeo, 0, 16 * s, 4 * s, 12 * s, 4 * s, tw, th, true);
-        addArmorMesh(skin.leftLeg.children[0], lLegGeo, mat, 0, 0);
+        addArmorMesh(skin.leftLeg.children[0], lLegGeo, mat, 0, 0, 0, 2);
       }
     }
   }
 
-  // 4. Bottes / Boots (Slot 100)
+  // =========================================================================
+  // 4. BOTTES / BOOTS (Slot 100) — Strictement > jambières (4.9x12.9x4.9)
+  // =========================================================================
   if (slots.boots && slots.boots.id) {
-    const tex = await getArmorTexture(slots.boots.id, 1, slots.boots.dyedColor);
+    const tex = await getArmorTexture(slots.boots.id, 1, slots.boots.dyedColor, slots.boots.equippable?.assetId);
+    if (isStale()) return;
     if (tex) {
       const mat = createArmorMaterial(tex, slots.boots.isEnchanted);
       const tw = tex.texWidth || 64;
       const th = tex.texHeight || 32;
       const s = (tw / th === 2) ? (tw / 64) : 1;
 
-      // Botte droite
       if (skin.rightLeg && skin.rightLeg.children[0]) {
-        const rBootGeo = new BoxGeometry(4.8, 12.4, 4.8);
+        const rBootGeo = new BoxGeometry(5.35, 13.4, 5.35);
         setBoxUV(rBootGeo, 0, 16 * s, 4 * s, 12 * s, 4 * s, tw, th, false);
         addArmorMesh(skin.rightLeg.children[0], rBootGeo, mat, 0, 0);
       }
 
-      // Botte gauche (effet miroir)
       if (skin.leftLeg && skin.leftLeg.children[0]) {
-        const lBootGeo = new BoxGeometry(4.8, 12.4, 4.8);
+        const lBootGeo = new BoxGeometry(5.35, 13.4, 5.35);
         setBoxUV(lBootGeo, 0, 16 * s, 4 * s, 12 * s, 4 * s, tw, th, true);
         addArmorMesh(skin.leftLeg.children[0], lBootGeo, mat, 0, 0);
       }
     }
+  }
+
+  // =========================================================================
+  // 5. MAIN PRINCIPALE (Slot hotbar actif) & SECONDE MAIN (-106 / 150)
+  // =========================================================================
+  const isHandheldToolOrWeapon = (idLower) => {
+    const base = idLower.includes(':') ? idLower.split(':')[1] : idLower;
+    return /(?:^|_)(sword|pickaxe|axe|shovel|hoe|trident|mace|stick|rod|bow|crossbow|shears|flint_and_steel|brush|spyglass|dagger|scythe|spear|hammer|halberd|katana|blade|sabre|saber|wand|staff|knife|club|cleaver|battleaxe|warhammer|greatsword|longsword|rapier|glaive|pike|gun|rifle|pistol|shotgun|smg|sniper|carbine|ak47|hk416|scar|m4|g36|glock|revolver|bazooka|launcher|wrench|torch)(?:$|_)/.test(base);
+  };
+
+  const isHeldBlockItem = (idLower) => {
+    const base = idLower.includes(':') ? idLower.split(':')[1] : idLower;
+    if (isHandheldToolOrWeapon(idLower) || base.includes('seed') || base.includes('ingot') || base.includes('nugget') || base.includes('dust') || base.includes('dye') || base.includes('ball') || base.includes('pearl') || base.includes('crystal') || base.includes('meat') || base.includes('bread') || base.includes('apple') || base.includes('potion') || base.includes('bucket') || base.includes('book') || base.includes('arrow') || base.includes('bone') || base.includes('key') || base.includes('rocket') || base.includes('bundle') || base.includes('bed') || base.includes('door') || base.includes('sign') || base.includes('boat')) {
+      return false;
+    }
+    return /(?:^|_)(tnt|stone|cobblestone|deepslate|dirt|grass_block|planks|log|wood|sand|gravel|glass|obsidian|bedrock|netherrack|end_stone|wool|concrete|terracotta|bricks|brick|ore|block|leaves|ice|snow_block|pumpkin|melon|furnace|crafting_table|chest|barrel|bookshelf|anvil|beacon|sponge|prismarine|quartz_block|hay_block|target|jukebox|note_block|dispenser|dropper|piston|observer|shulker_box)(?:$|_)/.test(base);
+  };
+
+  // Corrige les UVs de la face arrière (-z) d'une BoxGeometry pour qu'elle soit 100% alignée
+  // pixel pour pixel avec la face avant (+z) — élimine totalement l'effet "X croisé"
+  const createAlignedItemSlabGeo = (w, h, d = 0.35) => {
+    const geo = new BoxGeometry(w, h, d);
+    const uv = geo.attributes.uv;
+    if (uv && uv.array && uv.array.length >= 48) {
+      // Face 5 (-z) : indices 40..47 -> inverser u (1 - u) pour correspondre exactement à Face 4 (+z)
+      uv.array[40] = 1; uv.array[41] = 1;
+      uv.array[42] = 0; uv.array[43] = 1;
+      uv.array[44] = 1; uv.array[45] = 0;
+      uv.array[46] = 0; uv.array[47] = 0;
+      uv.needsUpdate = true;
+    }
+    return geo;
+  };
+
+  const attachHandItem = async (item, armGroup, isOffhand) => {
+    if (!item || !item.id || !armGroup || !armGroup.children[0]) return;
+    const armInner = armGroup.children[0];
+    const itemIdLower = String(item.id).toLowerCase();
+    const isShield = itemIdLower === 'minecraft:shield' || itemIdLower.endsWith('_shield');
+
+    // Posture naturelle du bras Minecraft lorsqu'un objet est tenu
+    armGroup.rotation.x = isOffhand ? -0.24 : -0.32;
+
+    if (isShield) {
+      const shieldTex = await getArmorTexture(item.id, 1, item.dyedColor, null);
+      if (isStale()) return;
+      if (shieldTex) {
+        const mat = createArmorMaterial(shieldTex, item.isEnchanted);
+        const tw = shieldTex.texWidth || 64;
+        const th = shieldTex.texHeight || 64;
+        const plateGeo = new BoxGeometry(5.6, 10.4, 0.85);
+        if (tw >= 64 && th >= 64) {
+          setBoxUV(plateGeo, 0, 0, 12, 22, 1, tw, th, false);
+        }
+        const plateMesh = new Mesh(plateGeo, mat);
+        plateMesh.position.set(isOffhand ? 2.15 : -2.15, -3.5, 2.05);
+        plateMesh.rotation.set(0.08, isOffhand ? 0.38 : -0.38, 0);
+        plateMesh.renderOrder = 3;
+
+        // Poignée en bois au dos du bouclier
+        const handleGeo = new BoxGeometry(1.0, 2.8, 2.2);
+        if (tw >= 64 && th >= 64) {
+          setBoxUV(handleGeo, 26, 0, 2, 6, 6, tw, th, false);
+        }
+        const handleMesh = new Mesh(handleGeo, mat);
+        handleMesh.position.set(0, 0, -1.35);
+        handleMesh.renderOrder = 3;
+        plateMesh.add(handleMesh);
+
+        registerObj(armInner, plateMesh);
+        return;
+      }
+    }
+
+    // Blocs tenus en main : mini-cube 3D authentique (comme en jeu)
+    if (isHeldBlockItem(itemIdLower)) {
+      const baseItemUrl = `/api/item-texture?worldId=${worldParam}&item=${encodeURIComponent(item.id)}&v=6`;
+      const [frontTex, sideTex, topTex, bottomTex] = await Promise.all([
+        loadPixelCanvasTexture(`${baseItemUrl}&face=front`),
+        loadPixelCanvasTexture(`${baseItemUrl}&face=side`),
+        loadPixelCanvasTexture(`${baseItemUrl}&face=top`),
+        loadPixelCanvasTexture(`${baseItemUrl}&face=bottom`)
+      ]);
+      if (isStale()) return;
+      const fallbackTex = frontTex || sideTex || topTex || bottomTex;
+      if (fallbackTex) {
+        const mkMat = (t) => createArmorMaterial(t || fallbackTex, item.isEnchanted);
+        const materials = [
+          mkMat(sideTex),
+          mkMat(sideTex),
+          mkMat(topTex),
+          mkMat(bottomTex || topTex),
+          mkMat(frontTex),
+          mkMat(sideTex)
+        ];
+        const miniBlockGeo = new BoxGeometry(4.4, 4.4, 4.4);
+        const miniBlock = new Mesh(miniBlockGeo, materials);
+        miniBlock.position.set(isOffhand ? 0.4 : -0.4, -4.6, 3.6);
+        miniBlock.rotation.set(-0.35, isOffhand ? -0.75 : 0.75, 0);
+        miniBlock.renderOrder = 3;
+        registerObj(armInner, miniBlock);
+        return;
+      }
+    }
+
+    const colorParam = (item.dyedColor !== null && item.dyedColor !== undefined) ? `&color=${encodeURIComponent(item.dyedColor)}` : '';
+    const itemUrl = `/api/item-texture?worldId=${worldParam}&item=${encodeURIComponent(item.id)}${colorParam}&v=6`;
+    const tex = await loadPixelCanvasTexture(itemUrl);
+    if (isStale() || !tex) return;
+
+    // FrontSide uniquement + face arrière UV-alignée -> zéro croisement en "X" à travers la transparence
+    const faceMat = new skinview3d.MeshStandardMaterial({
+      map: tex,
+      transparent: true,
+      alphaTest: 0.1,
+      depthWrite: true,
+      side: 0, // FrontSide
+      roughness: 1.0,
+      metalness: 0.0
+    });
+    if (item.isEnchanted) {
+      faceMat.emissive.setHex(0x6b21a8);
+      faceMat.emissiveIntensity = 0.45;
+    }
+    const invisibleEdgeMat = new skinview3d.MeshStandardMaterial({
+      transparent: true,
+      opacity: 0,
+      depthWrite: false
+    });
+    const slabMaterials = [
+      invisibleEdgeMat,
+      invisibleEdgeMat,
+      invisibleEdgeMat,
+      invisibleEdgeMat,
+      faceMat,
+      faceMat
+    ];
+
+    const isTool = isHandheldToolOrWeapon(itemIdLower);
+    const slabSize = isTool ? 8.0 : 5.6;
+    const slabGeo = createAlignedItemSlabGeo(slabSize, slabSize, 0.35);
+    const itemMesh = new Mesh(slabGeo, slabMaterials);
+    itemMesh.rotation.order = 'YXZ';
+
+    if (isTool) {
+      // Orientation 3e personne Minecraft : manche ancré au centre du poing (y=-5.0, z=+1.0),
+      // lame/tête projetée proprement vers l'avant (+Z) sans toucher l'avant-bras
+      itemMesh.position.set(isOffhand ? 0.3 : -0.3, -3.4, 5.2);
+      itemMesh.rotation.set(0, isOffhand ? -1.45 : -1.68, -0.42);
+    } else {
+      // Objet générique (perle, nourriture, potion, clé, objet moddé) tenu devant le poing face à la caméra
+      itemMesh.position.set(isOffhand ? 0.35 : -0.35, -4.6, 3.3);
+      itemMesh.rotation.set(-0.18, isOffhand ? 0.38 : -0.38, 0);
+    }
+
+    itemMesh.renderOrder = 3;
+    registerObj(armInner, itemMesh);
+  };
+
+  if (slots.mainHand && skin.rightArm) {
+    await attachHandItem(slots.mainHand, skin.rightArm, false);
+  }
+  if (slots.offhand && skin.leftArm) {
+    await attachHandItem(slots.offhand, skin.leftArm, true);
   }
 }
 
@@ -5774,8 +7097,8 @@ function hideMcTooltip() {
 // Variable d'état de l'inventaire actif pour la délégation de survol
 let activeInventoryItemsBySlot = {};
 
-// Fonction de rendu des slots d'inventaire avec vraies textures Minecraft
-function renderPlayerInventory(items, targetWorldId = null) {
+// Fonction de rendu des slots d'inventaire avec vraies textures extraites directement des mods / jeu (0 cache disque)
+function renderPlayerInventory(items, targetWorldId = null, selectedSlot = null) {
   activeInventoryItemsBySlot = {};
   items.forEach(it => {
     activeInventoryItemsBySlot[it.slot] = it;
@@ -5798,8 +7121,8 @@ function renderPlayerInventory(items, targetWorldId = null) {
     const worldParam = encodeURIComponent(resolvedWorld);
     const colorParam = (it.dyedColor !== null && it.dyedColor !== undefined) ? `&color=${encodeURIComponent(it.dyedColor)}` : '';
 
-    // Toutes les textures (mods et vanilla) passent par l'API locale avec cache mémoire & disque ultra-rapide
-    const itemUrl = `/api/item-texture?worldId=${worldParam}&item=${encodeURIComponent(rawId)}${colorParam}&v=3`;
+    // Toutes les textures (mods et vanilla) sont extraites à la volée en mémoire depuis les JARs du monde
+    const itemUrl = `/api/item-texture?worldId=${worldParam}&item=${encodeURIComponent(rawId)}${colorParam}&v=6`;
     const fallbackSvg = `/assets/minecraft/gui/unknown.svg`;
 
     const isEnch = !!it.isEnchanted;
@@ -5873,13 +7196,14 @@ function renderPlayerInventory(items, targetWorldId = null) {
     mainInventoryGrid.innerHTML = mainHtml;
   }
 
-  // Barre d'accès rapide (Slots 0 à 8 -> 9 cases)
+  // Barre d'accès rapide (Slots 0 à 8 -> 9 cases, avec surbrillance de l'emplacement actif)
   if (hotbarGrid) {
     let hotbarHtml = '';
     for (let s = 0; s <= 8; s++) {
       const it = itemsBySlot[s];
       const enchantClass = (it && it.isEnchanted) ? ' has-enchanted' : '';
-      hotbarHtml += `<div class="mc-slot${enchantClass}" data-slot="${s}">${renderSlotContent(s)}</div>`;
+      const selectedClass = (selectedSlot !== null && selectedSlot !== undefined && Number(selectedSlot) === s) ? ' hotbar-selected' : '';
+      hotbarHtml += `<div class="mc-slot${enchantClass}${selectedClass}" data-slot="${s}">${renderSlotContent(s)}</div>`;
     }
     hotbarGrid.innerHTML = hotbarHtml;
   }
@@ -5910,11 +7234,11 @@ function renderPlayerInventory(items, targetWorldId = null) {
   }
 }
 
-// Fonction centrale pour exécuter une action de gestion de joueur
+// Fonction centrale pour exécuter une action de gestion de joueur (sans clignotement du skin 3D)
 async function executePlayerManagementAction(action, value = null) {
   if (!currentPlayersWorldId || !currentPlayerDetailName) {
     showToast('Aucun joueur sélectionné.', 'error');
-    return;
+    return null;
   }
 
   try {
@@ -5933,64 +7257,116 @@ async function executePlayerManagementAction(action, value = null) {
 
     showToast(result.message || 'Action exécutée avec succès !', 'success');
 
-    // Rafraîchir les données du joueur et de la liste globale
-    await openPlayerDetail(currentPlayerDetailName);
+    // Mise à jour optimiste immédiate avant le prochain tick NBT
+    if (currentPlayerDetailData) {
+      if (typeof result.health === 'number') currentPlayerDetailData.health = result.health;
+      if (typeof result.foodLevel === 'number') currentPlayerDetailData.foodLevel = result.foodLevel;
+      if (typeof result.gameMode === 'string') currentPlayerDetailData.gameMode = result.gameMode;
+      renderPlayerDetailView(currentPlayerDetailData);
+    }
+
+    // Rafraîchissement fluide des données sans réinitialiser le viewer 3D
+    await pollPlayerDetailTick(true);
     await refreshPlayersData();
+    return result;
   } catch (err) {
     console.error('Erreur action joueur:', err);
     showToast(err.message, 'error');
+    throw err;
   }
 }
 
-// Câblage des boutons Soigner, Nourrir, Tuer, Affamer
-if (btnDetailHeal) {
-  btnDetailHeal.addEventListener('click', () => executePlayerManagementAction('heal'));
-}
-
-if (btnDetailFeed) {
-  btnDetailFeed.addEventListener('click', () => executePlayerManagementAction('feed'));
-}
-
-if (btnDetailKill) {
-  btnDetailKill.addEventListener('click', () => executePlayerManagementAction('damage'));
-}
-
-if (btnDetailStarve) {
-  btnDetailStarve.addEventListener('click', () => executePlayerManagementAction('starve'));
-}
-
-// Câblage des boutons d'XP (-10, -5, -1, +1, +5, +10)
-document.querySelectorAll('.btn-xp-chip').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const amount = parseInt(btn.dataset.xp, 10);
-    if (!isNaN(amount) && amount !== 0) {
-      executePlayerManagementAction('xp', amount);
+// Câblage des contrôles granulaires de Vie & Faim (Vider / -1 / +1 / Remplir)
+document.querySelectorAll('.btn-vital-ctrl[data-vital-action]').forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    if (btn.disabled || _isVitalActionBusy) return;
+    const vitalAction = btn.dataset.vitalAction;
+    if (!vitalAction) return;
+    _isVitalActionBusy = true;
+    try {
+      await executePlayerManagementAction(vitalAction);
+    } catch (_) {
+      // Toast déjà affiché dans executePlayerManagementAction
+    } finally {
+      _isVitalActionBusy = false;
     }
   });
 });
 
-// Câblage du Mode de Jeu (select change - mise à jour instantanée et optimiste)
-if (detailGameModeSelect) {
-  detailGameModeSelect.addEventListener('change', async () => {
-    const selectedMode = detailGameModeSelect.value;
-    const targetPlayer = currentPlayerDetailName;
-    if (!targetPlayer) return;
+// Câblage des boutons d'XP (-10, -5, -1, +1, +5, +10)
+document.querySelectorAll('.btn-xp-chip').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    if (btn.disabled) return;
+    const amount = parseInt(btn.dataset.xp, 10);
+    if (!isNaN(amount) && amount !== 0) {
+      try {
+        await executePlayerManagementAction('xp', amount);
+      } catch (_) { }
+    }
+  });
+});
 
-    const previousMode = currentPlayerDetailData?.gameMode || 'survival';
-    optimisticPlayerGameModes[targetPlayer.toLowerCase()] = selectedMode;
+// Fonction partagée pour changer le Mode de Jeu (optimiste + rollback en cas d'erreur)
+async function applyPlayerGameModeSelection(selectedMode) {
+  const targetPlayer = currentPlayerDetailName;
+  if (!targetPlayer || !GAMEMODE_LABELS[selectedMode]) return;
+
+  const previousMode = currentPlayerDetailData?.gameMode || 'survival';
+  optimisticPlayerGameModes[targetPlayer.toLowerCase()] = selectedMode;
+  if (currentPlayerDetailData) {
+    currentPlayerDetailData.gameMode = selectedMode;
+  }
+  syncGameModeDropdownUI(selectedMode);
+
+  try {
+    await executePlayerManagementAction('gamemode', selectedMode);
+  } catch (err) {
+    delete optimisticPlayerGameModes[targetPlayer.toLowerCase()];
     if (currentPlayerDetailData) {
-      currentPlayerDetailData.gameMode = selectedMode;
+      currentPlayerDetailData.gameMode = previousMode;
     }
+    syncGameModeDropdownUI(previousMode);
+  }
+}
 
-    try {
-      await executePlayerManagementAction('gamemode', selectedMode);
-    } catch (err) {
-      delete optimisticPlayerGameModes[targetPlayer.toLowerCase()];
-      if (currentPlayerDetailData) {
-        currentPlayerDetailData.gameMode = previousMode;
-      }
-      detailGameModeSelect.value = previousMode;
-    }
+// Câblage du menu déroulant Mode de Jeu custom (style identique au bouton Fermer ×)
+if (detailGameModeTrigger && detailGameModeDropdown) {
+  detailGameModeTrigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = detailGameModeDropdown.classList.contains('open');
+    setGameModeDropdownOpen(!isOpen);
+  });
+}
+
+if (detailGameModeMenu) {
+  detailGameModeMenu.querySelectorAll('.gamemode-dropdown-option').forEach((opt) => {
+    opt.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const mode = opt.dataset.value;
+      closeGameModeDropdown();
+      if (mode) applyPlayerGameModeSelection(mode);
+    });
+  });
+}
+
+document.addEventListener('click', (e) => {
+  if (detailGameModeDropdown && detailGameModeDropdown.classList.contains('open') && !detailGameModeDropdown.contains(e.target)) {
+    closeGameModeDropdown();
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && detailGameModeDropdown && detailGameModeDropdown.classList.contains('open')) {
+    e.preventDefault();
+    e.stopPropagation();
+    closeGameModeDropdown();
+  }
+}, true);
+
+// Compatibilité éventuelle si le <select> caché reçoit un événement programmatique
+if (detailGameModeSelect) {
+  detailGameModeSelect.addEventListener('change', () => {
+    applyPlayerGameModeSelection(detailGameModeSelect.value);
   });
 }
 
@@ -6411,10 +7787,17 @@ function openRenameWorld(worldId) {
     }
   }).catch(() => { });
 
-  // Bouton de Démarrage Forcé depuis la gestion du monde
+  // Bouton de Démarrage Forcé depuis la gestion du monde (actif uniquement si le monde est cassé)
   const btnForceStart = document.getElementById('btnForceStartFromManage');
   if (btnForceStart) {
+    const targetWorldObj = (worldsListCache || []).find(item => item.id === worldId);
+    const isWorldBroken = !!(targetWorldObj && (targetWorldObj.needsRepair || targetWorldObj.isCorrupted));
+    btnForceStart.disabled = !isWorldBroken;
+    btnForceStart.title = isWorldBroken
+      ? 'Forcer le lancement du serveur'
+      : 'Disponible uniquement si le monde est endommagé ou corrompu';
     btnForceStart.onclick = async () => {
+      if (!isWorldBroken) return;
       closeRenameWorld();
       await forceStartWorld(worldId);
     };
@@ -6509,6 +7892,10 @@ if (btnConfirmDelete) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erreur lors de la suppression');
       showToast(`Le monde '${target}' a été supprimé définitivement.`, 'success');
+      delete terminalBuffers[target];
+      delete terminalUnread[target];
+      suppressAutoSelectWorld = true;
+      showNoWorldSelectedTerminal();
       fetchWorlds();
     } catch (err) {
       showToast(err.message, 'error');
@@ -6631,15 +8018,15 @@ function switchLegalTab(tab, btn) {
 window.switchLegalTab = switchLegalTab;
 
 function showCurrentUpdateNotes() {
-  const version = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.4.0');
+  const version = (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.5.0');
   const summary = {
     version: version,
     releaseName: `Cubirium v${version}`,
     releaseNotes: `### Notes de version v${version}
-- **Protocole de Réparation Méthodique en 5 Étapes** : Sauvegarde préventive de sécurité, libération des ports occupés, allocation RAM adaptée, vérification de compatibilité Java et correction des corruptions NBT / level.dat.
-- **Workflow Interactif & Mode Sécurisé** : Modale d'investigation en temps réel avec timeline, journal d'actions en direct et verrouillage sécurisé en cas de corruption irréversible avec accès direct au dossier.
-- **Interface & Paramètres Repensés** : Icône globe réseau épurée, boîte d'adresse unifiée, pilule haute visibilité pour les notes de version et allègement des paramètres.
-- **Modal Dédié « À propos & Cadre Légal »** : Fenêtre modale accessible directement depuis l'en-tête principal et les paramètres regroupant identité, licence MIT, confidentialité et CGU.`
+- **Inspecteur de Joueur & Équipement 3D Intégral** : Rendu 3D fidèle sur le skin des armures Vanilla et moddées, élytres, boucliers, têtes/blocs équipés et outils, armes ou blocs tenus en main.
+- **Contrôles de Santé, Faim & Expérience** : Actions rapides granulaires sur les barres de vie et de faim (vider, -1, +1, remplir), carte d'expérience unifiée à 18 segments et sélecteur de mode de jeu harmonisé.
+- **Extraction Directe des Textures de Mods en Mémoire** : Lecture native Node.js directement depuis les archives .jar des mods du monde et du client Minecraft sans aucun stockage disque sur macOS et Windows.
+- **Ergonomie & Navigation Affinées** : Menu contextuel universel au clic droit, Skeleton Loader au démarrage, filigrane du terminal, protection du Démarrage Forcé et correction du calcul du Runtime et des retours console en jeu.`
   };
   showUpdateSummaryModal(summary);
   const title = document.getElementById('updateSummaryTitle');
@@ -6904,8 +8291,18 @@ if (appSettingsModal) {
   });
 }
 
-// Touche Échap pour fermer les modaux (avec auto-save paramètres)
+// Touche Échap pour fermer les modaux + raccourcis universels (Windows F1 / Ctrl+, et macOS Cmd+,)
 window.addEventListener('keydown', (e) => {
+  if (e.key === 'F1') {
+    e.preventDefault();
+    openAboutModal();
+    return;
+  }
+  if ((e.metaKey || e.ctrlKey) && e.key === ',') {
+    e.preventDefault();
+    openAppSettingsModal();
+    return;
+  }
   if (e.key === 'Escape') {
     const aboutModal = document.getElementById('aboutModal');
     if (aboutModal && aboutModal.style.display !== 'none') {

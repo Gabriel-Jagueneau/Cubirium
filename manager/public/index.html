@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cubirium</title>
   <link rel="icon" type="image/png" href="/assets/favicon.png?v=5">
-  <link rel="stylesheet" href="styles.css?v=1.4.0">
+  <link rel="stylesheet" href="styles.css?v=1.5.5">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -15,14 +15,107 @@
 </head>
 
 <body>
-  <!-- Loader simple (à partir du second lancement) -->
+  <!-- Skeleton Loader (actif dès le second lancement) -->
   <div id="appSplashLoader" class="app-splash-loader" style="display: none;">
-    <div class="splash-loader-content">
-      <div class="splash-logo-wrap">
-        <img src="/assets/logo.png?v=5" alt="Logo" class="splash-logo-img" />
+    <div class="skeleton-layout">
+      <aside class="skeleton-sidebar">
+        <div class="skeleton-sidebar-header">
+          <div class="skeleton-row">
+            <div class="skeleton-box" style="width: 78px; height: 18px; border-radius: 6px;"></div>
+            <div class="skeleton-box" style="width: 24px; height: 20px; border-radius: 9999px;"></div>
+          </div>
+          <div class="skeleton-row">
+            <div class="skeleton-box" style="width: 32px; height: 32px; border-radius: 8px;"></div>
+            <div class="skeleton-box" style="width: 108px; height: 32px; border-radius: 9999px;"></div>
+          </div>
+        </div>
+        <div class="skeleton-create-wrap">
+          <div class="skeleton-box" style="width: 100%; height: 38px; border-radius: 9999px;"></div>
+        </div>
+        <div class="skeleton-cards-list">
+          <div class="skeleton-world-card">
+            <div class="skeleton-card-top">
+              <div class="skeleton-col">
+                <div class="skeleton-box" style="width: 132px; height: 16px; border-radius: 6px;"></div>
+                <div class="skeleton-box" style="width: 72px; height: 20px; border-radius: 9999px;"></div>
+              </div>
+              <div class="skeleton-row">
+                <div class="skeleton-box" style="width: 26px; height: 26px; border-radius: 6px;"></div>
+                <div class="skeleton-box" style="width: 26px; height: 26px; border-radius: 6px;"></div>
+              </div>
+            </div>
+            <div class="skeleton-card-meta">
+              <div class="skeleton-box" style="width: 88px; height: 12px; border-radius: 4px;"></div>
+              <div class="skeleton-box" style="width: 76px; height: 12px; border-radius: 4px;"></div>
+              <div class="skeleton-box" style="width: 68px; height: 12px; border-radius: 4px;"></div>
+            </div>
+            <div class="skeleton-card-actions">
+              <div class="skeleton-box" style="flex: 1; height: 34px; border-radius: 9999px;"></div>
+              <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+              <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+              <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+              <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+            </div>
+          </div>
+          <div class="skeleton-world-card">
+            <div class="skeleton-card-top">
+              <div class="skeleton-col">
+                <div class="skeleton-box" style="width: 108px; height: 16px; border-radius: 6px;"></div>
+                <div class="skeleton-box" style="width: 84px; height: 20px; border-radius: 9999px;"></div>
+              </div>
+              <div class="skeleton-row">
+                <div class="skeleton-box" style="width: 26px; height: 26px; border-radius: 6px;"></div>
+                <div class="skeleton-box" style="width: 26px; height: 26px; border-radius: 6px;"></div>
+              </div>
+            </div>
+            <div class="skeleton-card-meta">
+              <div class="skeleton-box" style="width: 94px; height: 12px; border-radius: 4px;"></div>
+              <div class="skeleton-box" style="width: 72px; height: 12px; border-radius: 4px;"></div>
+              <div class="skeleton-box" style="width: 64px; height: 12px; border-radius: 4px;"></div>
+            </div>
+            <div class="skeleton-card-actions">
+              <div class="skeleton-box" style="flex: 1; height: 34px; border-radius: 9999px;"></div>
+              <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+              <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+              <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+              <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+            </div>
+          </div>
+          <div class="skeleton-world-card" style="opacity: 0.6;">
+            <div class="skeleton-card-top">
+              <div class="skeleton-col">
+                <div class="skeleton-box" style="width: 146px; height: 16px; border-radius: 6px;"></div>
+                <div class="skeleton-box" style="width: 68px; height: 20px; border-radius: 9999px;"></div>
+              </div>
+              <div class="skeleton-row">
+                <div class="skeleton-box" style="width: 26px; height: 26px; border-radius: 6px;"></div>
+                <div class="skeleton-box" style="width: 26px; height: 26px; border-radius: 6px;"></div>
+              </div>
+            </div>
+            <div class="skeleton-card-meta">
+              <div class="skeleton-box" style="width: 80px; height: 12px; border-radius: 4px;"></div>
+              <div class="skeleton-box" style="width: 76px; height: 12px; border-radius: 4px;"></div>
+              <div class="skeleton-box" style="width: 60px; height: 12px; border-radius: 4px;"></div>
+            </div>
+            <div class="skeleton-card-actions">
+              <div class="skeleton-box" style="flex: 1; height: 34px; border-radius: 9999px;"></div>
+              <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+              <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+              <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+              <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+      <div class="skeleton-console">
+        <div class="skeleton-console-center">
+          <div class="skeleton-box" style="width: 56px; height: 56px; border-radius: 15px;"></div>
+          <div class="skeleton-box" style="width: 210px; height: 14px; border-radius: 6px;"></div>
+        </div>
+        <div class="skeleton-console-footer">
+          <div class="skeleton-box" style="width: 100%; height: 42px; border-radius: 9999px;"></div>
+        </div>
       </div>
-      <div class="splash-spinner"></div>
-      <div class="splash-text">Connexion et chargement...</div>
     </div>
   </div>
 
@@ -39,45 +132,79 @@
           <div class="panel-header-actions">
             <button class="btn-icon" id="btnRefreshWorlds" title="Actualiser la liste">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15">
+                </path>
               </svg>
             </button>
-            <button class="btn-icon" id="btnOpenAboutModal" title="À propos de Cubirium &amp; Cadre légal"
-              onclick="openAboutModal()">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-              </svg>
-            </button>
-            <button class="btn-icon" id="btnOpenAppSettings" title="Paramètres de l'application"
+            <button class="btn-header-settings" id="btnOpenAppSettings" title="Paramètres de l'application"
               onclick="openAppSettingsModal()">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3"></circle>
                 <path
                   d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
                 </path>
               </svg>
+              <span>Paramètres</span>
             </button>
           </div>
         </header>
 
-        <div class="panel-create-bar">
-          <button class="btn-primary btn-create-world" id="btnOpenCreateModal">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            <span>Nouveau Monde</span>
-          </button>
-        </div>
+        <div class="worlds-body-wrap">
+          <div class="panel-create-bar">
+            <button class="btn-primary btn-create-world" id="btnOpenCreateModal">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Nouveau Monde</span>
+            </button>
+          </div>
 
-        <div class="worlds-grid" id="worldsList">
-          <!-- Les cartes de mondes seront injectées ici en JavaScript -->
-          <div class="loading-state">Chargement des mondes...</div>
+          <div class="worlds-grid" id="worldsList">
+            <!-- Les cartes de mondes seront injectées ici en JavaScript -->
+            <div class="loading-state skeleton-cards-inline">
+              <div class="skeleton-world-card">
+                <div class="skeleton-card-top">
+                  <div class="skeleton-col">
+                    <div class="skeleton-box" style="width: 128px; height: 16px; border-radius: 6px;"></div>
+                    <div class="skeleton-box" style="width: 72px; height: 20px; border-radius: 9999px;"></div>
+                  </div>
+                </div>
+                <div class="skeleton-card-meta">
+                  <div class="skeleton-box" style="width: 84px; height: 12px; border-radius: 4px;"></div>
+                  <div class="skeleton-box" style="width: 72px; height: 12px; border-radius: 4px;"></div>
+                </div>
+                <div class="skeleton-card-actions">
+                  <div class="skeleton-box" style="flex: 1; height: 34px; border-radius: 9999px;"></div>
+                  <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+                  <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+                  <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+                  <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+                </div>
+              </div>
+              <div class="skeleton-world-card" style="opacity: 0.65;">
+                <div class="skeleton-card-top">
+                  <div class="skeleton-col">
+                    <div class="skeleton-box" style="width: 112px; height: 16px; border-radius: 6px;"></div>
+                    <div class="skeleton-box" style="width: 82px; height: 20px; border-radius: 9999px;"></div>
+                  </div>
+                </div>
+                <div class="skeleton-card-meta">
+                  <div class="skeleton-box" style="width: 90px; height: 12px; border-radius: 4px;"></div>
+                  <div class="skeleton-box" style="width: 66px; height: 12px; border-radius: 4px;"></div>
+                </div>
+                <div class="skeleton-card-actions">
+                  <div class="skeleton-box" style="flex: 1; height: 34px; border-radius: 9999px;"></div>
+                  <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+                  <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+                  <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+                  <div class="skeleton-box" style="width: 34px; height: 34px; border-radius: 8px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -86,7 +213,7 @@
         <!-- Floating HUD Top Overlay (Infos et contrôles en haut sans bandeau lourd) -->
         <div class="console-hud-top">
           <div class="hud-left">
-            <div class="hud-pill-title">
+            <div class="hud-pill-title" id="terminalTitlePill" style="display: none;">
               <span class="pulse-dot" id="serverPulseDot"></span>
               <span id="activeWorldTitle">Terminal</span>
             </div>
@@ -122,15 +249,23 @@
             <button class="btn-danger" id="btnStopActiveServer" style="display: none;">
               Arrêter le Serveur
             </button>
-            <button class="btn-small btn-clear-console" id="btnClearConsole" title="Effacer les logs de ce monde">Effacer</button>
+            <button class="btn-small btn-clear-console" id="btnClearConsole" title="Effacer les logs de ce monde"
+              style="display: none;">Effacer</button>
           </div>
+        </div>
+
+        <!-- Watermark logo Cubirium en fond du terminal -->
+        <div class="terminal-watermark" aria-hidden="true">
+          <img src="/assets/logo.png?v=5" alt="" />
         </div>
 
         <!-- Terminal Output -->
         <div class="terminal-body" id="terminalOutput">
-          <div class="terminal-welcome">
-            <p>Bienvenue sur Cubirium.</p>
-            <p>Sélectionnez un monde à gauche pour afficher sa console et gérer la partie.</p>
+          <div class="terminal-empty-state">
+            <div class="terminal-empty-icon">
+              <img src="/assets/logo.png?v=5" alt="Cubirium" class="terminal-empty-logo" />
+            </div>
+            <p class="terminal-empty-text">Veuillez sélectionner un monde</p>
           </div>
         </div>
 
@@ -444,11 +579,13 @@
               <div class="analysis-results" id="analysisResults" style="display: none;">
                 <!-- En-tête résumé et statut Server Pack -->
                 <div class="analysis-summary">
-                  <div class="summary-box success" id="boxServerMods" onclick="switchModsListTab('server')" style="cursor: pointer;">
+                  <div class="summary-box success" id="boxServerMods" onclick="switchModsListTab('server')"
+                    style="cursor: pointer;">
                     <span class="summary-val" id="serverModsCount">0</span>
                     <span class="summary-lbl">Mods Serveur retenus</span>
                   </div>
-                  <div class="summary-box warning" id="boxClientMods" onclick="switchModsListTab('client')" style="cursor: pointer;">
+                  <div class="summary-box warning" id="boxClientMods" onclick="switchModsListTab('client')"
+                    style="cursor: pointer;">
                     <span class="summary-val" id="clientModsCount">0</span>
                     <span class="summary-lbl">Mods Client exclus</span>
                   </div>
@@ -457,21 +594,25 @@
                 <!-- Barre d'actions & Contrôle utilisateur -->
                 <div class="mods-filter-controls">
                   <div class="mods-filter-tabs">
-                    <button type="button" class="mods-tab-btn active" id="btnTabServerMods" onclick="switchModsListTab('server')">
+                    <button type="button" class="mods-tab-btn active" id="btnTabServerMods"
+                      onclick="switchModsListTab('server')">
                       Mods Serveur (<span id="tabServerModsBadge">0</span>)
                     </button>
-                    <button type="button" class="mods-tab-btn" id="btnTabClientMods" onclick="switchModsListTab('client')">
+                    <button type="button" class="mods-tab-btn" id="btnTabClientMods"
+                      onclick="switchModsListTab('client')">
                       Mods Exclus (<span id="tabClientModsBadge">0</span>)
                     </button>
                   </div>
-                  <button type="button" class="btn-toggle-keep-all" id="btnToggleKeepAllMods" onclick="toggleKeepAllMods()">
+                  <button type="button" class="btn-toggle-keep-all" id="btnToggleKeepAllMods"
+                    onclick="toggleKeepAllMods()">
                     Conserver tous les mods
                   </button>
                 </div>
 
                 <!-- Champ de recherche de mod -->
                 <div class="mods-search-wrap">
-                  <input type="text" id="modSearchInput" class="mods-search-input" placeholder="Filtrer ou rechercher un mod..." oninput="filterModsListDisplay()" />
+                  <input type="text" id="modSearchInput" class="mods-search-input"
+                    placeholder="Filtrer ou rechercher un mod..." oninput="filterModsListDisplay()" />
                 </div>
 
                 <!-- Liste des mods serveur retenus -->
@@ -937,12 +1078,76 @@
             </div>
           </div>
           <div class="player-detail-header-actions">
-            <div class="gamemode-picker-wrap" title="Changer le Mode de Jeu">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="2" y="6" width="20" height="12" rx="4"></rect>
-                <path d="M6 12h4m-2-2v4m10-2h.01m-3 0h.01"></path>
-              </svg>
-              <select id="detailGameModeSelect" class="gamemode-select">
+            <div class="gamemode-dropdown" id="detailGameModeDropdown" title="Changer le Mode de Jeu">
+              <button type="button" class="gamemode-dropdown-trigger" id="detailGameModeTrigger" aria-haspopup="listbox"
+                aria-expanded="false">
+                <svg class="gamemode-trigger-icon" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="6" width="20" height="12" rx="4"></rect>
+                  <path d="M6 12h4m-2-2v4m10-2h.01m-3 0h.01"></path>
+                </svg>
+                <span class="gamemode-trigger-label" id="detailGameModeLabel">Survie</span>
+                <svg class="gamemode-trigger-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div class="gamemode-dropdown-menu" id="detailGameModeMenu" role="listbox" aria-hidden="true">
+                <button type="button" class="gamemode-dropdown-option" role="option" data-value="survival">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.5 17.5L3 6V3h3l11.5 11.5"></path>
+                    <path d="M13 19l6-6"></path>
+                    <path d="M16 16l4 4"></path>
+                    <path d="M19 21l2-2"></path>
+                  </svg>
+                  <span>Survie</span>
+                  <svg class="gamemode-option-check" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </button>
+                <button type="button" class="gamemode-dropdown-option" role="option" data-value="creative">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                      d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                    </path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                  </svg>
+                  <span>Créatif</span>
+                  <svg class="gamemode-option-check" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </button>
+                <button type="button" class="gamemode-dropdown-option" role="option" data-value="adventure">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                  </svg>
+                  <span>Aventure</span>
+                  <svg class="gamemode-option-check" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </button>
+                <button type="button" class="gamemode-dropdown-option" role="option" data-value="spectator">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                  <span>Spectateur</span>
+                  <svg class="gamemode-option-check" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </button>
+              </div>
+              <select id="detailGameModeSelect" class="gamemode-select-hidden" tabindex="-1" aria-hidden="true">
                 <option value="survival">Survie</option>
                 <option value="creative">Créatif</option>
                 <option value="adventure">Aventure</option>
@@ -968,42 +1173,117 @@
               <div class="player-vitals-layout">
                 <!-- Colonne gauche : barres + XP -->
                 <div class="player-vitals-left">
-                  <div class="xp-section">
-                    <div class="xp-level-label" id="detailXpLabel">Niveau 0</div>
-                    <div class="xp-progress-bar">
-                      <div class="xp-progress-fill" id="detailXpFill" style="width: 0%;"></div>
-                    </div>
-                  </div>
-
                   <!-- Health Row -->
-                  <div class="vitals-bar-row">
+                  <div class="vitals-bar-row vitals-health-row">
+                    <div class="vitals-controls-group">
+                      <button type="button" class="btn-vital-ctrl danger" data-vital-action="health_empty"
+                        title="Vider la vie (1/2 cœur)">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="11 17 6 12 11 7"></polyline>
+                          <polyline points="18 17 13 12 18 7"></polyline>
+                        </svg>
+                      </button>
+                      <button type="button" class="btn-vital-ctrl negative" data-vital-action="health_sub"
+                        title="Retirer 1 cœur (-2 PV)">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.6" stroke-linecap="round">
+                          <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                      </button>
+                    </div>
                     <div class="hearts-container" id="detailHeartsContainer">
                       <!-- 10 cœurs dynamiques Minecraft -->
+                    </div>
+                    <div class="vitals-controls-group">
+                      <button type="button" class="btn-vital-ctrl positive" data-vital-action="health_add"
+                        title="Ajouter 1 cœur (+2 PV)">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.6" stroke-linecap="round">
+                          <line x1="12" y1="5" x2="12" y2="19"></line>
+                          <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                      </button>
+                      <button type="button" class="btn-vital-ctrl full" data-vital-action="health_full"
+                        title="Remplir la vie (20/20 PV)">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="13 17 18 12 13 7"></polyline>
+                          <polyline points="6 17 11 12 6 7"></polyline>
+                        </svg>
+                      </button>
                     </div>
                   </div>
 
                   <!-- Food Row -->
-                  <div class="vitals-bar-row">
+                  <div class="vitals-bar-row vitals-food-row">
+                    <div class="vitals-controls-group">
+                      <button type="button" class="btn-vital-ctrl danger" data-vital-action="food_empty"
+                        title="Vider la barre de faim (0/20)">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="11 17 6 12 11 7"></polyline>
+                          <polyline points="18 17 13 12 18 7"></polyline>
+                        </svg>
+                      </button>
+                      <button type="button" class="btn-vital-ctrl negative" data-vital-action="food_sub"
+                        title="Retirer 1 pilon (-2)">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.6" stroke-linecap="round">
+                          <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                      </button>
+                    </div>
                     <div class="food-container" id="detailFoodContainer">
                       <!-- 10 pilons dynamiques Minecraft -->
                     </div>
+                    <div class="vitals-controls-group">
+                      <button type="button" class="btn-vital-ctrl positive" data-vital-action="food_add"
+                        title="Ajouter 1 pilon (+2)">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.6" stroke-linecap="round">
+                          <line x1="12" y1="5" x2="12" y2="19"></line>
+                          <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                      </button>
+                      <button type="button" class="btn-vital-ctrl full" data-vital-action="food_full"
+                        title="Remplir la barre de faim (20/20)">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="13 17 18 12 13 7"></polyline>
+                          <polyline points="6 17 11 12 6 7"></polyline>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
 
-                  <!-- XP Quick Actions -->
-                  <div class="xp-quick-actions">
-                    <span class="xp-quick-label">XP :</span>
-                    <button class="btn-xp-chip negative" data-xp="-10" title="Retirer 10 niveaux d'XP">-10</button>
-                    <button class="btn-xp-chip negative" data-xp="-5" title="Retirer 5 niveaux d'XP">-5</button>
-                    <button class="btn-xp-chip negative" data-xp="-1" title="Retirer 1 niveau d'XP">-1</button>
-                    <button class="btn-xp-chip positive" data-xp="1" title="Donner 1 niveau d'XP">+1</button>
-                    <button class="btn-xp-chip positive" data-xp="5" title="Donner 5 niveaux d'XP">+5</button>
-                    <button class="btn-xp-chip positive" data-xp="10" title="Donner 10 niveaux d'XP">+10</button>
+                  <!-- Unified XP Card -->
+                  <div class="xp-card">
+                    <div class="xp-section">
+                      <div class="xp-header-row">
+                        <span class="xp-title">Expérience</span>
+                        <span class="xp-level-label" id="detailXpLabel">Niveau 0</span>
+                      </div>
+                      <div class="xp-progress-bar">
+                        <div class="xp-progress-fill" id="detailXpFill" style="width: 0%;"></div>
+                      </div>
+                    </div>
+
+                    <!-- XP Quick Actions -->
+                    <div class="xp-quick-actions">
+                      <button class="btn-xp-chip negative" data-xp="-10" title="Retirer 10 niveaux d'XP">-10</button>
+                      <button class="btn-xp-chip negative" data-xp="-5" title="Retirer 5 niveaux d'XP">-5</button>
+                      <button class="btn-xp-chip negative" data-xp="-1" title="Retirer 1 niveau d'XP">-1</button>
+                      <button class="btn-xp-chip positive" data-xp="1" title="Donner 1 niveau d'XP">+1</button>
+                      <button class="btn-xp-chip positive" data-xp="5" title="Donner 5 niveaux d'XP">+5</button>
+                      <button class="btn-xp-chip positive" data-xp="10" title="Donner 10 niveaux d'XP">+10</button>
+                    </div>
                   </div>
                 </div>
 
                 <!-- Colonne droite : skin 3D joueur -->
                 <div class="player-3d-wrap">
-                  <canvas id="player3dCanvas" width="150" height="210"></canvas>
+                  <canvas id="player3dCanvas" width="162" height="218"></canvas>
                   <div class="player-3d-loading" id="player3dLoading">
                     <div class="player-3d-spinner"></div>
                   </div>
@@ -1435,18 +1715,24 @@
 
         <div class="modal-content" style="display: flex; flex-direction: column; gap: 14px;">
           <!-- Étape 1 : Préparation & Sauvegarde obligatoire recommandée -->
-          <div id="repairStepIntro" class="repair-step-screen" style="display: flex; flex-direction: column; gap: 14px;">
+          <div id="repairStepIntro" class="repair-step-screen"
+            style="display: flex; flex-direction: column; gap: 14px;">
             <div class="repair-warning-box">
               <div class="repair-warning-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                  </path>
                   <line x1="12" y1="9" x2="12" y2="13"></line>
                   <line x1="12" y1="17" x2="12.01" y2="17"></line>
                 </svg>
               </div>
               <div class="repair-warning-text">
                 <strong>Sauvegarde préalable recommandée</strong>
-                <p>La procédure de diagnostic méthodique analyse en profondeur vos journaux, mémoires, versions et fichiers NBT. Si les données de votre monde sont sévèrement endommagées, la réparation n'est pas garantie et le monde peut être déclaré corrompu. Nous vous recommandons vivement d'exporter une sauvegarde complète avant de continuer.</p>
+                <p>La procédure de diagnostic méthodique analyse en profondeur vos journaux, mémoires, versions et
+                  fichiers NBT. Si les données de votre monde sont sévèrement endommagées, la réparation n'est pas
+                  garantie et le monde peut être déclaré corrompu. Nous vous recommandons vivement d'exporter une
+                  sauvegarde complète avant de continuer.</p>
               </div>
             </div>
 
@@ -1454,7 +1740,8 @@
               <div class="repair-backup-info">
                 <span>Sécuriser une copie complète de vos fichiers de monde :</span>
               </div>
-              <button type="button" class="btn-secondary" id="btnBackupBeforeRepair" onclick="backupWorldBeforeRepair()">
+              <button type="button" class="btn-secondary" id="btnBackupBeforeRepair"
+                onclick="backupWorldBeforeRepair()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                   <polyline points="7 10 12 15 17 10"></polyline>
@@ -1466,7 +1753,8 @@
           </div>
 
           <!-- Étape 2 : Timeline & Diagnostic interactif en direct -->
-          <div id="repairStepProgress" class="repair-step-screen" style="display: none; flex-direction: column; gap: 14px;">
+          <div id="repairStepProgress" class="repair-step-screen"
+            style="display: none; flex-direction: column; gap: 14px;">
             <div class="repair-timeline-header">
               <span class="timeline-title">Progression de l'analyse méthodique</span>
               <span class="timeline-eta" id="repairTimelineEta">Estimation : ~10s</span>
@@ -1522,7 +1810,8 @@
           </div>
 
           <!-- Étape 3 : Résultat et Synthèse -->
-          <div id="repairStepResult" class="repair-step-screen" style="display: none; flex-direction: column; gap: 14px;">
+          <div id="repairStepResult" class="repair-step-screen"
+            style="display: none; flex-direction: column; gap: 14px;">
             <div id="repairDiagnosisBox" class="repair-diagnosis-box" style="display: none;">
               <div class="repair-diag-label">Analyse de l'incident</div>
               <div id="repairDiagnosisText" class="repair-diag-text"></div>
@@ -1536,10 +1825,12 @@
 
         <div class="modal-footer" id="repairModalFooter" style="display: flex; justify-content: flex-end; gap: 10px;">
           <button type="button" class="btn-secondary" id="btnDismissRepairReport">Fermer</button>
-          <button type="button" class="btn-primary" id="btnStartInteractiveRepair" onclick="startInteractiveWorldRepair()">
+          <button type="button" class="btn-primary" id="btnStartInteractiveRepair"
+            onclick="startInteractiveWorldRepair()">
             Commencer la réparation
           </button>
-          <button type="button" class="btn-secondary" id="btnOpenFolderAfterCorrupted" style="display: none;" onclick="openWorldFolderFromRepair()">
+          <button type="button" class="btn-secondary" id="btnOpenFolderAfterCorrupted" style="display: none;"
+            onclick="openWorldFolderFromRepair()">
             Ouvrir le dossier du monde
           </button>
           <button type="button" class="btn-primary" id="btnLaunchAfterRepair"
@@ -1619,7 +1910,8 @@
               </svg>
               <h4>Adresse Réseau &amp; Partage</h4>
             </div>
-            <p class="settings-section-desc">Adresse personnalisée utilisée par vos invités pour rejoindre vos mondes.</p>
+            <p class="settings-section-desc">Adresse personnalisée utilisée par vos invités pour rejoindre vos mondes.
+            </p>
 
             <div class="settings-path-group" style="margin-top: 14px;">
               <label for="settingsCustomDomainPrefix" class="settings-field-label">Adresse du serveur :</label>
@@ -1632,7 +1924,8 @@
                     <ellipse cx="12" cy="12" rx="4.5" ry="10"></ellipse>
                   </svg>
                   <input type="text" id="settingsCustomDomainPrefix" class="custom-domain-prefix-input"
-                    placeholder="lesMondesAvecMesPotes" value="lesMondesAvecMesPotes" spellcheck="false" autocomplete="off" />
+                    placeholder="lesMondesAvecMesPotes" value="lesMondesAvecMesPotes" spellcheck="false"
+                    autocomplete="off" />
                   <span class="custom-domain-suffix">.cubirium.fr</span>
                 </div>
                 <button type="button" class="btn-secondary" onclick="copyCustomDomainDemo(event)"
@@ -1644,14 +1937,16 @@
                   <span>Copier</span>
                 </button>
               </div>
-              <span class="settings-hint">Partagez cette adresse directe avec vos amis pour leur permettre de se connecter facilement à votre serveur.</span>
+              <span class="settings-hint">Partagez cette adresse directe avec vos amis pour leur permettre de se
+                connecter facilement à votre serveur.</span>
             </div>
 
             <!-- Éléments techniques masqués conservant la compatibilité app.js / diagnose.js -->
             <input type="hidden" id="settingsTunnelRelayHost" value="bore.pub" />
             <input type="hidden" id="settingsTunnelRelayPort" value="7835" />
             <input type="hidden" id="settingsTunnelAuthToken" value="" />
-            <button type="button" id="btnToggleTunnelToken" style="display: none;" onclick="toggleTunnelTokenVisibility()"></button>
+            <button type="button" id="btnToggleTunnelToken" style="display: none;"
+              onclick="toggleTunnelTokenVisibility()"></button>
           </div>
 
           <!-- Section 2 : Propriétés par défaut à la création de mondes -->
@@ -1884,9 +2179,11 @@
               <div class="settings-update-info">
                 <div class="settings-update-title-wrap">
                   <span class="settings-update-title">Version installée</span>
-                  <span class="settings-update-tag" id="settingsCurrentVersionTag">v1.4.0</span>
-                  <button type="button" class="btn-changelog-pill" id="btnShowUpdateNotes" onclick="showCurrentUpdateNotes()" title="Consulter les notes de version et nouveautés">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <span class="settings-update-tag" id="settingsCurrentVersionTag">v1.5.0</span>
+                  <button type="button" class="btn-changelog-pill" id="btnShowUpdateNotes"
+                    onclick="showCurrentUpdateNotes()" title="Consulter les notes de version et nouveautés">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                      stroke-linecap="round" stroke-linejoin="round">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                       <polyline points="14 2 14 8 20 8"></polyline>
                       <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -1914,10 +2211,12 @@
             <div class="settings-about-row">
               <div class="settings-about-row__info">
                 <span class="settings-about-row__title">À propos de Cubirium &amp; Cadre Légal</span>
-                <span class="settings-about-row__desc">Propriété intellectuelle, licence MIT, engagements de confidentialité et conditions d'utilisation.</span>
+                <span class="settings-about-row__desc">Propriété intellectuelle, licence MIT, engagements de
+                  confidentialité et conditions d'utilisation.</span>
               </div>
               <button type="button" class="btn-secondary" onclick="openAboutModal()" title="Consulter le cadre légal">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="10"></circle>
                   <line x1="12" y1="16" x2="12" y2="12"></line>
                   <line x1="12" y1="8" x2="12.01" y2="8"></line>
@@ -1991,7 +2290,7 @@
               <div class="about-hero-text">
                 <div class="about-hero-title-row">
                   <strong class="about-app-name">Cubirium</strong>
-                  <span class="about-version-tag">v1.4.0</span>
+                  <span class="about-version-tag">v1.5.0</span>
                 </div>
                 <span class="about-app-desc">Gestionnaire autonome et hébergement de serveurs Minecraft locaux.</span>
                 <span class="about-author-line">Développé et maintenu par <strong>Gabriel Jagueneau</strong>.</span>
@@ -1999,7 +2298,8 @@
             </div>
 
             <div class="about-links-row">
-              <button type="button" class="btn-official-site" onclick="openOfficialWebsite()" title="Site officiel Cubirium">
+              <button type="button" class="btn-official-site" onclick="openOfficialWebsite()"
+                title="Site officiel Cubirium">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="12" cy="12" r="10"></circle>
                   <line x1="2" y1="12" x2="22" y2="12"></line>
@@ -2007,7 +2307,8 @@
                 </svg>
                 <span>cubirium.fr</span>
               </button>
-              <button type="button" class="legal-link-author" onclick="openAuthorPortfolio()" title="Portfolio de Gabriel Jagueneau">
+              <button type="button" class="legal-link-author" onclick="openAuthorPortfolio()"
+                title="Portfolio de Gabriel Jagueneau">
                 <span>gjagueneau.fr</span>
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
@@ -2021,9 +2322,12 @@
           <!-- Contrôle Segmenté avec Sliding Pill -->
           <div class="legal-segmented-control" id="legalSegmentedControl">
             <div class="legal-sliding-pill" id="legalSlidingPill"></div>
-            <button type="button" class="legal-seg-btn active" id="btnLegalTabPrivacy" onclick="switchLegalTab('privacy', this)">Confidentialité</button>
-            <button type="button" class="legal-seg-btn" id="btnLegalTabTerms" onclick="switchLegalTab('terms', this)">Conditions d'utilisation</button>
-            <button type="button" class="legal-seg-btn" id="btnLegalTabNotices" onclick="switchLegalTab('notices', this)">Mentions légales</button>
+            <button type="button" class="legal-seg-btn active" id="btnLegalTabPrivacy"
+              onclick="switchLegalTab('privacy', this)">Confidentialité</button>
+            <button type="button" class="legal-seg-btn" id="btnLegalTabTerms"
+              onclick="switchLegalTab('terms', this)">Conditions d'utilisation</button>
+            <button type="button" class="legal-seg-btn" id="btnLegalTabNotices"
+              onclick="switchLegalTab('notices', this)">Mentions légales</button>
           </div>
 
           <!-- Panneaux Légaux -->
@@ -2031,24 +2335,33 @@
             <div id="legalPanePrivacy" class="legal-pane" style="display: block;">
               <h5 class="legal-pane-heading">Protection absolue des données et de la vie privée</h5>
               <p class="legal-pane-intro">
-                Cubirium a été conçu selon le principe de la souveraineté locale des données (Privacy by Design). L'application n'intègre aucun traceur, aucun outil d'analyse comportementale et ne revend aucune donnée à des tiers.
+                Cubirium a été conçu selon le principe de la souveraineté locale des données (Privacy by Design).
+                L'application n'intègre aucun traceur, aucun outil d'analyse comportementale et ne revend aucune donnée
+                à des tiers.
               </p>
               <ul class="legal-pane-list">
-                <li><strong>Stockage local exclusif :</strong> Vos mondes Minecraft, configurations, inventaires et données de joueurs sont conservés localement sur votre disque dur.</li>
-                <li><strong>Flux réseau :</strong> Le partage de monde transite par un tunnel sécurisé sans enregistrement ni analyse du contenu des paquets de jeu.</li>
-                <li><strong>Contrôle utilisateur :</strong> Vous pouvez à tout moment exporter, sauvegarder ou purger l'intégralité de vos fichiers depuis l'application.</li>
+                <li><strong>Stockage local exclusif :</strong> Vos mondes Minecraft, configurations, inventaires et
+                  données de joueurs sont conservés localement sur votre disque dur.</li>
+                <li><strong>Flux réseau :</strong> Le partage de monde transite par un tunnel sécurisé sans
+                  enregistrement ni analyse du contenu des paquets de jeu.</li>
+                <li><strong>Contrôle utilisateur :</strong> Vous pouvez à tout moment exporter, sauvegarder ou purger
+                  l'intégralité de vos fichiers depuis l'application.</li>
               </ul>
             </div>
 
             <div id="legalPaneTerms" class="legal-pane" style="display: none;">
               <h5 class="legal-pane-heading">Cadre d'utilisation et règles de bonne conduite</h5>
               <p class="legal-pane-intro">
-                L'accès à Cubirium est fourni gratuitement pour un usage privé et récréatif. En utilisant ce logiciel, vous acceptez les directives suivantes :
+                L'accès à Cubirium est fourni gratuitement pour un usage privé et récréatif. En utilisant ce logiciel,
+                vous acceptez les directives suivantes :
               </p>
               <ul class="legal-pane-list">
-                <li><strong>Respect des CGU Mojang :</strong> L'exploitation des serveurs Minecraft doit se conformer aux conditions de licence et à l'EULA de Mojang Studios / Microsoft.</li>
-                <li><strong>Responsabilité du contenu :</strong> L'administrateur du monde est garant des activités et des comportements sur les serveurs qu'il héberge et partage.</li>
-                <li><strong>Usage loyal du réseau :</strong> Tout abus, saturation volontaire, utilisation de relais à des fins illicites ou tentative de perturbation est strictement prohibé.</li>
+                <li><strong>Respect des CGU Mojang :</strong> L'exploitation des serveurs Minecraft doit se conformer
+                  aux conditions de licence et à l'EULA de Mojang Studios / Microsoft.</li>
+                <li><strong>Responsabilité du contenu :</strong> L'administrateur du monde est garant des activités et
+                  des comportements sur les serveurs qu'il héberge et partage.</li>
+                <li><strong>Usage loyal du réseau :</strong> Tout abus, saturation volontaire, utilisation de relais à
+                  des fins illicites ou tentative de perturbation est strictement prohibé.</li>
               </ul>
             </div>
 
@@ -2058,9 +2371,14 @@
                 Cubirium est une œuvre logicielle originale développée par <strong>Gabriel Jagueneau</strong>.
               </p>
               <ul class="legal-pane-list">
-                <li><strong>Droits d'auteur :</strong> Le code source, l'interface graphique et les éléments visuels de Cubirium sont protégés au titre du droit d'auteur et de la propriété intellectuelle.</li>
-                <li><strong>Marques tierces :</strong> Minecraft est une marque déposée de Mojang Synergies AB / Microsoft Corporation. Cubirium est un logiciel indépendant et n'est ni sponsorisé ni affilié à Mojang Studios.</li>
-                <li><strong>Licence :</strong> Logiciel distribué sous licence MIT. Pour toute question, consultez le site de l'auteur : <a href="https://gjagueneau.fr" target="_blank" style="color: var(--accent-indigo); text-decoration: underline;">gjagueneau.fr</a>.</li>
+                <li><strong>Droits d'auteur :</strong> Le code source, l'interface graphique et les éléments visuels de
+                  Cubirium sont protégés au titre du droit d'auteur et de la propriété intellectuelle.</li>
+                <li><strong>Marques tierces :</strong> Minecraft est une marque déposée de Mojang Synergies AB /
+                  Microsoft Corporation. Cubirium est un logiciel indépendant et n'est ni sponsorisé ni affilié à Mojang
+                  Studios.</li>
+                <li><strong>Licence :</strong> Logiciel distribué sous licence MIT. Pour toute question, consultez le
+                  site de l'auteur : <a href="https://gjagueneau.fr" target="_blank"
+                    style="color: var(--accent-indigo); text-decoration: underline;">gjagueneau.fr</a>.</li>
               </ul>
             </div>
           </div>
@@ -2579,11 +2897,14 @@
     </div>
   </div>
 
+  <!-- Menu contextuel personnalisé universel -->
+  <div id="worldContextMenu" class="world-context-menu" role="menu" aria-hidden="true"></div>
+
   <!-- Toast Notification -->
   <div class="toast" id="toast"></div>
 
   <script src="libs/skinview3d.bundle.js"></script>
-  <script src="app.js?v=1.4.0"></script>
+  <script src="app.js?v=1.5.5"></script>
 </body>
 
 </html>

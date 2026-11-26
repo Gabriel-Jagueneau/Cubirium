@@ -194,6 +194,7 @@ sync-chunk-writes=false
 allow-flight=true
 network-compression-threshold=512
 white-list=false
+broadcast-console-to-ops=false
 `;
     fs.writeFileSync(path.join(targetDir, 'server.properties'), serverProps, 'utf8');
 

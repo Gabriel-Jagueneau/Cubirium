@@ -152,7 +152,7 @@
     NSMenu *appMenu = [[NSMenu alloc] initWithTitle:@"Cubirium"];
     NSString *appName = @"Cubirium";
     [appMenu addItemWithTitle:[NSString stringWithFormat:@"À propos de %@", appName]
-                       action:@selector(orderFrontStandardAboutPanel:)
+                       action:@selector(openAbout:)
                 keyEquivalent:@""];
     [appMenu addItem:[NSMenuItem separatorItem]];
     [appMenu addItemWithTitle:@"Recharger la page"
@@ -186,6 +186,10 @@
     [windowMenuItem setSubmenu:windowMenu];
 
     [NSApp setMainMenu:mainMenu];
+}
+
+- (void)openAbout:(id)sender {
+    [self.webView evaluateJavaScript:@"window.openAboutModal && window.openAboutModal();" completionHandler:nil];
 }
 
 - (void)reloadPage:(id)sender {

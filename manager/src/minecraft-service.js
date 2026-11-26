@@ -1307,7 +1307,9 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       // Rétablir systématiquement le retour visuel in-game des commandes (/locate, etc.)
       if (this.activeProcess && this.activeProcess.stdin) {
         try {
-          this.activeProcess.stdin.write('gamerule sendCommandFeedback true\n');
+          const ver = this.detectedVersion || this.getWorldVersion(wid);
+          const feedbackRule = this.isModernGamerules(ver) ? 'send_command_feedback' : 'sendCommandFeedback';
+          this.activeProcess.stdin.write(`gamerule ${feedbackRule} true\n`);
         } catch (e) {}
       }
     }
@@ -1371,8 +1373,11 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
   getState() {
     const isRunning = (this.activeWorld && this.startTime && this.status !== 'STOPPED');
     const elapsed = isRunning ? Math.max(0, Math.floor((Date.now() - this.startTime) / 1000)) : 0;
+    const sessionBase = (this.activeWorld && this.worldSessionBases && typeof this.worldSessionBases[this.activeWorld] === 'number')
+      ? this.worldSessionBases[this.activeWorld]
+      : (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : 0);
     const baseRuntime = isRunning
-      ? Math.max(typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : 0, (this.activeWorld ? this.getWorldRuntime(this.activeWorld) : 0))
+      ? sessionBase
       : (this.activeWorld ? this.getWorldRuntime(this.activeWorld) : 0);
     const activeRuntime = isRunning ? Math.max(baseRuntime, baseRuntime + elapsed) : baseRuntime;
 
@@ -1785,6 +1790,10 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       fs.writeFileSync(eulaPath, 'eula=true\n', 'utf8');
     } catch (e) {}
 
+    // Désactiver uniquement la diffusion console -> OP (évite le spam "[Server: Saved the game]" en jeu)
+    // sans jamais toucher à sendCommandFeedback (/locate et toutes les commandes joueur restent 100% fonctionnelles)
+    this.ensureSilentConsoleBroadcast(worldPath);
+
     this.activeWorld = worldId;
     this.status = 'STARTING';
     const initialBase = this.getWorldRuntime(worldId);
@@ -2020,17 +2029,7 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
         clearInterval(this.serverSyncInterval);
         this.serverSyncInterval = null;
       }
-      const stoppingStart = (stoppedWorld && this.worldStartTimes[stoppedWorld]) || this.startTime;
-      const stoppingBase = (stoppedWorld && typeof this.worldSessionBases[stoppedWorld] === 'number')
-        ? this.worldSessionBases[stoppedWorld]
-        : (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : (stoppedWorld ? this.getWorldRuntime(stoppedWorld) : 0));
-
-      if (stoppedWorld && stoppingStart) {
-        const elapsed = Math.max(0, Math.floor((Date.now() - stoppingStart) / 1000));
-        const finalRuntime = stoppingBase + elapsed;
-        this.saveWorldRuntime(stoppedWorld, finalRuntime, stoppingStart);
-        this.worldSessionBases[stoppedWorld] = finalRuntime;
-      }
+      this.finalizeSessionRuntime(stoppedWorld);
       this.status = 'STOPPED';
       this.activeWorld = null;
       this.activeProcess = null;
@@ -2065,17 +2064,7 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
         clearInterval(this.serverSyncInterval);
         this.serverSyncInterval = null;
       }
-      const stoppingStart = (stoppedWorld && this.worldStartTimes[stoppedWorld]) || this.startTime;
-      const stoppingBase = (stoppedWorld && typeof this.worldSessionBases[stoppedWorld] === 'number')
-        ? this.worldSessionBases[stoppedWorld]
-        : (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : (stoppedWorld ? this.getWorldRuntime(stoppedWorld) : 0));
-
-      if (stoppedWorld && stoppingStart) {
-        const elapsed = Math.max(0, Math.floor((Date.now() - stoppingStart) / 1000));
-        const finalRuntime = stoppingBase + elapsed;
-        this.saveWorldRuntime(stoppedWorld, finalRuntime, stoppingStart);
-        this.worldSessionBases[stoppedWorld] = finalRuntime;
-      }
+      this.finalizeSessionRuntime(stoppedWorld);
       this.status = 'STOPPED';
       this.activeWorld = null;
       this.activeProcess = null;
@@ -2104,12 +2093,40 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
   }
 
   /**
+   * Garantit broadcast-console-to-ops=false dans server.properties pour empêcher le spam
+   * "[Server: Saved the game]" dans le chat des opérateurs en jeu, tout en conservant
+   * sendCommandFeedback=true pour les commandes exécutées par les joueurs (/locate, etc.).
+   */
+  ensureSilentConsoleBroadcast(worldPath) {
+    if (!worldPath || !fs.existsSync(worldPath)) return;
+    const propsPath = path.join(worldPath, 'server.properties');
+    try {
+      if (fs.existsSync(propsPath)) {
+        const raw = fs.readFileSync(propsPath, 'utf8');
+        const eol = raw.includes('\r\n') ? '\r\n' : '\n';
+        let updated = raw;
+        if (/^[ \t]*broadcast-console-to-ops[ \t]*=.*$/m.test(updated)) {
+          updated = updated.replace(/^[ \t]*broadcast-console-to-ops[ \t]*=.*$/m, 'broadcast-console-to-ops=false');
+        } else {
+          const suffix = updated.length > 0 && !updated.endsWith('\n') ? eol : '';
+          updated = `${updated}${suffix}broadcast-console-to-ops=false${eol}`;
+        }
+        if (updated !== raw) {
+          fs.writeFileSync(propsPath, updated, 'utf8');
+        }
+      } else {
+        fs.writeFileSync(propsPath, 'broadcast-console-to-ops=false\n', 'utf8');
+      }
+    } catch (e) {}
+  }
+
+  /**
    * Sauvegarde silencieuse en tâche de fond (force Minecraft à écrire les playerdata sur disque)
    */
-  triggerSilentSave(worldId) {
+  triggerSilentSave(worldId, force = false) {
     if (this.activeProcess && this.activeProcess.stdin && this.status === 'RUNNING' && this.activeWorld === worldId) {
       const now = Date.now();
-      if (!this._lastSilentSave || (now - this._lastSilentSave > 1500)) {
+      if (force || !this._lastSilentSave || (now - this._lastSilentSave > 2000)) {
         this._lastSilentSave = now;
         try {
           this.activeProcess.stdin.write('save-all\n');
@@ -2134,6 +2151,40 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
   }
 
   /**
+   * Finalise de façon idempotente le runtime d'une session (évite tout double comptage entre close/error et stopWorld)
+   */
+  finalizeSessionRuntime(worldId, clientRuntime = null) {
+    if (!worldId) return 0;
+    const sessionStart = this.worldStartTimes[worldId] || null;
+    if (!sessionStart) {
+      // Déjà finalisé (ex: par child.on('close') juste avant la fin de stopWorld)
+      const persisted = this.getWorldRuntime(worldId);
+      if (typeof clientRuntime === 'number' && clientRuntime > persisted) {
+        const clamped = Math.floor(clientRuntime);
+        this.saveWorldRuntime(worldId, clamped);
+        this.worldSessionBases[worldId] = clamped;
+        return clamped;
+      }
+      return persisted;
+    }
+
+    const sessionBase = (typeof this.worldSessionBases[worldId] === 'number')
+      ? this.worldSessionBases[worldId]
+      : (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : this.getWorldRuntime(worldId));
+    const elapsed = Math.max(0, Math.floor((Date.now() - sessionStart) / 1000));
+    let finalRuntime = sessionBase + elapsed;
+
+    if (typeof clientRuntime === 'number' && clientRuntime > finalRuntime) {
+      finalRuntime = Math.floor(clientRuntime);
+    }
+
+    delete this.worldStartTimes[worldId];
+    this.saveWorldRuntime(worldId, finalRuntime, sessionStart);
+    this.worldSessionBases[worldId] = finalRuntime;
+    return finalRuntime;
+  }
+
+  /**
    * Arrêt propre du serveur Minecraft
    */
   async stopWorld(force = false, clientRuntime = null) {
@@ -2146,18 +2197,6 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
     }
 
     const stoppingWorld = this.activeWorld;
-    const stoppingStartTime = (stoppingWorld && this.worldStartTimes[stoppingWorld]) || this.startTime;
-    const stoppingSessionBase = (stoppingWorld && typeof this.worldSessionBases[stoppingWorld] === 'number')
-      ? this.worldSessionBases[stoppingWorld]
-      : (typeof this.sessionStartRuntime === 'number' ? this.sessionStartRuntime : (stoppingWorld ? this.getWorldRuntime(stoppingWorld) : 0));
-
-    if (stoppingWorld && typeof clientRuntime === 'number' && clientRuntime > 0) {
-      const prev = this.getWorldRuntime(stoppingWorld);
-      if (clientRuntime > prev) {
-        this.saveWorldRuntime(stoppingWorld, clientRuntime, stoppingStartTime);
-        this.worldSessionBases[stoppingWorld] = clientRuntime;
-      }
-    }
 
     this.status = 'STOPPING';
     this.appendLog(`[Système] Arrêt du serveur en cours...`);
@@ -2201,21 +2240,8 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"`;
       this.serverSyncInterval = null;
     }
     const targetWorld = stoppingWorld || this.activeWorld;
-    const targetStart = stoppingStartTime || (targetWorld && this.worldStartTimes[targetWorld]) || this.startTime;
-    const targetBase = (targetWorld && typeof this.worldSessionBases[targetWorld] === 'number')
-      ? this.worldSessionBases[targetWorld]
-      : stoppingSessionBase;
     if (targetWorld) {
-      let finalRuntime = targetBase;
-      if (targetStart) {
-        const elapsed = Math.max(0, Math.floor((Date.now() - targetStart) / 1000));
-        finalRuntime = targetBase + elapsed;
-      }
-      if (typeof clientRuntime === 'number' && clientRuntime > finalRuntime) {
-        finalRuntime = Math.floor(clientRuntime);
-      }
-      this.saveWorldRuntime(targetWorld, finalRuntime, targetStart);
-      this.worldSessionBases[targetWorld] = finalRuntime;
+      this.finalizeSessionRuntime(targetWorld, clientRuntime);
     }
 
     this.status = 'STOPPED';
@@ -3041,6 +3067,7 @@ sync-chunk-writes=false
 allow-flight=true
 network-compression-threshold=512
 white-list=false
+broadcast-console-to-ops=false
 `;
       fs.writeFileSync(path.join(targetDir, 'server.properties'), serverProps, 'utf8');
 
@@ -3327,9 +3354,9 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"
     const bannedIps = this.readJsonFile(worldPath, 'banned-ips.json', []);
 
     // Joueurs actuellement connectés si ce monde est en ligne
+    // Note : ne pas déclencher save-all ici (la liste des joueurs n'a pas besoin de vider les chunks sur disque)
     if (this.activeWorld === worldId && (this.status === 'RUNNING' || this.activeProcess)) {
       this.triggerSilentList(worldId);
-      this.triggerSilentSave(worldId);
       if (this.players.length === 0) {
         this.syncPlayersFromLog(worldPath);
       }
@@ -4461,7 +4488,7 @@ if not defined JAVA_EXEC set "JAVA_EXEC=java"
       if (!fs.existsSync(path.join(targetDir, 'server.properties'))) {
         fs.writeFileSync(
           path.join(targetDir, 'server.properties'),
-          `# Importé par Cubirium\nserver-port=25565\nmotd=Serveur ${cleanId}\nonline-mode=true\nmax-players=20\n`,
+          `# Importé par Cubirium\nserver-port=25565\nmotd=Serveur ${cleanId}\nonline-mode=true\nmax-players=20\nbroadcast-console-to-ops=false\n`,
           'utf8'
         );
       }

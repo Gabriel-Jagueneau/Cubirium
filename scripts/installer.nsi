@@ -75,7 +75,7 @@ Section "Application Principale" SecMain
   
   CreateDirectory "$INSTDIR\manager\public"
   SetOutPath "$INSTDIR\manager\public"
-  File /r "..\manager\public\*"
+  File /r /x "cache" "..\manager\public\*"
 
   ; Vérification et installation automatique de la toute dernière version de Java (Java 25)
   IfFileExists "$LOCALAPPDATA\Cubirium\runtime\java-25\bin\java.exe" JavaAlreadyInstalled 0
@@ -105,7 +105,7 @@ JavaAlreadyInstalled:
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "UninstallString" "$\"$INSTDIR\Uninstall.exe$\""
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "DisplayIcon" "$\"$INSTDIR\AppIcon.ico$\""
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "Publisher" "Gabriel JAGUENEAU"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "DisplayVersion" "1.4.0"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "DisplayVersion" "1.5.0"
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "NoModify" 1
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Cubirium" "NoRepair" 1
 SectionEnd

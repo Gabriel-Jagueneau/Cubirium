@@ -247,7 +247,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMe
 
         let appMenu = NSMenu()
         let appName = "Cubirium"
-        appMenu.addItem(withTitle: "À propos de \(appName)", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
+        let aboutItem = NSMenuItem(title: "À propos de \(appName)", action: #selector(openAbout), keyEquivalent: "")
+        appMenu.addItem(aboutItem)
         appMenu.addItem(NSMenuItem.separator())
         
         let settingsItem = NSMenuItem(title: "Paramètres...", action: #selector(openSettings), keyEquivalent: ",")
@@ -298,6 +299,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, WKScriptMe
 
     @objc func reloadApp() {
         webView.reload()
+    }
+
+    @objc func openAbout() {
+        webView.evaluateJavaScript("window.openAboutModal && window.openAboutModal();", completionHandler: nil)
     }
 
     @objc func openSettings() {

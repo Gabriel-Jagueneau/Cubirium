@@ -269,8 +269,9 @@ class PlayerDataService {
          (minecraftService.status === 'RUNNING' || minecraftService.activeProcess) && 
          minecraftService.players.some(p => p.toLowerCase() === playerName.toLowerCase()));
 
-    // Si le serveur tourne actuellement sur ce monde, forcer un flush discret des données joueur vers le disque
-    if (minecraftService && minecraftService.activeWorld === worldId && minecraftService.status === 'RUNNING' && typeof minecraftService.triggerSilentSave === 'function') {
+    // Si le serveur tourne actuellement sur ce monde ET que le joueur est en ligne,
+    // forcer un flush discret des données joueur vers le disque (silencieux en jeu grâce à broadcast-console-to-ops=false)
+    if (isOnline && minecraftService && minecraftService.activeWorld === worldId && minecraftService.status === 'RUNNING' && typeof minecraftService.triggerSilentSave === 'function') {
       minecraftService.triggerSilentSave(worldId);
       await new Promise(r => setTimeout(r, 40));
     }
@@ -290,6 +291,7 @@ class PlayerDataService {
     let foodSaturation = 5.0;
     let xpLevel = 0;
     let xpProgress = 0;
+    let selectedSlot = 0;
     let gameMode = 'survival'; // survival, creative, adventure, spectator
     let position = { x: 0, y: 64, z: 0, dimension: 'minecraft:overworld' };
     let spawnPosition = null;
@@ -325,6 +327,32 @@ class PlayerDataService {
           if (nbt.foodSaturationLevel !== undefined) foodSaturation = Number(nbt.foodSaturationLevel);
           if (nbt.XpLevel !== undefined) xpLevel = Number(nbt.XpLevel);
           if (nbt.XpP !== undefined) xpProgress = Number(nbt.XpP);
+          if (nbt.SelectedItemSlot !== undefined) {
+            selectedSlot = Math.max(0, Math.min(8, Number(nbt.SelectedItemSlot) || 0));
+          }
+          const attrs = nbt.attributes || nbt.Attributes;
+          if (Array.isArray(attrs)) {
+            const mhAttr = attrs.find(a => a && (a.id === 'minecraft:max_health' || a.id === 'minecraft:generic.max_health' || a.Name === 'minecraft:generic.max_health' || a.Name === 'generic.maxHealth'));
+            if (mhAttr && typeof (mhAttr.base ?? mhAttr.Base) === 'number' && (mhAttr.base ?? mhAttr.Base) > 0) {
+              let computedMax = mhAttr.base ?? mhAttr.Base;
+              const mods = mhAttr.modifiers || mhAttr.Modifiers;
+              if (Array.isArray(mods)) {
+                let addTotal = 0;
+                let multBase = 0;
+                let multTotal = 1;
+                for (const m of mods) {
+                  const amt = Number(m?.amount ?? m?.Amount ?? 0);
+                  const op = m?.operation ?? m?.Operation;
+                  if (op === 0 || op === 'add_value') addTotal += amt;
+                  else if (op === 1 || op === 'add_multiplied_base') multBase += amt;
+                  else if (op === 2 || op === 'add_multiplied_total') multTotal *= (1 + amt);
+                }
+                computedMax = ((computedMax + addTotal) * (1 + multBase)) * multTotal;
+              }
+              if (computedMax > 0) maxHealth = Math.round(computedMax);
+            }
+          }
+          if (health > maxHealth) maxHealth = health;
 
           // GameMode (0: survival, 1: creative, 2: adventure, 3: spectator)
           const gmMap = { 0: 'survival', 1: 'creative', 2: 'adventure', 3: 'spectator' };
@@ -498,8 +526,46 @@ class PlayerDataService {
 
             const isEnchanted = enchants.length > 0 || (comp['minecraft:enchantment_glint_override'] === true);
             const damage = (comp && comp['minecraft:damage'] !== undefined) ? comp['minecraft:damage'] : (rawItem.tag && rawItem.tag.Damage !== undefined ? rawItem.tag.Damage : null);
-            const customName = (comp && (comp['minecraft:custom_name'] || comp['minecraft:item_name'])) || (rawItem.tag && rawItem.tag.display && rawItem.tag.display.Name) || null;
-            const dyedColor = (comp && comp['minecraft:dyed_color'] && comp['minecraft:dyed_color'].rgb !== undefined) ? comp['minecraft:dyed_color'].rgb : (rawItem.tag && rawItem.tag.display && rawItem.tag.display.color) || null;
+            let rawCustomName = (comp && (comp['minecraft:custom_name'] || comp['minecraft:item_name'])) || (rawItem.tag && rawItem.tag.display && rawItem.tag.display.Name) || null;
+            let customName = null;
+            if (rawCustomName) {
+              if (typeof rawCustomName === 'string') {
+                const t = rawCustomName.trim();
+                if (t.startsWith('{') || t.startsWith('"')) {
+                  try {
+                    const parsed = JSON.parse(t);
+                    customName = typeof parsed === 'string' ? parsed : (parsed.text || (Array.isArray(parsed.extra) ? parsed.extra.map(x => typeof x === 'string' ? x : (x.text || '')).join('') : null));
+                  } catch (_) {
+                    customName = t.replace(/^"|"$/g, '');
+                  }
+                } else {
+                  customName = t;
+                }
+              } else if (typeof rawCustomName === 'object') {
+                customName = rawCustomName.text || (Array.isArray(rawCustomName.extra) ? rawCustomName.extra.map(x => typeof x === 'string' ? x : (x.text || '')).join('') : null);
+              }
+            }
+            const dyedColor = (comp && comp['minecraft:dyed_color'] !== undefined)
+              ? (typeof comp['minecraft:dyed_color'] === 'number' ? comp['minecraft:dyed_color'] : (comp['minecraft:dyed_color'].rgb !== undefined ? comp['minecraft:dyed_color'].rgb : null))
+              : (rawItem.tag && rawItem.tag.display && rawItem.tag.display.color !== undefined ? rawItem.tag.display.color : null);
+
+            // Propriétaire d'une tête de joueur (player_head) pour rendu 3D fidèle sur le skin
+            let skullOwner = null;
+            const profileComp = comp && comp['minecraft:profile'];
+            if (profileComp) {
+              skullOwner = typeof profileComp === 'string' ? profileComp : (profileComp.name || null);
+            } else if (rawItem.tag && rawItem.tag.SkullOwner) {
+              skullOwner = typeof rawItem.tag.SkullOwner === 'string' ? rawItem.tag.SkullOwner : (rawItem.tag.SkullOwner.Name || null);
+            }
+
+            // Composant moderne 1.21.2+ / 26.x minecraft:equippable (slot & asset_id d'armure/équipement)
+            const eqComp = comp && comp['minecraft:equippable'];
+            const equippable = eqComp && typeof eqComp === 'object'
+              ? {
+                  slot: eqComp.slot || null,
+                  assetId: eqComp.asset_id || eqComp.model || null
+                }
+              : null;
 
             // Calcul Durabilité
             let maxDamage = comp['minecraft:max_damage'] || VANILLA_MAX_DURABILITY[rawName] || null;
@@ -526,7 +592,9 @@ class PlayerDataService {
               durability: currentDurability,
               durabilityPercent,
               customName,
-              dyedColor
+              dyedColor,
+              skullOwner,
+              equippable
             };
           };
 
@@ -625,6 +693,7 @@ class PlayerDataService {
       foodSaturation,
       xpLevel,
       xpProgress,
+      selectedSlot,
       position,
       spawnPosition,
       lastDeathPosition,
@@ -648,34 +717,163 @@ class PlayerDataService {
 
     if (!target) throw new Error('Pseudo de joueur manquant.');
 
+    const supportsDamageCmd = () => {
+      const ver = String((minecraftService && (minecraftService.detectedVersion || minecraftService.getWorldVersion(worldId))) || '').trim().toLowerCase();
+      if (!ver) return true;
+      if (/^(?:24|25|26|27)/.test(ver)) return true;
+      const m = ver.match(/^1\.(\d+)(?:\.(\d+))?/);
+      if (m) {
+        const min = parseInt(m[1], 10);
+        const pat = parseInt(m[2] || '0', 10);
+        return min > 19 || (min === 19 && pat >= 4);
+      }
+      return true;
+    };
+
+    const flushPlayerSoon = () => {
+      try {
+        if (minecraftService && typeof minecraftService.triggerSilentSave === 'function') {
+          minecraftService.triggerSilentSave(worldId, true);
+        }
+      } catch (_) {}
+    };
+
     switch (action) {
+      case 'health_full':
       case 'heal': {
-        if (!isRunning) throw new Error('Le serveur doit être allumé pour soigner le joueur.');
-        minecraftService.sendCommand(`effect give ${target} instant_health 1 255`);
-        minecraftService.sendCommand(`effect give ${target} saturation 1 255`);
-        return { success: true, message: `${target} a été soigné.` };
+        if (!isRunning) throw new Error('Le serveur doit être allumé pour modifier la vie.');
+        const cur = await this.getPlayerDetails(worldId, target, minecraftService);
+        const maxHp = cur.maxHealth || 20;
+        minecraftService.sendCommand(`effect give ${target} instant_health 1 10 true`);
+        await new Promise(r => setTimeout(r, 120));
+        flushPlayerSoon();
+        return { success: true, message: `Vie de ${target} restaurée au maximum.`, health: maxHp };
       }
 
-      case 'feed': {
-        if (!isRunning) throw new Error('Le serveur doit être allumé pour nourrir le joueur.');
-        minecraftService.sendCommand(`effect give ${target} saturation 1 255`);
-        await new Promise(r => setTimeout(r, 200));
-        return { success: true, message: `${target} a été nourri.` };
+      case 'health_add': {
+        if (!isRunning) throw new Error('Le serveur doit être allumé pour modifier la vie.');
+        const cur = await this.getPlayerDetails(worldId, target, minecraftService);
+        const curHealth = typeof cur.health === 'number' ? cur.health : 20;
+        const maxHp = cur.maxHealth || 20;
+        if (curHealth >= maxHp) {
+          return { success: true, message: `La vie de ${target} est déjà au maximum.`, health: maxHp };
+        }
+        // Regeneration II (amplifier 1, 1 HP / 25 ticks) pendant 3 s (60 ticks) -> ticks à 50 et 25 = exactement +2 PV (+1 cœur) sans flash rouge
+        if (maxHp - curHealth <= 2) {
+          minecraftService.sendCommand(`effect give ${target} instant_health 1 0 true`);
+          setTimeout(flushPlayerSoon, 200);
+        } else {
+          minecraftService.sendCommand(`effect give ${target} regeneration 3 1 true`);
+          setTimeout(flushPlayerSoon, 300);
+          setTimeout(flushPlayerSoon, 2800);
+        }
+        const nextHealth = Math.min(maxHp, curHealth + 2);
+        return { success: true, message: `+1 cœur ajouté à ${target}.`, health: nextHealth };
       }
 
+      case 'health_sub': {
+        if (!isRunning) throw new Error('Le serveur doit être allumé pour modifier la vie.');
+        const cur = await this.getPlayerDetails(worldId, target, minecraftService);
+        if (cur.gameMode === 'creative' || cur.gameMode === 'spectator') {
+          throw new Error(`${target} est en mode ${cur.gameMode === 'creative' ? 'Créatif' : 'Spectateur'} (invulnérable).`);
+        }
+        const curHealth = typeof cur.health === 'number' ? cur.health : 20;
+        if (curHealth <= 1) {
+          return { success: true, message: `La vie de ${target} est déjà au minimum (1/2 cœur).`, health: 1 };
+        }
+        const dmg = Math.min(2, curHealth - 1);
+        if (supportsDamageCmd()) {
+          // minecraft:starve ignore l'armure et la résistance -> retire exactement 1 cœur (2 PV)
+          minecraftService.sendCommand(`damage ${target} ${dmg} minecraft:starve`);
+        } else {
+          minecraftService.sendCommand(`effect give ${target} poison 2 1 true`);
+        }
+        await new Promise(r => setTimeout(r, 120));
+        flushPlayerSoon();
+        const nextHealth = Math.max(1, curHealth - dmg);
+        return { success: true, message: `-1 cœur retiré à ${target}.`, health: nextHealth };
+      }
+
+      case 'health_empty':
       case 'damage':
       case 'drain_health':
       case 'poison':
       case 'kill': {
         if (!isRunning) throw new Error('Le serveur doit être allumé pour vider la vie du joueur.');
-        minecraftService.sendCommand(`effect give ${target} poison 1 252`);
-        return { success: true, message: `Barre de santé de ${target} vidée (1/2 cœur).` };
+        const cur = await this.getPlayerDetails(worldId, target, minecraftService);
+        if (cur.gameMode === 'creative' || cur.gameMode === 'spectator') {
+          throw new Error(`${target} est en mode ${cur.gameMode === 'creative' ? 'Créatif' : 'Spectateur'} (invulnérable).`);
+        }
+        const curHealth = typeof cur.health === 'number' ? cur.health : 20;
+        if (curHealth > 1) {
+          if (supportsDamageCmd()) {
+            minecraftService.sendCommand(`damage ${target} ${curHealth - 1} minecraft:starve`);
+          } else {
+            minecraftService.sendCommand(`effect give ${target} poison 1 252 true`);
+          }
+        }
+        await new Promise(r => setTimeout(r, 120));
+        flushPlayerSoon();
+        return { success: true, message: `Barre de santé de ${target} vidée (1/2 cœur).`, health: 1 };
       }
 
+      case 'food_full':
+      case 'feed': {
+        if (!isRunning) throw new Error('Le serveur doit être allumé pour nourrir le joueur.');
+        minecraftService.sendCommand(`effect give ${target} saturation 1 255 true`);
+        await new Promise(r => setTimeout(r, 150));
+        flushPlayerSoon();
+        return { success: true, message: `Barre de faim de ${target} remplie au maximum.`, foodLevel: 20 };
+      }
+
+      case 'food_add': {
+        if (!isRunning) throw new Error('Le serveur doit être allumé pour modifier la faim.');
+        const cur = await this.getPlayerDetails(worldId, target, minecraftService);
+        const curFood = typeof cur.foodLevel === 'number' ? cur.foodLevel : 20;
+        if (curFood >= 20) {
+          return { success: true, message: `La barre de faim de ${target} est déjà pleine.`, foodLevel: 20 };
+        }
+        if (curFood >= 18) {
+          minecraftService.sendCommand(`effect give ${target} saturation 1 0 true`);
+          await new Promise(r => setTimeout(r, 150));
+        } else {
+          // saturation amp 0 restaure +1 point de faim / tick (50 ms) -> ~2 ticks (~100 ms) = +2 points (+1 pilon)
+          minecraftService.sendCommand(`effect give ${target} saturation 1 0 true`);
+          await new Promise(r => setTimeout(r, 100));
+          minecraftService.sendCommand(`effect clear ${target} saturation`);
+        }
+        flushPlayerSoon();
+        return { success: true, message: `+1 pilon ajouté à ${target}.`, foodLevel: Math.min(20, curFood + 2) };
+      }
+
+      case 'food_sub': {
+        if (!isRunning) throw new Error('Le serveur doit être allumé pour modifier la faim.');
+        const cur = await this.getPlayerDetails(worldId, target, minecraftService);
+        const curFood = typeof cur.foodLevel === 'number' ? cur.foodLevel : 20;
+        const curSat = typeof cur.foodSaturation === 'number' ? cur.foodSaturation : 0;
+        if (curFood <= 0) {
+          return { success: true, message: `La barre de faim de ${target} est déjà vide.`, foodLevel: 0 };
+        }
+        // Formule exacte Minecraft : hunger draine 0.025 * (amp + 1) points de saturation/faim par seconde
+        const ptsToDrain = Math.max(2, curSat + 2);
+        const secs = Math.max(1, Math.min(5, Math.ceil(ptsToDrain / 6.4)));
+        const amp = Math.max(0, Math.min(255, Math.round(ptsToDrain / (0.025 * secs) - 1)));
+        minecraftService.sendCommand(`effect give ${target} hunger ${secs} ${amp} true`);
+        setTimeout(flushPlayerSoon, secs * 1000 + 150);
+        return { success: true, message: `-1 pilon retiré à ${target}.`, foodLevel: Math.max(0, curFood - 2) };
+      }
+
+      case 'food_empty':
       case 'starve': {
         if (!isRunning) throw new Error('Le serveur doit être allumé pour affamer le joueur.');
-        minecraftService.sendCommand(`effect give ${target} hunger 1 255`);
-        return { success: true, message: `Barre de faim de ${target} vidée.` };
+        const cur = await this.getPlayerDetails(worldId, target, minecraftService);
+        const curFood = typeof cur.foodLevel === 'number' ? cur.foodLevel : 20;
+        const curSat = typeof cur.foodSaturation === 'number' ? cur.foodSaturation : 5;
+        const totalPts = Math.max(6, curFood + curSat + 4);
+        const secs = Math.max(1, Math.min(8, Math.ceil(totalPts / 6.4)));
+        minecraftService.sendCommand(`effect give ${target} hunger ${secs} 255 true`);
+        setTimeout(flushPlayerSoon, Math.min(1200, secs * 500));
+        return { success: true, message: `Barre de faim de ${target} vidée.`, foodLevel: 0 };
       }
 
       case 'xp': {
@@ -683,6 +881,8 @@ class PlayerDataService {
         const levels = parseInt(value, 10);
         if (isNaN(levels) || levels === 0) throw new Error('Montant d\'XP invalide.');
         minecraftService.sendCommand(`experience add ${target} ${levels} levels`);
+        await new Promise(r => setTimeout(r, 100));
+        flushPlayerSoon();
         const msg = levels > 0 
           ? `+${levels} niveau(x) d'XP donné(s) à ${target}.` 
           : `${levels} niveau(x) d'XP retiré(s) à ${target}.`;
@@ -704,8 +904,8 @@ class PlayerDataService {
             timestamp: Date.now()
           });
           try {
-            if (minecraftService.activeProcess && minecraftService.activeProcess.stdin) {
-              minecraftService.activeProcess.stdin.write('save-all\n');
+            if (typeof minecraftService.triggerSilentSave === 'function') {
+              minecraftService.triggerSilentSave(worldId, true);
             }
           } catch (e) {}
         }
